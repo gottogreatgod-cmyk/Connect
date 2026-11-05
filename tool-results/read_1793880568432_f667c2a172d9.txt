@@ -1,0 +1,632 @@
+     1→/**
+     2→ * The Growth OS Engine — the unified orchestration layer.
+     3→ *
+     4→ * One agent loop behind every surface (the Agent chat, the Builder's
+     5→ * "Generate my website" button, any MCP client). This module IS the
+     6→ * "internal layer that makes all the tools one tool":
+     7→ *
+     8→ *   receive task
+     9→ *     → 1 · LOAD CONTEXT   memory (DB) + build state + the skill catalogue
+    10→ *     → 2 · PLAN           the planner classifies the task and extracts
+    11→ *                          the business facts (one fast LLM call)
+    12→ *     → 3 · EXECUTE        sub-agents run IN PARALLEL where their work
+    13→ *                          is independent — the Designer picks the
+    14→ *                          template + motion while the Copywriter writes
+    15→ *                          the launch copy in the persona voice
+    16→ *     → 4 · VERIFY         every field re-checked against the REAL
+    17→ *                          registries server-side; invalid picks fall
+    18→ *                          back to the deterministic scorer, never guessed
+    19→ *     → 5 · MEMORY         business facts + decisions written back to
+    20→ *                          the AgentMemory table — the engine learns the
+    21→ *                          client as it works
+    22→ *     → 6 · RESPOND        say + validated actions + the full TRACE
+    23→ *                          (every step, with timings) so the analysis is
+    24→ *                          visible, not claimed
+    25→ *
+    26→ * Rules that make it reliable (from the blueprint, enforced here):
+    27→ *   · evidence before claims — the trace is the evidence
+    28→ *   · parallel independent calls — designer ∥ copywriter
+    29→ *   · deterministic verification — registries are ground truth, the
+    30→ *     LLM proposes and the engine disposes
+    31→ *   · never fail the user — every layer degrades to the one below it:
+    32→ *     multi-call loop → single grounded call → deterministic scorer
+    33→ */
+    34→
+    35→import ZAI from "z-ai-web-dev-sdk";
+    36→import { db } from "@/lib/db";
+    37→import { TEMPLATES, findTemplate, industryOf } from "./registry";
+    38→import { PERSONALITIES } from "./motion-craft";
+    39→import { askConcierge } from "./concierge";
+    40→
+    41→/* ── the contracts ─────────────────────────────────────────────────── */
+    42→
+    43→/** One step of the engine loop — rendered verbatim in the UI. */
+    44→export interface TraceStep {
+    45→  id: string;
+    46→  label: string;
+    47→  detail: string;
+    48→  ms: number;
+    49→}
+    50→
+    51→export interface SiteAction {
+    52→  type: "site";
+    53→  slug: string;
+    54→  why: string;
+    55→  brief: string;
+    56→  name: string;
+    57→  city: string;
+    58→  pitch: string;
+    59→  headline: string;
+    60→  tagline: string;
+    61→  cta: string;
+    62→  about: string;
+    63→  motion: string;
+    64→}
+    65→export interface ImageAction { type: "image"; prompt: string; size: string }
+    66→export interface VideoAction { type: "video"; prompt: string; quality: string }
+    67→export interface SpeakAction { type: "speak"; text: string; voice: string }
+    68→export interface SearchAction { type: "search"; query: string }
+    69→export interface ReadAction { type: "read"; url: string }
+    70→export type EngineAction = SiteAction | ImageAction | VideoAction | SpeakAction | SearchAction | ReadAction;
+    71→
+    72→export interface EngineResult {
+    73→  say: string;
+    74→  actions: EngineAction[];
+    75→  trace: TraceStep[];
+    76→  /** human-readable notes about what the engine remembered */
+    77→  memory: string[];
+    78→}
+    79→
+    80→export interface EngineContext {
+    81→  template?: string | null;
+    82→  business?: string;
+    83→  city?: string;
+    84→  personality?: string | null;
+    85→  brief?: string;
+    86→}
+    87→
+    88→export interface EngineInput {
+    89→  messages: { role: "user" | "assistant"; content: string }[];
+    90→  context: EngineContext;
+    91→  hint?: "site" | null;
+    92→}
+    93→
+    94→/* ── the grounded catalogues, compacted once ───────────────────────── */
+    95→
+    96→const REGISTRY_LINES = TEMPLATES.map(
+    97→  (t) => `${t.slug} — ${t.name} · ${industryOf(t.industry).label.toLowerCase()} · ${t.kind.toLowerCase()} · ${t.city} · ${t.positioning}`,
+    98→).join("\n");
+    99→
+   100→const PERSONALITY_LINES = Object.values(PERSONALITIES)
+   101→  .map((p) => `${p.id} — ${p.label}. Fits: ${p.brands}.`)
+   102→  .join("\n");
+   103→
+   104→const IMAGE_SIZES = ["1024x1024", "768x1344", "864x1152", "1344x768", "1152x864", "1536x768", "768x1536"];
+   105→const VOICES = ["tongtong", "chuichui", "xiaochen", "jam", "kazi", "douji", "luodo"];
+   106→const TEMPLATE_SLUGS = new Set(TEMPLATES.map((t) => t.slug));
+   107→
+   108→/* the copywriter personas — the agency-agents specialist pattern */
+   109→const PERSONAS: { id: string; label: string; style: string }[] = [
+   110→  { id: "warm", label: "Warm & local", style: "Write in a warm, neighbourly, human voice — plain words, short sentences, like a local business owner talking to a regular." },
+   111→  { id: "premium", label: "Premium & minimal", style: "Write in a restrained, premium voice — few words, no exclamation marks, confidence through specificity, never hype." },
+   112→  { id: "bold", label: "Bold & playful", style: "Write in a bold, playful, energetic voice — direct address, a little cheeky, but never cringe." },
+   113→];
+   114→
+   115→const str = (v: unknown, max: number, fallback = ""): string =>
+   116→  typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : fallback;
+   117→
+   118→/* ── step 1 · context (memory) ─────────────────────────────────────── */
+   119→
+   120→interface MemoryBlock {
+   121→  lines: string[];
+   122→  facts: { scope: string; key: string; body: string }[];
+   123→  notes: string[];
+   124→}
+   125→
+   126→async function loadMemory(): Promise<MemoryBlock> {
+   127→  try {
+   128→    const rows = await db.agentMemory.findMany({
+   129→      orderBy: { updatedAt: "desc" },
+   130→      take: 32,
+   131→    });
+   132→    return {
+   133→      lines: rows.map((r) => `${r.scope}:${r.key} = ${r.body}`),
+   134→      facts: rows.map((r) => ({ scope: r.scope, key: r.key, body: r.body })),
+   135→      notes: [],
+   136→    };
+   137→  } catch {
+   138→    /* DB unavailable — the engine still works, just amnesic */
+   139→    return { lines: [], facts: [], notes: [] };
+   140→  }
+   141→}
+   142→
+   143→async function writeMemory(writes: { scope: string; key: string; body: string }[]): Promise<string[]> {
+   144→  const notes: string[] = [];
+   145→  for (const w of writes) {
+   146→    if (!w.body) continue;
+   147→    try {
+   148→      await db.agentMemory.upsert({
+   149→        where: { scope_key: { scope: w.scope, key: w.key } },
+   150→        create: w,
+   151→        update: { body: w.body },
+   152→      });
+   153→      notes.push(`${w.scope}:${w.key} → ${w.body}`);
+   154→    } catch {
+   155→      /* memory is best-effort, never fatal */
+   156→    }
+   157→  }
+   158→  return notes;
+   159→}
+   160→
+   161→/* ── defensive JSON extraction ─────────────────────────────────────── */
+   162→
+   163→function parseJson(raw: string): Record<string, unknown> | null {
+   164→  let text = raw.trim();
+   165→  text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+   166→  const start = text.indexOf("{");
+   167→  const end = text.lastIndexOf("}");
+   168→  if (start === -1 || end === -1 || end <= start) return null;
+   169→  try {
+   170→    return JSON.parse(text.slice(start, end + 1)) as Record<string, unknown>;
+   171→  } catch {
+   172→    return null;
+   173→  }
+   174→}
+   175→
+   176→async function complete(zai: Awaited<ReturnType<typeof ZAI.create>>, system: string, user: string): Promise<string> {
+   177→  const completion = await zai.chat.completions.create({
+   178→    messages: [
+   179→      { role: "assistant", content: system },
+   180→      { role: "user", content: user },
+   181→    ],
+   182→    thinking: { type: "disabled" },
+   183→  });
+   184→  return completion.choices[0]?.message?.content?.trim() ?? "";
+   185→}
+   186→
+   187→/* ── step 2 · the planner ──────────────────────────────────────────── */
+   188→
+   189→interface Plan {
+   190→  task: "question" | "build" | "multi";
+   191→  wants: ("site" | "image" | "video" | "speak" | "search" | "read")[];
+   192→  business: string;
+   193→  city: string;
+   194→  persona: string;
+   195→  /** for question tasks: the answer itself */
+   196→  answer?: string;
+   197→  /** payloads for the non-site wants, written by the planner in one pass */
+   198→  image?: { prompt: string; size: string };
+   199→  video?: { prompt: string; quality: string };
+   200→  speak?: { text: string; voice: string };
+   201→  search?: { query: string };
+   202→  read?: { url: string };
+   203→}
+   204→
+   205→function plannerSystem(memoryLines: string[], ctx: EngineContext, hint: string | null): string {
+   206→  const contextBlock = [
+   207→    ctx.template ? `Staged template: ${ctx.template}` : "No template staged yet.",
+   208→    ctx.business ? `Business name: ${ctx.business}` : "",
+   209→    ctx.city ? `City: ${ctx.city}` : "",
+   210→    ctx.personality ? `Motion personality chosen: ${ctx.personality}` : "",
+   211→    ctx.brief ? `Current brief: ${ctx.brief}` : "",
+   212→  ]
+   213→    .filter(Boolean)
+   214→    .join("\n");
+   215→
+   216→  return `You are the PLANNER of the Growth OS engine — the routing brain of a website-building platform. You classify tasks and extract facts. You are warm, direct and brief.
+   217→
+   218→YOU ALWAYS REPLY WITH A SINGLE RAW JSON OBJECT — no markdown fences, no text outside it:
+   219→{"task":"question|build|multi","wants":[...],"business":"","city":"","persona":"warm|premium|bold","answer":"",...}
+   220→
+   221→DECIDE:
+   222→- Pure question/advice (no deliverable wanted) → {"task":"question","wants":[],"answer":"<the full answer, grounded on the memory and context, max 130 words>"}
+   223→- A website is wanted (build/make/design a site, landing page…) → include "site" in wants.
+   224→- Also wanted in the same breath: "image" (generate art), "video" (render a reel), "speak" (text to speech), "search" (live web search), "read" (extract a url).
+   225→- Include EVERY want in one reply — the engine runs them all.
+   226→
+   227→WHEN "site" IS IN WANTS, ALSO SET:
+   228→- business: the client's business name if they gave one, else invent a fitting, honest one
+   229→- city: their city if known, else a fitting city
+   230→- persona: the copywriter voice that fits — ${PERSONAS.map((p) => `${p.id} (${p.label})`).join(", ")}
+   231→
+   232→WHEN OTHER WANTS ARE INCLUDED, ALSO WRITE THEIR PAYLOADS:
+   233→- image: {"image":{"prompt":"<photographic art direction, subject + place + light + mood, add 'no text' for backgrounds>","size":"1344x768|1024x1024|864x1152|1152x864|1536x768"}}
+   234→- video: {"video":{"prompt":"<cinematic direction, 'no text overlays'>","quality":"speed|quality"}}
+   235→- speak: {"speak":{"text":"<the script>","voice":"tongtong|jam|kazi"}}
+   236→- search: {"search":{"query":"<a focused query>"}}
+   237→- read: {"read":{"url":"<the url>"}}
+   238→
+   239→RULES:
+   240→- If the user is vague, pick sensible defaults and note them inside "answer" (one line) — never interrogate.
+   241→- ${hint === "site" ? 'The user PRESSED "Generate my website" — wants MUST include "site".' : "Never add wants the user did not ask for."}
+   242→- The answer field is only used for question tasks; for build/multi leave it as a one-line note of what you chose.
+   243→
+   244→WHAT THE ENGINE ALREADY KNOWS (memory + live build context):
+   245→${contextBlock || "(a fresh session — nothing staged yet)"}
+   246→${memoryLines.length ? `\nMEMORY (facts learned about this client — USE these, they are current):\n${memoryLines.join("\n")}` : ""}`;
+   247→}
+   248→
+   249→/* ── step 3a · the Designer sub-agent ──────────────────────────────── */
+   250→
+   251→function designerSystem(): string {
+   252→  return `You are the DESIGNER sub-agent of the Growth OS engine. You pick the ONE template that best fits a brief, and the motion personality that fits the brand.
+   253→
+   254→YOU ALWAYS REPLY WITH A SINGLE RAW JSON OBJECT — no fences, no prose:
+   255→{"slug":"<one slug from the registry>","motion":"<corporate|organic|bold|cinematic>","why":"<one line: why this template>","pitch":"<one-line differentiator for THIS business>"}
+   256→
+   257→THE REAL TEMPLATE REGISTRY (pick ONLY from these slugs):
+   258→${REGISTRY_LINES}
+   259→
+   260→MOTION PERSONALITIES (pick the one that fits the brand):
+   261→${PERSONALITY_LINES}
+   262→
+   263→HOW TO PICK — in priority order:
+   264→1. The client's CONVERSION GOAL first (bookings? orders? quotes? visits? listings? portal?) — match it to the template's conversion verb.
+   265→2. The business KIND second — the daily-rhythm of the business should feel familiar (a florist with daily stock and walk-ins is closer to a café's "today's bake + hours" than to a fine-dining tasting menu).
+   266→3. The template's demo industry LAST — the design gets re-skinned and the demo copy is replaced by the client's own, so a food template can carry a florist perfectly if the conversion goal matches.
+   267→
+   268→RULES:
+   269→- The slug MUST come from the registry above — never invent one.
+   270→- The pitch is about the CLIENT's business, concrete and honest, no hype words like "unlock" or "elevate".`;
+   271→}
+   272→
+   273→/* ── step 3b · the Copywriter sub-agent ────────────────────────────── */
+   274→
+   275→function copySystem(personaId: string, memoryLines: string[]): string {
+   276→  const persona = PERSONAS.find((p) => p.id === personaId) ?? PERSONAS[0];
+   277→  return `You are the COPYWRITER sub-agent of the Growth OS engine — the "${persona.label}" specialist. ${persona.style}
+   278→
+   279→YOU ALWAYS REPLY WITH A SINGLE RAW JSON OBJECT — no fences, no prose:
+   280→{"headline":"<max 8 words>","tagline":"<one sentence>","cta":"<max 4 words, a button label>","about":"<2 sentences>","brief":"<one-line business brief, the shape: 'a <what they do> in <city> that <conversion goal>'>"}
+   281→
+   282→RULES:
+   283→- Write for the CLIENT's business (the user tells you what it is) — never a demo brand.
+   284→- Concrete and honest: real things, real hours, real neighbourhoods. No "unlock", no "elevate", no exclamation storms.
+   285→${memoryLines.length ? `- MEMORY about this client (already learned — stay consistent with it):\n${memoryLines.join("\n")}` : ""}`;
+   286→}
+   287→
+   288→/* ── step 4 · deterministic verification ───────────────────────────── */
+   289→
+   290→function verifySite(raw: Record<string, unknown>, planner: Plan): SiteAction | null {
+   291→  const slug = str(raw.slug, 64).toLowerCase();
+   292→  if (!TEMPLATE_SLUGS.has(slug)) return null; // never stage an invented template
+   293→  const motion = str(raw.motion, 24).toLowerCase();
+   294→  const t = findTemplate(slug)!;
+   295→  return {
+   296→    type: "site",
+   297→    slug,
+   298→    why: str(raw.why, 200) || `Picked ${t.name} for your brief.`,
+   299→    brief: str(raw.brief, 300),
+   300→    name: str(raw.name, 60) || planner.business,
+   301→    city: str(raw.city, 60) || planner.city || t.city,
+   302→    pitch: str(raw.pitch, 160),
+   303→    headline: str(raw.headline, 90),
+   304→    tagline: str(raw.tagline, 200),
+   305→    cta: str(raw.cta, 40),
+   306→    about: str(raw.about, 400),
+   307→    motion: motion in PERSONALITIES ? motion : "organic",
+   308→  };
+   309→}
+   310→
+   311→function verifyImage(raw: unknown): ImageAction | null {
+   312→  if (!raw || typeof raw !== "object") return null;
+   313→  const a = raw as Record<string, unknown>;
+   314→  const prompt = str(a.prompt, 900);
+   315→  if (!prompt) return null;
+   316→  const size = str(a.size, 12);
+   317→  return { type: "image", prompt, size: IMAGE_SIZES.includes(size) ? size : "1344x768" };
+   318→}
+   319→
+   320→function verifyVideo(raw: unknown): VideoAction | null {
+   321→  if (!raw || typeof raw !== "object") return null;
+   322→  const a = raw as Record<string, unknown>;
+   323→  const prompt = str(a.prompt, 1100);
+   324→  if (!prompt) return null;
+   325→  return { type: "video", prompt, quality: a.quality === "quality" ? "quality" : "speed" };
+   326→}
+   327→
+   328→function verifySpeak(raw: unknown): SpeakAction | null {
+   329→  if (!raw || typeof raw !== "object") return null;
+   330→  const a = raw as Record<string, unknown>;
+   331→  const text = str(a.text, 900);
+   332→  if (!text) return null;
+   333→  const voice = str(a.voice, 16).toLowerCase();
+   334→  return { type: "speak", text, voice: VOICES.includes(voice) ? voice : "tongtong" };
+   335→}
+   336→
+   337→function verifySearch(raw: unknown): SearchAction | null {
+   338→  if (!raw || typeof raw !== "object") return null;
+   339→  const query = str((raw as Record<string, unknown>).query, 300);
+   340→  return query ? { type: "search", query } : null;
+   341→}
+   342→
+   343→function verifyRead(raw: unknown): ReadAction | null {
+   344→  if (!raw || typeof raw !== "object") return null;
+   345→  let url = str((raw as Record<string, unknown>).url, 500);
+   346→  if (!url) return null;
+   347→  if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
+   348→  return { type: "read", url };
+   349→}
+   350→
+   351→/** The deterministic fallback router — when the Designer hallucinates,
+   352→ *  the local scorer picks instead. No LLM, just evidence. */
+   353→function deterministicPick(brief: string, planner: Plan): SiteAction | null {
+   354→  const answer = askConcierge(brief || planner.business || "local business", 1);
+   355→  const top = answer.items[0];
+   356→  if (!top) return null;
+   357→  const t = findTemplate(top.slug);
+   358→  if (!t) return null;
+   359→  return {
+   360→    type: "site",
+   361→    slug: top.slug,
+   362→    why: `${top.why} (deterministic fallback — the designer's pick failed verification)`,
+   363→    brief: `${planner.business || t.kind} in ${planner.city || t.city}`,
+   364→    name: planner.business,
+   365→    city: planner.city || t.city,
+   366→    pitch: "",
+   367→    headline: "",
+   368→    tagline: "",
+   369→    cta: "",
+   370→    about: "",
+   371→    motion: planner.persona === "premium" ? "corporate" : planner.persona === "bold" ? "bold" : "organic",
+   372→  };
+   373→}
+   374→
+   375→/* ── the loop ──────────────────────────────────────────────────────── */
+   376→
+   377→export async function runEngine(input: EngineInput): Promise<EngineResult> {
+   378→  const trace: TraceStep[] = [];
+   379→  const mark = (id: string, label: string, detail: string, since: number) => {
+   380→    trace.push({ id, label, detail, ms: Date.now() - since });
+   381→  };
+   382→
+   383→  /* 1 · LOAD CONTEXT — memory + build state */
+   384→  let t0 = Date.now();
+   385→  const memory = await loadMemory();
+   386→  mark(
+   387→    "context",
+   388→    "Context loaded",
+   389→    memory.lines.length
+   390→      ? `${memory.lines.length} memories in scope · build context: ${input.context.template ? input.context.template : "fresh"}`
+   391→      : `no memories yet (fresh client) · build context: ${input.context.template ? input.context.template : "fresh"}`,
+   392→    t0,
+   393→  );
+   394→
+   395→  const zai = await ZAI.create();
+   396→  const lastUser = [...input.messages].reverse().find((m) => m.role === "user");
+   397→  const userTurn = lastUser?.content ?? "";
+   398→
+   399→  /* 2 · PLAN — one fast call classifies + extracts facts */
+   400→  t0 = Date.now();
+   401→  let planner: Plan | null = null;
+   402→  try {
+   403→    const raw = await complete(
+   404→      zai,
+   405→      plannerSystem(memory.lines, input.context, input.hint ?? null),
+   406→      input.messages.map((m) => `${m.role === "user" ? "USER" : "AGENT"}: ${m.content}`).slice(-8).join("\n"),
+   407→    );
+   408→    const parsed = parseJson(raw);
+   409→    if (parsed) {
+   410→      planner = {
+   411→        task: (["question", "build", "multi"] as const).includes(parsed.task as never) ? (parsed.task as Plan["task"]) : "question",
+   412→        wants: Array.isArray(parsed.wants)
+   413→          ? (parsed.wants.filter((w) => ["site", "image", "video", "speak", "search", "read"].includes(w as string)) as Plan["wants"])
+   414→          : [],
+   415→        business: str(parsed.business, 60),
+   416→        city: str(parsed.city, 60),
+   417→        persona: PERSONAS.some((p) => p.id === parsed.persona) ? String(parsed.persona) : "warm",
+   418→        answer: str(parsed.answer, 1200),
+   419→        image: parsed.image as Plan["image"],
+   420→        video: parsed.video as Plan["video"],
+   421→        speak: parsed.speak as Plan["speak"],
+   422→        search: parsed.search as Plan["search"],
+   423→        read: parsed.read as Plan["read"],
+   424→      };
+   425→    }
+   426→  } catch {
+   427→    planner = null;
+   428→  }
+   429→
+   430→  if (input.hint === "site" && planner && !planner.wants.includes("site")) {
+   431→    planner.wants.push("site"); // the Generate button is unmissable
+   432→  }
+   433→
+   434→  if (!planner) {
+   435→    /* total planner failure — degrade to the single-shot legacy behaviour
+   436→       (one grounded call, still verified, still traced) */
+   437→    mark("plan", "Planner", "fast classification unavailable — falling back to single-shot mode", t0);
+   438→    t0 = Date.now();
+   439→    try {
+   440→      const raw = await complete(
+   441→        zai,
+   442→        `${plannerSystem(memory.lines, input.context, input.hint ?? null)}\n\nRespond with the FULL action JSON instead: for builds, merge the planner and designer roles into {"task":"build","business":"","city":"","persona":"","slug":"","motion":"","why":"","pitch":"","headline":"","tagline":"","cta":"","about":"","brief":""}.`,
+   443→        userTurn,
+   444→      );
+   445→      const parsed = parseJson(raw);
+   446→      if (parsed) {
+   447→        const plan: Plan = {
+   448→          task: "build",
+   449→          wants: TEMPLATE_SLUGS.has(String(parsed.slug ?? "")) ? ["site"] : [],
+   450→          business: str(parsed.business, 60),
+   451→          city: str(parsed.city, 60),
+   452→          persona: PERSONAS.some((p) => p.id === parsed.persona) ? String(parsed.persona) : "warm",
+   453→          answer: str(parsed.answer, 1200),
+   454→        };
+   455→        const site = verifySite(parsed, plan);
+   456→        if (site) {
+   457→          mark("plan", "Planner", "classified: build · fallback single-shot mode", t0);
+   458→          return await finish(plan, site, str(parsed.answer, 1200) || null, trace, input);
+   459→        }
+   460→      }
+   461→    } catch {
+   462→      /* falls through to the honest error */
+   463→    }
+   464→    return {
+   465→      say: "I could not shape that into an action — could you rephrase in one sentence?",
+   466→      actions: [],
+   467→      trace,
+   468→      memory: [],
+   469→    };
+   470→  }
+   471→
+   472→  const wantsSite = planner.wants.includes("site");
+   473→  const otherWants = planner.wants.filter((w) => w !== "site");
+   474→  mark(
+   475→    "plan",
+   476→    wantsSite ? "Planner — classified: BUILD" : otherWants.length ? "Planner — classified: MULTI-DELIVERABLE" : "Planner — classified: QUESTION",
+   477→    wantsSite
+   478→      ? `wants: ${planner.wants.join(", ")} · business: ${planner.business || "(inventing one)"} · persona: ${planner.persona}`
+   479→      : otherWants.length
+   480→        ? `wants: ${otherWants.join(", ")}`
+   481→        : "a question — answering from memory + context",
+   482→    t0,
+   483→  );
+   484→
+   485→  /* 3 · EXECUTE — question path: answer directly (already planned) */
+   486→  if (!wantsSite && otherWants.length === 0) {
+   487→    t0 = Date.now();
+   488→    const say = planner.answer || "Ask me to build a site, generate art, render a reel, speak, search or read — I'll do it right here.";
+   489→    mark("answer", "Answer composed", `${say.length} chars, grounded on ${memory.lines.length} memories`, t0);
+   490→    /* memory: remember expressed preferences in questions */
+   491→    const writes = extractMemory(planner, null);
+   492→    t0 = Date.now();
+   493→    const notes = await writeMemory(writes);
+   494→    mark("memory", notes.length ? "Memory written" : "Memory", notes.length ? notes.join(" · ") : "nothing new worth remembering", t0);
+   495→    return { say, actions: [], trace, memory: notes };
+   496→  }
+   497→
+   498→  /* 3 · EXECUTE — build path: Designer ∥ Copywriter in parallel */
+   499→  let site: SiteAction | null = null;
+   500→  if (wantsSite) {
+   501→    t0 = Date.now();
+   502→    const designerP = (async () => {
+   503→      const raw = await complete(zai, designerSystem(), userTurn);
+   504→      return parseJson(raw) ?? {};
+   505→    })().catch(() => ({}) as Record<string, unknown>);
+   506→
+   507→    const copyP = (async () => {
+   508→      const raw = await complete(zai, copySystem(planner!.persona, memory.lines), userTurn);
+   509→      return parseJson(raw) ?? {};
+   510→    })().catch(() => ({}) as Record<string, unknown>);
+   511→
+   512→    const [designerOut, copyOut] = await Promise.all([designerP, copyP]);
+   513→    const parallelMs = Date.now() - t0;
+   514→    const parallelNote = `parallel round: ${(parallelMs / 1000).toFixed(1)}s wall-clock`;
+   515→
+   516→    site = verifySite({ ...designerOut, ...copyOut, name: planner.business, city: planner.city }, planner);
+   517→
+   518→    /* both sub-agents ran concurrently — each reports the same honest
+   519→       wall-clock duration of the parallel round */
+   520→    mark(
+   521→      "designer",
+   522→      "Designer — template picked (parallel)",
+   523→      `${site ? `${site.slug} · motion: ${site.motion} · ${String(designerOut.why ?? "").slice(0, 80)}` : "designer pick failed verification — deterministic scorer will take over"} · ${parallelNote}`,
+   524→      t0,
+   525→    );
+   526→    mark(
+   527→      "copywriter",
+   528→      "Copywriter — launch copy written (parallel)",
+   529→      `${copyOut.headline ? `“${String(copyOut.headline).slice(0, 70)}” · persona: ${planner.persona}` : "copywriter returned nothing — copy will be seeded by the Builder"} · ${parallelNote}`,
+   530→      t0,
+   531→    );
+   532→
+   533→    /* 4 · VERIFY — deterministic, registry-grounded */
+   534→    t0 = Date.now();
+   535→    if (!site) {
+   536→      site = deterministicPick(userTurn, planner);
+   537→      mark(
+   538→        "verify",
+   539→        site ? "Verified — via deterministic fallback" : "Verification failed",
+   540→        site ? `designer pick rejected → local scorer picked ${site.slug} on evidence` : "no template could be grounded — refusing to invent one",
+   541→        t0,
+   542→      );
+   543→      if (!site && input.hint === "site") {
+   544→        return {
+   545→          say: "The agent could not pick a starting point — try describing the business in one sentence.",
+   546→          actions: [],
+   547→          trace,
+   548→          memory: [],
+   549→        };
+   550→      }
+   551→    } else {
+   552→      mark("verify", "Verified — registry checks passed", `slug "${site.slug}" exists · motion "${site.motion}" valid · copy lengths capped`, t0);
+   553→    }
+   554→  }
+   555→
+   556→  /* other deliverables from the planner's own payloads */
+   557→  const actions: EngineAction[] = [];
+   558→  if (site) actions.push(site);
+   559→  const img = verifyImage(planner.image);
+   560→  if (planner.wants.includes("image") && img) actions.push(img);
+   561→  const vid = verifyVideo(planner.video);
+   562→  if (planner.wants.includes("video") && vid) actions.push(vid);
+   563→  const spk = verifySpeak(planner.speak);
+   564→  if (planner.wants.includes("speak") && spk) actions.push(spk);
+   565→  const srch = verifySearch(planner.search);
+   566→  if (planner.wants.includes("search") && srch) actions.push(srch);
+   567→  const rd = verifyRead(planner.read);
+   568→  if (planner.wants.includes("read") && rd) actions.push(rd);
+   569→
+   570→  return await finish(planner, site, planner.answer || null, trace, input, actions);
+   571→}
+   572→
+   573→/* ── steps 5+6 · memory + compose ──────────────────────────────────── */
+   574→
+   575→function extractMemory(planner: Plan, site: SiteAction | null): { scope: string; key: string; body: string }[] {
+   576→  const writes: { scope: string; key: string; body: string }[] = [];
+   577→  if (planner.business) writes.push({ scope: "business", key: "name", body: planner.business });
+   578→  if (planner.city) writes.push({ scope: "business", key: "city", body: planner.city });
+   579→  if (planner.persona) writes.push({ scope: "preference", key: "persona", body: planner.persona });
+   580→  if (site) {
+   581→    writes.push({ scope: "decision", key: "template", body: `${site.slug} — ${site.why.slice(0, 140)}` });
+   582→    writes.push({ scope: "decision", key: "motion", body: site.motion });
+   583→  }
+   584→  return writes;
+   585→}
+   586→
+   587→async function finish(
+   588→  planner: Plan,
+   589→  site: SiteAction | null,
+   590→  plannedSay: string | null,
+   591→  trace: TraceStep[],
+   592→  input: EngineInput,
+   593→  actions?: EngineAction[],
+   594→): Promise<EngineResult> {
+   595→  let out: EngineAction[] = actions ?? (site ? [site] : []);
+   596→
+   597→  /* 5 · MEMORY — write what was learned */
+   598→  let t0 = Date.now();
+   599→  const notes = await writeMemory(extractMemory(planner, site));
+   600→  trace.push({
+   601→    id: "memory",
+   602→    label: notes.length ? "Memory written" : "Memory",
+   603→    detail: notes.length ? notes.join(" · ") : "nothing new worth remembering",
+   604→    ms: Date.now() - t0,
+   605→  });
+   606→
+   607→  /* 6 · RESPOND */
+   608→  t0 = Date.now();
+   609→  let say: string;
+   610→  if (site) {
+   611→    const t = findTemplate(site.slug);
+   612→    say =
+   613→      (plannedSay && planner.task === "multi" && plannedSay.length > 4 ? `${plannedSay} ` : "") +
+   614→      `Done — ${t?.name ?? site.slug} is staged for ${site.name || "your business"}${site.city ? ` in ${site.city}` : ""}, launch copy written in the ${planner.persona} voice, motion: ${site.motion}. The live preview is below — it's already in the Builder, ready to shape.`;
+   615→  } else if (out.length) {
+   616→    say = `On it — ${out.length} deliverable${out.length > 1 ? "s" : ""} running below.`;
+   617→  } else {
+   618→    say = plannedSay || "Ask me to build a site, generate art, render a reel, speak, search or read — I'll do it right here.";
+   619→  }
+   620→  trace.push({
+   621→    id: "respond",
+   622→    label: "Response composed",
+   623→    detail: `${say.length} chars · ${out.length} action${out.length === 1 ? "" : "s"} dispatched`,
+   624→    ms: Date.now() - t0,
+   625→  });
+   626→
+   627→  /* the Generate button MUST yield a site action */
+   628→  if (input.hint === "site" && !out.some((a) => a.type === "site")) out = [];
+   629→
+   630→  return { say, actions: out.slice(0, 4), trace, memory: notes };
+   631→}
+   632→

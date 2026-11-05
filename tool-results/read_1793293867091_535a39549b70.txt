@@ -1,0 +1,302 @@
+   201→   201→- **T3:** + `BookingCalendar` (advisor) · `ClientPortalTeaser` · `SecureDocumentUpload` (prior returns) · `CaseStudyCard` (savings) · `TeamCredentials` · `StructuredDataBlock`
+   202→   202→- **T4:** + `ClientPortal` (documents, filings, invoices) · `AiConcierge` (deduction explainer, disclaimed) · `ROIcalculator` (outsourcing savings) · `CostCalculator` (estimate teaser) · `PersonalizedRecommendations` (service reminders) · `AnimatedCounter` (returns filed)
+   203→   203→
+   204→   204→### 6.4 Architecture Firm — `mass-light`
+   205→   205→- **T1:** `HeroPortfolio` · `CaseStudyCard` · `ServiceCardGrid` (phases) · `ContactForm`
+   206→   206→- **T2:** + `CaseStudyDetail` · `ProcessTimeline` (design phases) · `Lightbox` · `PressMentions` · `AwardStrip` · `BlogIndex`
+   207→   207→- **T3:** + `DownloadableAsset` (capability deck, gated) · `TeamCredentials` · `RFPResponseForm` (competitions) · `TestimonialVideo` (client journeys) · `StructuredDataBlock`
+   208→   208→- **T4:** + `VirtualGallery` (built works, 3D) · `HorizontalGallery` (drawing sequences) · `HeroCinematic` (building film) · `StickySection` (case-study scroll) · `CursorContextLayer` ("Explore") · `ImageRevealMask` · `AiConcierge` (project fit)
+   209→   209→
+   210→   210→---
+   211→   211→
+   212→   212→## F7 · Beauty & Personal Care
+   213→   213→**DNA:** book a stylist/artist. **Premium signature:** artist match, loyalty, editorial motion.
+   214→   214→
+   215→   215→### 7.1 Hair Salon — `crown-row`
+   216→   216→- **T1:** `HeroMenu` (salon edition) · `ServiceCardGrid` (price-from) · `TeamGrid` (stylists) · `GoogleMapEmbed` · `ContactForm` · `OpenNowBadge`
+   217→   217→- **T2:** + `BookingCalendar` (stylist + service) · `StaffSelector` · `ReviewWall` (by stylist) · `BeforeAfterSlider` (color) · `GiftCardModule` · `StickyActionBar` (book)
+   218→   218→- **T3:** + `RecurringBooking` (standing appointments) · `ProductGrid` (haircare) · `SubscriptionSelector` · `ConsultationBooking` (color consult) · `CareersBoard` (hiring stylists) · `StructuredDataBlock` (HairSalon)
+   219→   219→- **T4:** + `HeroCinematic` (editorial shoot) · `AiConcierge` (stylist match) · `PersonalizedRecommendations` (by hair profile) · `VirtualGallery` (salon) · `LoyaltyPanel` · `AnimatedCounter` (five-star reviews)
+   220→   220→
+   221→   221→### 7.2 Barbershop — `blade-basin`
+   222→   222→- **T1:** `HeroLocal` · `ServiceCardGrid` (cuts, fades, shaves) · `CallNowPanel` (walk-ins) · `HoursTable` · `ContactForm`
+   223→   223→- **T2:** + `QueueStatus` (live wait) · `BookingCalendar` · `ReviewCarousel` · `MembershipSignup` (club cuts) · `ProductGrid` (pomade) · `StickyActionBar` (check-in)
+   224→   224→- **T3:** + `GiftCardModule` · `TeamGrid` (barbers) · `RecurringBooking` · `LoyaltyPanel` · `CareersBoard` · `StructuredDataBlock`
+   225→   225→- **T4:** + `HeroVideo` (shop culture film) · `AiConcierge` (cut recommendation) · `BeforeAfterSlider` · `AnimatedCounter` (cuts today) · `PersonalizedRecommendations`
+   226→   226→
+   227→   227→### 7.3 Tattoo Studio — `iron-meridian`
+   228→   228→- **T1:** `HeroPortfolio` (artists) · `TeamGrid` (artists by style) · `ContactForm` (consult) · `FAQAccordion` (aftercare) · `GoogleMapEmbed`
+   229→   229→- **T2:** + `ConsultationBooking` · `QuoteRequestForm` (size/placement) · `BookingCalendar` (deposits) · `ReviewCarousel` · `KnowledgeBase` (aftercare) · `TrustBar` (licensed, sterile)
+   230→   230→- **T3:** + `IntakeDocumentUpload` (reference images) · `SignaturePad` + `ConsentCheckbox` (waivers) · `CaseStudyDetail` (large pieces) · `ProductGrid` (merch) · `StructuredDataBlock`
+   231→   231→- **T4:** + `PortfolioReel` (artists) · `HorizontalGallery` (flash sheets) · `HeroCinematic` (machine macro) · `AiConcierge` (style → artist match) · `ClientDashboard` (appointments, aftercare docs) · `WaitlistForm` (artist books)
+   232→   232→
+   233→   233→### 7.4 Day Spa — `stillhouse-spa`
+   234→   234→- **T1:** `HeroSplit` · `ServiceCardGrid` (massages, facials) · `GoogleMapEmbed` · `ContactForm` · `GiftCardModule` teaser
+   235→   235→- **T2:** + `BookingCalendar` (treatment rooms) · `PackageCard` · `ReviewCarousel` · `AmenityGrid` (sauna, pool) · `NewsletterSignup`
+   236→   236→- **T3:** + `MembershipSignup` (monthly wellness) · `GroupBookingForm` (spa days) · `ProductGrid` (skincare) · `StructuredDataBlock` (DaySpa)
+   237→   237→- **T4:** + `HeroCinematic` (water/steam) · `VirtualGallery` (treatment rooms) · `AudioAtmosphere` (opt-in) · `AiConcierge` (ritual recommender) · `LoyaltyPanel` · `PersonalizedRecommendations`
+   238→   238→
+   239→   239→---
+   240→   240→
+   241→   241→## F8 · Fitness & Sports
+   242→   242→**DNA:** trial → membership. **Premium signature:** progress portal, streaks, class personalization.
+   243→   243→
+   244→   244→### 8.1 Boutique Gym — `forge-society`
+   245→   245→- **T1:** `HeroSplit` (offer) · `PricingTable` · `ClassTimetable` · `ContactForm` · `GoogleMapEmbed` · `FAQAccordion`
+   246→   246→- **T2:** + `ClassTimetable` with booking · `RecurringBooking` · `LeadMagnetForm` (free trial) · `CoachProfiles` · `ReviewCarousel` · `BeforeAfterSlider` (transformations) · `StickyActionBar` (join)
+   247→   247→- **T3:** + `MembershipSignup` (tiered) · `PackageBuilder` (nutrition add-ons) · `TeamCredentials` (coaches) · `ReferralPanel` (buddy pass) · `CareersBoard` · `StructuredDataBlock` (ExerciseGym)
+   248→   248→- **T4:** + `ClientDashboard` (bookings, progress) · `AiConcierge` (program fit) · `PersonalizedRecommendations` (classes) · `LoyaltyPanel` (streaks) · `AnimatedCounter` (member PRs) · `HeroCinematic` · `PageTransition`
+   249→   249→
+   250→   250→### 8.2 Yoga & Pilates Studio — `salt-stretch`
+   251→   251→- **T1:** `HeroEditorial` (calm) · `ClassTimetable` · `PricingTable` (intro offer) · `ContactForm`
+   252→   252→- **T2:** + `ClassTimetable` booking · `RecurringBooking` (packs) · `CoachProfiles` · `EventCalendar` (workshops) · `ReviewCarousel` · `LeadMagnetForm` (free class) · `StickyActionBar`
+   253→   253→- **T3:** + `MembershipSignup` (unlimited) · `PackageCard` + `ExperienceBooking` (retreats) · `LearningPath` (workshop series) · `TeamCredentials` (RYT) · `GiftCardModule` · `StructuredDataBlock`
+   254→   254→- **T4:** + `HeroCinematic` (sunrise class) · `AudioAtmosphere` (opt-in) · `ClientDashboard` (bookings) · `PersonalizedRecommendations` (by mood) · `AiConcierge` (practice guide) · `VirtualGallery` (studio)
+   255→   255→
+   256→   256→### 8.3 Martial Arts Academy — `ironline-academy`
+   257→   257→- **T1:** `HeroLocal` (kids + adults) · `ServiceCardGrid` (disciplines) · `ClassTimetable` · `ContactForm` · `FAQAccordion` (beginners)
+   258→   258→- **T2:** + `BookingCalendar` (trial class) · `LeadMagnetForm` (free trial) · `CoachProfiles` (lineage) · `ReviewCarousel` (parents) · `TrustBar` (sanctioned) · `StickyActionBar` (trial)
+   259→   259→- **T3:** + `MembershipSignup` · `ProjectStatusPortal` reused as belt progression · `EventCalendar` (camps) · `ProductGrid` (gear) · `TeamCredentials` (competitive records) · `StructuredDataBlock` (SportsActivityLocation)
+   260→   260→- **T4:** + `HeroCinematic` (sparring) · `ClientDashboard` (training progress) · `PersonalizedRecommendations` (classes) · `AiConcierge` (discipline match) · `LiveClassSchedule` (streaming) · `AnimatedCounter` (champions)
+   261→   261→
+   262→   262→---
+   263→   263→
+   264→   264→## F9 · Education & Learning
+   265→   265→**DNA:** assessment → enroll. **Premium signature:** student dashboard, tutor-matching AI.
+   266→   266→
+   267→   267→### 9.1 Tutoring Center — `northstar-tutors`
+   268→   268→- **T1:** `HeroLocal` (subjects + grades) · `ServiceCardGrid` · `TestimonialCarousel` (parents) · `FAQAccordion` · `GoogleMapEmbed` · `ContactForm`
+   269→   269→- **T2:** + `TutorBooking` · `ResultsStatStrip` (grade improvements) · `ReviewWall` · `QuizModule` (assessment) · `ProcessTimeline` (onboarding) · `StickyActionBar` (book assessment)
+   270→   270→- **T3:** + `MultiStepIntake` (student profile) · `LearningPath` (subject plans) · `PackageBuilder` (hour bundles) · `ScholarshipPanel` (aid) · `CaseStudyDetail` · `StructuredDataBlock` (EducationalOrganization)
+   271→   271→- **T4:** + `StudentDashboard` (sessions, progress) · `LessonPlayer` (online sessions) · `AiConcierge` (tutor match) · `PersonalizedRecommendations` (subjects) · `AnimatedCounter` (hours taught) · parent-facing `ClientDashboard`
+   272→   272→
+   273→   273→### 9.2 Music School — `cadence-conservatory`
+   274→   274→- **T1:** `HeroLocal` · `ServiceCardGrid` (instruments) · `CoachProfiles` (teachers) · `ContactForm` · `GoogleReviewsEmbed`
+   275→   275→- **T2:** + `TutorBooking` (lesson slots) · `RecurringBooking` (terms) · `ClassTimetable` (groups) · `EventCalendar` (recitals) · `ReviewCarousel` · `StickyActionBar` (book trial)
+   276→   276→- **T3:** + `MembershipSignup` (term plans) · `ProductDetail` (instrument rentals) · `LearningPath` (exam prep) · `VideoLibrary` (recitals) · `TeamCredentials` (conservatory) · `StructuredDataBlock`
+   277→   277→- **T4:** + `StudentDashboard` (practice logs) · `LessonPlayer` (recordings) · `AiConcierge` (instrument match) · `HeroCinematic` (recital stage) · `PersonalizedRecommendations` · `AnimatedCounter`
+   278→   278→
+   279→   279→### 9.3 Coding Bootcamp — `bracket-school`
+   280→   280→- **T1:** `HeroProduct` (outcome: hired) · `CourseCard` · `CurriculumAccordion` teaser · `ResultsStatStrip` (placement) · `ContactForm`
+   281→   281→- **T2:** + `CourseDetail` · `CurriculumAccordion` full · `LeadMagnetForm` (free course) · `AlumniStories` · `LiveClassSchedule` (cohorts) · `FAQAccordion` (financing) · `StickyActionBar` (apply)
+   282→   282→- **T3:** + `ApplicationForm` · `FinancingCalculator` (ISAs) · `ScholarshipPanel` · `CaseStudyIndex` (career switches) · `PartnerProgram` (hiring partners) · `StudentDashboard` teaser · `StructuredDataBlock` (Course)
+   283→   283→- **T4:** + `StudentDashboard` (projects, mentors) · `LessonPlayer` · `CommunityForum` · `AiConcierge` (curriculum advisor) · `EventCalendar` (demo days) · `AnimatedCounter` (grads hired)
+   284→   284→
+   285→   285→### 9.4 Language School — `fluenta`
+   286→   286→- **T1:** `HeroEditorial` · `ServiceCardGrid` (languages/levels) · `ContactForm` · `FAQAccordion` · `ReviewCarousel`
+   287→   287→- **T2:** + `QuizModule` (placement test) · `TutorBooking` · `LiveClassSchedule` (timezones) · `PricingTable` (group/private) · `LanguageSwitcher` (site itself) · `StickyActionBar` (test level)
+   288→   288→- **T3:** + `MultiStepIntake` (goals) · `LearningPath` (CEFR levels) · `WholesalePortal` (corporate accounts) · `TeamCredentials` (certified examiners) · `StructuredDataBlock`
+   289→   289→- **T4:** + `StudentDashboard` · `LessonPlayer` · `CommunityForum` (language exchange) · `AiConcierge` (conversation partner) · full localized journeys via `LanguageSwitcher` · `PersonalizedRecommendations` · `AnimatedCounter`
+   290→   290→
+   291→   291→---
+   292→   292→
+   293→   293→## F10 · Creative Studios & Agencies
+   294→   294→**DNA:** check availability / request proposal. **Premium signature:** the site itself is the portfolio — art-directed.
+   295→   295→
+   296→   296→### 10.1 Wedding Photographer — `everline-photo`
+   297→   297→- **T1:** `HeroPortfolio` · `PackageCard` (collections) · `Lightbox` · `ContactForm` · `FAQAccordion`
+   298→   298→- **T2:** + `TestimonialVideo` · `ProcessTimeline` (booking→delivery) · `AvailabilityChecker` via `BookingCalendar` teaser · `LeadMagnetForm` (pricing guide) · `ReviewCarousel` · `StickyActionBar` (check date)
+   299→   299→- **T3:** + `ConsultationBooking` · `BookingCalendar` (deposit-secured) · `CaseStudyDetail` (real weddings) · `PressMentions` · `AwardStrip` · `LogoCloud` (vendor network) · `StructuredDataBlock`
+   300→   300→- **T4:** + `PortfolioReel` · `HorizontalGallery` (galleries) · `HeroCinematic` (wedding film) · `CursorContextLayer` ("View") · `ClientDashboard` (password-protected client galleries) · `AiConcierge` (collection advisor) · `PageTransition`
+   301→   301→
+   302→   302→### 10.2 Branding & Design Agency — `northsign-studio`
+   303→   303→- **T1:** `HeroEditorial` · `CaseStudyCard` · `ServiceCardGrid` (brand, web, motion) · `ContactForm` · `LogoCloud`
+   304→   304→- **T2:** + `CaseStudyDetail` · `ProcessTimeline` (sprint model) · `TeamGrid` · `PressMentions` · `ConsultationBooking` · `BlogIndex`
+   305→   305→- **T3:** + `RFPResponseForm` · `PackageBuilder` (engagement scopes) · `ResultsStatStrip` (rebrand impact) · `AwardStrip` · `CareersCulture` · `StructuredDataBlock`
+   306→   306→- **T4:** + `HorizontalGallery` (work reel, scroll-controlled) · `HeroCinematic` (showreel) · `StickySection` (case studies) · `CursorContextLayer` ("Drag") · `ImageRevealMask` · `AiConcierge` (scope advisor) · `MarqueeStrip` · art-directed `PageTransition`
+   307→   307→
+   308→   308→### 10.3 Video Production — `framecraft`
+   309→   309→- **T1:** `HeroVideo` (showreel) · `ServiceCardGrid` (corporate, docs, events) · `ContactForm` · `LogoCloud`
+   310→   310→- **T2:** + `PortfolioReel` · `PackageCard` (day rates) · `QuoteRequestForm` (brief) · `ProcessTimeline` (pre→post) · `TestimonialVideo` · `ConsultationBooking`
+   311→   311→- **T3:** + `CaseStudyDetail` (campaign metrics) · `RFPResponseForm` · `TeamCredentials` (crew) · `PressMentions` · `CareersBoard` (crew calls) · `StructuredDataBlock`
+   312→   312→- **T4:** + `HeroCinematic` (natively) · `HorizontalGallery` (timeline scrub) · `CursorContextLayer` ("Play") · `Lightbox` (project archive) · `AiConcierge` (quote estimator) · `RelatedContent` (similar productions)
+   313→   313→
+   314→   314→---
+   315→   315→
+   316→   316→## F11 · Retail & Commerce
+   317→   317→**DNA:** add to cart / book a fitting. **Premium signature:** 3D product, personalized feeds, trade portals.
+   318→   318→
+   319→   319→### 11.1 Fashion Boutique — `fold-drape`
+   320→   320→- **T1:** `ProductGrid` · `ProductCard` · `ProductDetail` · `HoursTable` (store) · `GoogleMapEmbed` · `ContactForm`
+   321→   321→- **T2:** + `CartDrawer` · `CheckoutForm` · `Wishlist` · `StockStatus` · `PromoCodeField` · `TaxShippingEstimator` · `StoreLocator` · `StickyActionBar` (shop)
+   322→   322→- **T3:** + `ProductGallery` (zoom) · `VariantSelector` · `ProductRecommendations` · `OrderTracking` · `ReturnsPortal` · `LoyaltyPanel` · `GiftCardModule` · `StructuredDataBlock` (Product)
+   323→   323→- **T4:** + `HeroCinematic` (lookbook film) · `3DHeroObject` (garment) · `HorizontalGallery` (lookbook) · `PersonalizedRecommendations` (style feed) · `AiConcierge` (stylist chat) · `WholesalePortal` (stylists) · `PageTransition`
+   324→   324→
+   325→   325→### 11.2 Furniture Showroom — `grain-glider`
+   326→   326→- **T1:** `ProductGrid` (by room) · `ProductDetail` · `ContactForm` (delivery quote) · `GoogleMapEmbed` · `HoursTable`
+   327→   327→- **T2:** + `VariantSelector` (materials) · `InventoryByStore` (showroom vs warehouse) · `ProductGallery` (360) · `TaxShippingEstimator` · `Wishlist` · `ReviewCarousel` · `StickyActionBar` (visit)
+   328→   328→- **T3:** + `Configurator` (fabric/finish — isolated 3D allowed) · `ConsultationBooking` (design service) · `WholesalePortal` (trade program) · `FinancingCalculator` · `CaseStudyCard` (real homes) · `StructuredDataBlock`
+   329→   329→- **T4:** + `3DHeroObject` (sofa in room) · `VirtualGallery` (3D room scenes) · `AiConcierge` (space advisor) · `PersonalizedRecommendations` · `HeroCinematic` (workshop film) · `ClientDashboard` (orders, deliveries)
+   330→   330→
+   331→   331→### 11.3 Florist — `stem-society`
+   332→   332→- **T1:** `ProductGrid` (arrangements) · `ProductDetail` · `ContactForm` (weddings) · `HoursTable` (holiday hours critical) · `GoogleMapEmbed`
+   333→   333→- **T2:** + `CartDrawer` · `CheckoutForm` + `TaxShippingEstimator` (delivery zones) · `DailySpecials` (seasonal) · `SubscriptionSelector` (weekly blooms) · `PromoCodeField` · `StickyActionBar` (order)
+   334→   334→- **T3:** + `ConsultationBooking` (weddings) · `EventCalendar` (workshops, holidays) · `GiftCardModule` · `CaseStudyDetail` (weddings) · `ReviewCarousel` · `StructuredDataBlock` (Florist)
+   335→   335→- **T4:** + `Configurator` (bouquet builder) · `HeroCinematic` (arranging) · `AiConcierge` (occasion advisor) · `PersonalizedRecommendations` (by occasion) · `LoyaltyPanel`
+   336→   336→
+   337→   337→### 11.4 Jeweler — `ore-atelier`
+   338→   338→- **T1:** `HeroProduct` (signature piece) · `ProductGrid` · `ProductDetail` · `ContactForm` (appointments) · `GoogleMapEmbed`
+   339→   339→- **T2:** + `BookingCalendar` (consults, sizing) · `ProductGallery` (360) · `WarrantyPanel` (lifetime care) · `GiftCardModule` · `ReviewCarousel` · `StickyActionBar` (book consult)
+   340→   340→- **T3:** + `ProcessTimeline` (bespoke process) · `ConsultationBooking` (custom) · `TradeInValuation` (gold trade-in) · `CertificateModule` (authenticity docs) · `DocumentRequest` (appraisals) · `StructuredDataBlock` (JewelryStore)
+   341→   341→- **T4:** + `3DHeroObject` (rotatable ring) · `Configurator` (diamond builder) · `HeroCinematic` (artisan macro) · `AiConcierge` (diamond guide) · `PersonalizedRecommendations` · `ClientDashboard` (appraisals, service history)
+   342→   342→
+   343→   343→---
+   344→   344→
+   345→   345→## F12 · Events & Venues
+   346→   346→**DNA:** check date → request proposal. **Premium signature:** 3D walkthroughs, event portals, seat maps.
+   347→   347→
+   348→   348→### 12.1 Wedding Venue — `hollowbrook-barn`
+   349→   349→- **T1:** `HeroPortfolio` (venue shot) · `VenueSpaceCard` (capacities) · `Lightbox` · `ContactForm` · `FAQAccordion`
+   350→   350→- **T2:** + `VenueAvailability` (date checker) · `PackageCard` (wedding packages) · `ReviewCarousel` (couples) · `LogoCloud` (preferred vendors) · `LeadMagnetForm` (brochure) · `StickyActionBar` (check date)
+   351→   351→- **T3:** + `ViewingBooking` (private tours) · `EventCalendar` (open houses) · `CaseStudyDetail` (real weddings) · `FloorplanViewer` (layouts) · `PressMentions` · `BookingCalendar` (tastings) · `StructuredDataBlock` (EventVenue)
+   352→   352→- **T4:** + `VirtualGallery` (3D walkthrough) · `HeroCinematic` (day→night film) · `EventPackageBuilder` (full) · `AiConcierge` (date + package advisor) · `ClientDashboard` (wedding portal: vendors, timeline, payments) · `HorizontalGallery` (seasons) · `PageTransition`
+   353→   353→
+   354→   354→### 12.2 Conference Center — `summitworks`
+   355→   355→- **T1:** `HeroEditorial` · `VenueSpaceCard` (capacities, AV) · `ContactForm` · `LogoCloud` (clients) · `FAQAccordion`
+   356→   356→- **T2:** + `VenueAvailability` · `EventPackageBuilder` teaser · `CaseStudyCard` · `TrustBar` (certifications) · `LeadMagnetForm` (brochure)
+   357→   357→- **T3:** + `RFPResponseForm` full · `EventPackageBuilder` (catering, AV, staffing) · `FloorplanViewer` (room configs) · `IntegrationGrid` (AV partners) · `TestimonialVideo` (planners) · `AgendaTimeline` (sample agendas) · `StructuredDataBlock`
+   358→   358→- **T4:** + `VirtualGallery` (3D floor tour) · `Configurator` (room configurator) · `AiConcierge` (space fit calculator) · `ClientDashboard` (event portal) · `HeroCinematic` (event sizzle)
+   359→   359→
+   360→   360→### 12.3 Theater / Music Venue — `grand-marquee`
+   361→   361→- **T1:** `EventCard` (now playing) · `EventDetail` · `PerformancesCalendar` · `ContactForm` · `HoursTable` (box office) · `GoogleMapEmbed`
+   362→   362→- **T2:** + `TicketSelector` · `SeatMap` · `PressMentions` · `NewsletterSignup` (presales) · `GiftCardModule` · `StickyActionBar` (book)
+   363→   363→- **T3:** + `TicketSelector` full (tiers) · `SeatMap` (accessibility seats + legend) · `MembershipSignup` (season passes) · `GroupBookingForm` · `PressKitDownload` · `PartnerProgram` (sponsors) · `StructuredDataBlock` (Event)
+   364→   364→- **T4:** + `HeroCinematic` (stage lights) · `VirtualTourEmbed` (seat-view preview) · `AiConcierge` (seat recommender) · `PersonalizedRecommendations` (shows) · `MarqueeStrip` (what's on) · `PageTransition`
+   365→   365→
+   366→   366→### 12.4 Party & Equipment Rentals — `confetti-works`
+   367→   367→- **T1:** `HeroEditorial` · `ProductGrid` (items) · `ContactForm` · `FAQAccordion` (delivery)
+   368→   368→- **T2:** + `QuoteRequestForm` (event list) · `ServiceAreaMap` (delivery) · `TaxShippingEstimator` · `SavedItems` (shortlist → quote) · `ReviewCarousel` · `StickyActionBar` (quote)
+   369→   369→- **T3:** + `RFQForm` full (cart → RFQ) · `PackageBuilder` (party bundles) · `EventCalendar` (seasonality) · `CaseStudyCard` (corporate) · `WholesalePortal` (planners) · `StructuredDataBlock`
+   370→   370→- **T4:** + `Configurator` (event builder) · `AiConcierge` (rental list from guest count) · `ClientDashboard` (quotes, orders) · `HeroCinematic` (setup timelapse) · `PersonalizedRecommendations`
+   371→   371→
+   372→   372→---
+   373→   373→
+   374→   374→## F13 · B2B, Industrial & SaaS
+   375→   375→**DNA:** demo / RFP / trial. **Premium signature:** interactive demos, compliance center, customer portals.
+   376→   376→
+   377→   377→### 13.1 Vertical SaaS — `chartwell`
+   378→   378→- **T1:** `ProductHero` · `FeatureSection` · `LogoCloud` · `PricingTable` teaser · `ContactForm` · `FAQAccordion`
+   379→   379→- **T2:** + `RequestDemoForm` · `UseCaseSection` (personas) · `IntegrationGrid` · `CaseStudyCard` · `ROIcalculator` teaser · `StickyActionBar` (demo) · `BlogIndex`
+   380→   380→- **T3:** + `PricingCalculator` (seats) · `EnterpriseCta` · `SecurityPage` (SOC 2) · `APISection` · `DocsSearch` · `StatusPageEmbed` · `CaseStudyIndex` · `ProductTour` · `ChangelogFeed` · `StructuredDataBlock` (SoftwareApp)
+   381→   381→- **T4:** + `GuidedTour` (interactive demo) · `AiConcierge` (product fit) · `ComplianceCenter` (DPA download) · `RFPResponseForm` · `CustomerPortalTeaser` (live sandbox login) · `PartnerProgram` (resellers) · `PersonalizedRecommendations` (use cases) · `TabbedShowcase`
+   382→   382→
+   383→   383→### 13.2 Manufacturing / Industrial — `vulcanworks`
+   384→   384→- **T1:** `HeroEditorial` (capabilities) · `ProductGrid` (catalog teaser) · `SpecSheet` · `RFQForm` · `LogoCloud` (OEMs) · `GoogleMapEmbed` (plant)
+   385→   385→- **T2:** + `RFQForm` full (specs, files) · `TrustBar` (ISO certs) · `CaseStudyCard` · `NewsletterSignup` · `PartsCatalogue` (compat search)
+   386→   386→- **T3:** + `WholesalePortal` (distributors) · `DownloadableAsset` (gated spec sheets) · `IntegrationGrid` (ERP compatibility) · `TeamCredentials` (engineers) · `SecurityCompliancePanel` (certs) · `CareersBoard` (skilled labor) · `StructuredDataBlock`
+   387→   387→- **T4:** + `3DHeroObject` (exploded part view) · `Configurator` (part configurator) · `AiConcierge` (spec matcher) · `VirtualGallery` (plant tour) · `HeroCinematic` (factory floor) · `ClientDashboard` (order status) · `LanguageSwitcher` (global buyers)
+   388→   388→
+   389→   389→### 13.3 Logistics / 3PL — `freightline`
+   390→   390→- **T1:** `HeroEditorial` (coverage) · `ServiceCardGrid` (warehousing, freight, last mile) · `ContactForm` · `TrustBar` (carrier partners) · `FAQAccordion`
+   391→   391→- **T2:** + `ROIcalculator` (savings) · `QuoteRequestForm` (lanes) · `IntegrationGrid` (WMS/ERP) · `ProcessTimeline` (onboarding) · `ServiceAreaMap` (coverage) · `CaseStudyCard`
+   392→   392→- **T3:** + `RFPResponseForm` · `ClientPortalTeaser` (tracking) · `SecurityCompliancePanel` · `WholesalePortal` (volume accounts) · `TeamCredentials` · `StructuredDataBlock`
+   393→   393→- **T4:** + `ClientDashboard` (shipment tracking + analytics) · `AiConcierge` (quote assistant) · `StatusPageEmbed` (network status) · `AnimatedCounter` (on-time %) · `HeroCinematic` (distribution center) · `LanguageSwitcher`
+   394→   394→
+   395→   395→### 13.4 Construction / General Contractor — `cornerstone-build`
+   396→   396→- **T1:** `HeroPortfolio` (projects) · `ServiceCardGrid` (residential, commercial, reno) · `BeforeAfterSlider` · `ContactForm` · `FAQAccordion`
+   397→   397→- **T2:** + `QuoteRequestForm` (plan upload via `FileUpload`) · `ProcessTimeline` (pre-construction→handover) · `CaseStudyDetail` · `ReviewCarousel` · `TrustBar` (licensed, bonded) · `ServiceAreaMap`
+   398→   398→- **T3:** + `ProjectStatusPortal` teaser · `FinancingCalculator` · `TeamCredentials` (licenses) · `RFPResponseForm` (commercial bids) · `SafetyCompliancePanel` (OSHA) · `StructuredDataBlock`
+   399→   399→- **T4:** + `ClientDashboard` (schedule, selections, change orders) · `AiConcierge` (budget advisor) · `HeroCinematic` (timelapse) · `HorizontalGallery` (portfolio) · `VirtualGallery` (3D plans → builds) · `AnimatedCounter` (projects delivered)
+   400→   400→
+   401→   401→### 13.5 IT / Managed Services — `northgrid-it`
+   402→   402→- **T1:** `HeroEditorial` · `ServiceCardGrid` (managed IT, security, cloud) · `ContactForm` · `LogoCloud` · `FAQAccordion`
+   403→   403→- **T2:** + `ROIcalculator` (downtime cost) · `CaseStudyCard` · `ConsultationBooking` (IT audit) · `TrustBar` (Microsoft/Cisco partners) · `NewsletterSignup`
+   404→   404→- **T3:** + `SecurityPage` + `ComplianceCenter` · `RFPResponseForm` · `IntegrationGrid` · `StatusPageEmbed` (client NOC) · `CareersBoard` · `StructuredDataBlock`
+   405→   405→- **T4:** + `ClientPortal` (tickets, assets, invoices) · `AiConcierge` (tier-0 triage) · `PersonalizedRecommendations` (risk assessments) · `ResultsStatStrip` + `MarqueeStrip` (uptime, vendors) · `AnimatedCounter` (uptime)
+   406→   406→
+   407→   407→---
+   408→   408→
+   409→   409→## F14 · Nonprofit & Public Sector
+   410→   410→**DNA:** donate / volunteer. **Premium signature:** impact storytelling, donor portal, matching AI.
+   411→   411→
+   412→   412→### 14.1 Charity — `wellspring-foundation`
+   413→   413→- **T1:** `MissionHero` · `ImpactMetrics` · `DonationTiers` teaser · `ContactForm` · `FAQAccordion`
+   414→   414→- **T2:** + `DonationTiers` full (impact copy per amount) · `FundraiserPage` (peer-to-peer) · `VolunteerSignup` · `EventFundraiser` (gala) · `NewsletterSignup` · `StickyActionBar` (donate)
+   415→   415→- **T3:** + `DonationFlow` (monthly option) · `ProgramDetail` · `TransparencyReports` · `CaseStudyDetail` (consented beneficiary story) · `AdvocacyCampaign` · `StructuredDataBlock` (NGO)
+   416→   416→- **T4:** + `ClientDashboard` (donor portal: receipts, recurring gifts) · `AiConcierge` (impact advisor) · `AnimatedCounter` (lives changed) · `HeroCinematic` (field story) · `PersonalizedRecommendations` (campaigns by cause affinity) · `LanguageSwitcher`
+   417→   417→
+   418→   418→### 14.2 Animal Shelter — `secondchance-paws`
+   419→   419→- **T1:** `MissionHero` · `ListingGrid` reused for adoptable pets · `ListingCard`/`ListingDetail` (pet profiles) · `ContactForm` · `HoursTable`
+   420→   420→- **T2:** + `ApplicationForm` (adoption) · `VolunteerSignup` · `DonationTiers` · `EventCalendar` (fundraisers) · `ClientStories` (happy tails) · `StickyActionBar` (adopt)
+   421→   421→- **T3:** + `FundraiserPage` (per-pet sponsorship) · `ProductGrid` (merch) · `CaseStudyCard` (adoption stories) · `KnowledgeBase` (pet care) · `StructuredDataBlock` (NGO)
+   422→   422→- **T4:** + `AiConcierge` (pet-matching quiz) · `PersonalizedRecommendations` (pets by lifestyle) · `AnimatedCounter` (adoptions) · `HeroCinematic` (shelter story) · `PageTransition`
+   423→   423→
+   424→   424→### 14.3 Museum — `meridian-museum`
+   425→   425→- **T1:** `HeroLocal` (current exhibit) · `HoursTable` · `GoogleMapEmbed` · `TicketSelector` teaser · `ContactForm`
+   426→   426→- **T2:** + `EventCalendar` (programs) · `TicketSelector` · `EventDetail` (exhibitions) · `MembershipSignup` · `NewsletterSignup` · `Lightbox` (collection highlights)
+   427→   427→- **T3:** + `GroupBookingForm` (schools) · `VenueSpaceCard` (event rentals) · `DonationTiers` (support) · `AccessibilityStatement` · `VirtualTourEmbed` (exhibit) · `PressKitDownload` · `StructuredDataBlock` (Museum)
+   428→   428→- **T4:** + `VirtualGallery` (3D collection) · `HeroCinematic` (exhibit film) · `AiConcierge` (collection guide) · `PersonalizedRecommendations` (exhibits by interest) · `LanguageSwitcher` · `PageTransition`
+   429→   429→
+   430→   430→---
+   431→   431→
+   432→   432→## F15 · Finance & Lending
+   433→   433→**DNA:** calculator → prequalification → appointment. **Premium signature:** compliance-first AI, status portals, calculators that convert.
+   434→   434→
+   435→   435→### 15.1 Financial Advisory — `cardinal-wealth`
+   436→   436→- **T1:** `HeroEditorial` (trust) · `AdvisorProfile` · `ServiceCardGrid` (planning, retirement, tax) · `ContactForm` · `FAQAccordion` (fiduciary)
+   437→   437→- **T2:** + `RetirementCalculator` · `RiskProfileQuiz` · `ConsultationBooking` · `ReviewCarousel` · `CredentialWall` (CFP) · `NewsletterSignup` (market notes) · `StickyActionBar` (book)
+   438→   438→- **T3:** + `ClientPortalTeaser` · `SecureDocumentUpload` · `TeamCredentials` · `DisclosurePanel` (full regulatory) · `CaseStudyDetail` (compliance-safe outcomes) · `StructuredDataBlock` (FinancialService)
+   439→   439→- **T4:** + `ClientPortal` (portfolio, docs, meetings) · `AiConcierge` (education-only Q&A, disclaimed) · `PersonalizedRecommendations` (content by life stage) · `QuizWizard` full · `AnimatedCounter` (families served — not AUM, compliance-safe) · `LanguageSwitcher`
+   440→   440→
+   441→   441→### 15.2 Mortgage Brokerage — `keystone-lending`
+   442→   442→- **T1:** `HeroSplit` (rate teaser) · `MortgageCalculator` · `ContactForm` (prequal) · `FAQAccordion` · `TrustBar` (licensed) · `GoogleReviewsEmbed`
+   443→   443→- **T2:** + `QuoteRequestForm` (scenario) · `ProcessTimeline` (approval steps) · `ReviewWall` · `ResultsStatStrip` (closings) · `RentAffordabilityCalculator` · `StickyActionBar` (get prequalified)
+   444→   444→- **T3:** + `MultiStepIntake` (application) · `SecureDocumentUpload` · `AppointmentScheduling` (loan officer) · `ComparisonTable` (loan types) · `TeamCredentials` (NMLS) · `StructuredDataBlock`
+   445→   445→- **T4:** + `ClaimsTracker` reused as application status portal · `AiConcierge` (rate scenario advisor) · `PersonalizedRecommendations` (loan products) · `ClientStories` · `AnimatedCounter` (loans closed) · `LanguageSwitcher`
+   446→   446→
+   447→   447→---
+   448→   448→
+   449→   449→## F16 · Travel & Outdoors
+   450→   450→**DNA:** book an experience. **Premium signature:** cinematic destination film, trip-matching AI, traveler portal.
+   451→   451→
+   452→   452→### 16.1 Tour Operator — `wayfare-collective`
+   453→   453→- **T1:** `HeroListing` (destinations) · `PackageCard` (trips) · `ContactForm` · `FAQAccordion` · `GoogleReviewsEmbed`
+   454→   454→- **T2:** + `ExperienceBooking` (dates, guests) · `PackageCard` full (inclusions) · `SeasonalCalendar` (when to go) · `ReviewCarousel` (travelers) · `TeamCredentials` (guides) · `StickyActionBar` (book)
+   455→   455→- **T3:** + `GroupBookingForm` (private groups) · `BookingCalendar` (departures) · `IntakeDocumentUpload` (passports, docs) · `InsuranceChecker` (travel insurance) · `CaseStudyDetail` (custom itineraries) · `BlogIndex` (guides) · `StructuredDataBlock`
+   456→   456→- **T4:** + `HeroCinematic` (drone film) · `VirtualGallery` (destinations) · `AiConcierge` (trip-matcher quiz) · `PersonalizedRecommendations` (trips) · `ClientDashboard` (bookings, packing lists) · `HorizontalGallery` (itineraries) · `LanguageSwitcher`
+   457→   457→
+   458→   458→### 16.2 Adventure / Outfitter — `ridgeline-outfitters`
+   459→   459→- **T1:** `HeroPortfolio` (action shot) · `ExperienceBooking` teaser · `ContactForm` · `FAQAccordion` (fitness required) · `GoogleReviewsEmbed`
+   460→   460→- **T2:** + `ExperienceBooking` full (difficulty levels) · `SeasonalCalendar` (weather windows) · `DownloadableAsset` (gear lists) · `CoachProfiles` (guides) · `SafetyCompliancePanel` (certs, insurance) · `StickyActionBar` (book)
+   461→   461→- **T3:** + `MultiStepIntake` + `SignaturePad` (waivers) · `GroupBookingForm` (corporate retreats) · `ProductGrid` (gear rentals) · `StatusPageEmbed` reused for trail/river conditions · `StructuredDataBlock`
+   462→   462→- **T4:** + `HeroCinematic` (expedition film) · `AiConcierge` (trip-readiness quiz) · `ClientDashboard` (bookings, gear lists, signed waivers) · `PersonalizedRecommendations` (next challenge) · `AnimatedCounter` (summits logged)
+   463→   463→
+   464→   464→### 16.3 Campground / RV Park — `cedar-hollow`
+   465→   465→- **T1:** `HeroLocal` · `ListingGrid` reused as site grid · `HoursTable` (season) · `ContactForm` · `GoogleMapEmbed`
+   466→   466→- **T2:** + `ResourceBooking` (site booking) · `AmenityGrid` (pool, showers) · `SeasonalCalendar` · `ReviewCarousel` · `HousePolicyPanel` (rules) · `StickyActionBar` (book)
+   467→   467→- **T3:** + `RecurringBooking` (seasonal sites) · `EventCalendar` (music weekends) · `ProductGrid` (camp store) · `GroupBookingForm` (rallies) · `LocalLandingPage` (nearby attractions) · `StructuredDataBlock` (Campground)
+   468→   468→- **T4:** + `MapSearch` (interactive site picking) · `VirtualTourEmbed` (360° sites) · `AiConcierge` (site recommender) · `PersonalizedRecommendations` · `ClientDashboard` (bookings) · `HeroCinematic` (golden hour)
+   469→   469→
+   470→   470→---
+   471→   471→
+   472→   472→## Elite Layer Entitlement — How the Premium Tier Gets Earned
+   473→   473→
+   474→   474→| Layer | T1 Low | T2 Mid | T3 High | T4 Premium |
+   475→   475→|---|---|---|---|---|
+   476→   476→| **Motion** | none or `RevealOnScroll` only | `RevealOnScroll`, `TabbedShowcase`, one `MarqueeStrip` | + `AnimatedCounter`, `TiltCard`, `ParallaxMedia`, `StickySection` | + `HeroCinematic`, `PageTransition`, `HorizontalGallery`, `CursorContextLayer`, `ImageRevealMask`, `ShaderAccent` (art-directed, never full-screen) |
+   477→   477→| **3D / Immersive** | none | none | one isolated instance (`3DHeroObject` or `VirtualTourEmbed`) | + `VirtualGallery`, `Configurator`, `3DHeroObject`, always with poster fallback + reduced-motion branch |
+   478→   478→| **AI** | none | none | optional: one grounded assistant | + `AiConcierge` + `PersonalizedRecommendations` + `GuidedTour` |
+   479→   479→| **Non-negotiables** | every layer: `prefers-reduced-motion` branch, LCP protected, content survives with motion off, `DemoContentBadge` on fictional proof | ← | ← | ← |
+   480→   480→
+   481→   481→**Rule of thumb:** a T4 page earns its cinematic hero only if its T1 skeleton (headline, subhead, CTA, hours/phone) still converts with images disabled and motion off. That's what makes the elite layer defensible rather than decorative.
+   482→   482→
+   483→   483→---
+   484→   484→
+   485→   485→## Flagship Deep Dive — Boutique Hotel `lodgemark` (page-by-page)
+   486→   486→
+   487→   487→| Page | Modules |
+   488→   488→|---|---|
+   489→   489→| **Home** | `HeroCinematic` (drone→lobby, poster fallback) · `RoomCard` (3 featured) · `PackageCard` (bundles) · `ReviewCarousel` · `LocationCard` + `GoogleMapEmbed` · `NewsletterSignup` |
+   490→   490→| **Rooms** | `RoomCard` grid → `RoomDetail` (gallery, bed options, policies, book CTA) · `VirtualGallery` (3D room) · `HousePolicyPanel` |
+   491→   491→| **Dining** | `MenuBoard` · `WineList` · `ReservationFlow` (restaurant) · `PrivateDiningEnquiry` |
+   492→   492→| **Experiences** | `ExperienceBooking` (tours, classes) · `EventCalendar` (seasonal programming) · `SeasonalCalendar` |
+   493→   493→| **Weddings & Groups** | `VenueSpaceCard` · `GroupBookingForm` · `CaseStudyDetail` (real wedding) · `FloorplanViewer` |
+   494→   494→| **Booking flow** | `ReservationFlow` → `BookingConfirmation` (add-to-calendar, directions, policies) → `ReminderOptIn` |
+   495→   495→| **Portal** | `ClientDashboard` (upcoming stays, receipts, `LoyaltyPanel` tier perks) · `AiConcierge` (itinerary planner) · `PersonalizedRecommendations` (upgrades) |
+   496→   496→| **Local** | `LocalLandingPage` × neighborhood · `MultiLocationMap` (sister properties) · `StructuredDataBlock` (Hotel + Offer) · hreflang via `LanguageSwitcher` |
+   497→   497→
+   498→   498→**Dominant CTA:** *Check availability* (header, hero, every room card). Secondary: reserve dining, book experiences. Nothing competes.
+   499→   499→
+   500→   500→---
+
+[showing lines 201-500 of 2002; use offset=501 with limit to continue reading]

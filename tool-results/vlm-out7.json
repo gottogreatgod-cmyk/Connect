@@ -1,0 +1,29 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "**The sticky header is rendering correctly on top — but the page content below is not what you described.**\n\nHere's what's actually at the very top of the viewport:\n\n**The sticky header (fully visible, on top, no overlap issues):**\n1. **Top bar:** green \"G\" logo + \"Website Builder\" title on the left; on the right, a muted line \"✻ 8 AI skills · 19 motion masters · 23 templates — one flow\" plus an \"AI Studio\" link.\n2. **Step rail (second row):** Brief ✓, Design ✓, Content ✓, Art & media ✓, Motion ✓ (all with green checkmarks), and **\"Launch\"** as the active step (white card with a \"6\" badge). The rail has a white background that fully covers the content behind it.\n\n**Below the header — this is the mismatch:**\n- There is **no step 2 'Design' heading, no lead text, and no browser-chrome frame with traffic light dots / URL bar** visible anywhere.\n- The page is the **Launch (final) step**. The first thing peeking out from under the header is a **cropped hero image** — a cream-colored section with large black serif text reading \"one\", next to a food photo — cut off mid-element by the header, which is normal scroll clipping, not overlap corruption.\n- Beneath that: action links (\"Open the finished site\", \"Keep refining in the library\", \"Browse all templates\"), a \"Your generated assets (1)\" card with an architecture \"Hero\" image and Download button, a \"Take this build to any AI\" panel with copy buttons and a curl snippet, and a \"← Back\" link.\n\n**Verdict:** No content is hidden behind the sticky header — the header sits cleanly on top with the hero image scrolling under it as expected. However, this is **not** the Design step; it's the final Launch/summary step, so the Design heading, lead text, and browser-chrome preview you're asking about aren't present in this screenshot.",
+        "reasoning_content": "Screenshot shows Launch step, not Design step. Content below header starts with a cropped hero image \"one\" — no \"Design\" heading. The header occupies top; content below appears fine, not overlapped — actually there's a slight overlap? The \"one\" hero is partially cut by header? It appears just below the header, partially scrolled. Also the user asks about sticky header with step rail — that's present. Answer: header renders on top correctly; below it content is visible but it's the Launch step content, not Design heading — content is cropped mid-hero but not hidden behind header.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1793789118,
+  "id": "202611041845041d264899a51d4397",
+  "model": "glm-5.3-flash",
+  "object": "chat.completion",
+  "request_id": "202611041845041d264899a51d4397",
+  "usage": {
+    "completion_tokens": 555,
+    "completion_tokens_details": {
+      "reasoning_tokens": 121
+    },
+    "prompt_tokens": 2026,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2581
+  }
+}

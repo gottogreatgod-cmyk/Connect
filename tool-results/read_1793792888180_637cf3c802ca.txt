@@ -1,0 +1,1697 @@
+     1→"use client"
+     2→
+     3→/**
+     4→ * BuilderView — the Website Builder: the direct, anyone-can-use path.
+     5→ *
+     6→ * One flow, six steps, zero jargon:
+     7→ *
+     8→ *   brief    → describe the business, get honest template picks
+     9→ *   design   → live preview, one-click skins, shuffle the look
+    10→ *   content  → the business's own name/city/pitch → AI launch copy
+    11→ *   art      → per-section generations — hero image, brand mark,
+    12→ *              editorial still, cinematic reel, site voiceover
+    13→ *   motion   → four motion personalities, felt live, from the
+    14→ *              19-skill motion registry
+    15→ *   launch   → the assembled site + take-it-to-any-AI exports
+    16→ *
+    17→ * The whole build lives in a module-level store (useSyncExternalStore)
+    18→ * so navigating away and back never loses progress — running renders
+    19→ * keep polling in the background and settle into the store.
+    20→ *
+    21→ * Deep-linkable (#/build/<step>), plain language throughout, every
+    22→ * generation a REAL API call (image/video as background jobs, TTS and
+    23→ * copy synchronous).
+    24→ */
+    25→
+    26→import {
+    27→  useCallback,
+    28→  useEffect,
+    29→  useMemo,
+    30→  useRef,
+    31→  useState,
+    32→  useSyncExternalStore,
+    33→  type ReactNode,
+    34→} from "react"
+    35→import { motion } from "framer-motion"
+    36→import {
+    37→  ArrowLeft,
+    38→  ArrowRight,
+    39→  AudioLines,
+    40→  BadgeCheck,
+    41→  Camera as CameraIcon,
+    42→  Check,
+    43→  Clapperboard,
+    44→  Copy,
+    45→  Dices,
+    46→  Download,
+    47→  ExternalLink,
+    48→  Film,
+    49→  Image as ImageIcon,
+    50→  LayoutGrid,
+    51→  Lightbulb,
+    52→  MessageSquare,
+    53→  Monitor,
+    54→  Music4,
+    55→  Orbit,
+    56→  Palette,
+    57→  PenLine,
+    58→  Play,
+    59→  Rocket,
+    60→  Smartphone,
+    61→  Sparkles,
+    62→  Square,
+    63→  Stamp,
+    64→  Wand2,
+    65→  type LucideIcon,
+    66→} from "lucide-react"
+    67→import { BUILDER_STEPS, go, href, type BuilderStepId } from "@/engine/nav"
+    68→import { CONCIERGE_CHIPS, askConcierge, type ConciergeAnswer } from "@/engine/concierge"
+    69→import { TEMPLATES, findTemplate, industryOf, type TemplateDef } from "@/engine/registry"
+    70→import { NATIVE, type Genome } from "@/engine/genome"
+    71→import { EDITIONS, EDITION_ORDER, EDITION_SITE, type EditionId } from "@/engine/editions"
+    72→import { randomGenome } from "@/engine/randomizer"
+    73→import { PERSONALITIES } from "@/engine/motion-craft"
+    74→import { MOTION_SKILLS } from "@/engine/motion-skills"
+    75→import { track } from "@/engine/analytics"
+    76→import { SiteFrame } from "../site-frame"
+    77→import {
+    78→  Busy,
+    79→  ErrorNote,
+    80→  Field,
+    81→  btnGhostCx,
+    82→  btnPrimaryCx,
+    83→  inputCx,
+    84→  postJson,
+    85→  pollJob,
+    86→  useSequentialAudio,
+    87→  type PollState,
+    88→} from "./ai-kit"
+    89→
+    90→/* ══ the store — survives view switches, runs renders in the background ══ */
+    91→
+    92→type AssetId = "hero" | "mark" | "still" | "reel" | "voice"
+    93→type AssetStatus = "idle" | "running" | "done" | "error"
+    94→
+    95→interface AssetState {
+    96→  status: AssetStatus
+    97→  prompt: string
+    98→  /** the user edited this prompt by hand — never re-seed it */
+    99→  touched?: boolean
+   100→  size?: string
+   101→  voice?: string
+   102→  speed?: number
+   103→  image?: string
+   104→  video?: string
+   105→  audio?: string[]
+   106→  error?: string
+   107→  startedAt?: number
+   108→}
+   109→
+   110→interface CopyBlock {
+   111→  headline: string
+   112→  tagline: string
+   113→  cta: string
+   114→  about: string
+   115→}
+   116→
+   117→interface BuilderState {
+   118→  brief: string
+   119→  tplSlug: string | null
+   120→  /** null = as designed; otherwise the edition skin id */
+   121→  edition: EditionId | null
+   122→  genome: Genome
+   123→  name: string
+   124→  city: string
+   125→  pitch: string
+   126→  /** the copywriter persona — how the launch copy should sound */
+   127→  persona: string
+   128→  copy: CopyBlock | null
+   129→  copyRaw: string
+   130→  copyBusy: boolean
+   131→  copyError: string | null
+   132→  refBusy: boolean
+   133→  refError: string | null
+   134→  refNote: string | null
+   135→  personality: string | null
+   136→  assets: Record<AssetId, AssetState>
+   137→}
+   138→
+   139→const IMAGE_SIZES = [
+   140→  { value: "1344x768", label: "Wide — hero & banners (1344×768)" },
+   141→  { value: "1024x1024", label: "Square — marks & social (1024×1024)" },
+   142→  { value: "864x1152", label: "Portrait — covers (864×1152)" },
+   143→  { value: "1152x864", label: "Landscape — cards (1152×864)" },
+   144→  { value: "1440x720", label: "Cinematic strip (1440×720)" },
+   145→]
+   146→
+   147→const VOICES = [
+   148→  { value: "tongtong", label: "Tongtong — warm, even pace" },
+   149→  { value: "jam", label: "Jam — bright, conversational" },
+   150→  { value: "kazi", label: "Kazi — calm, low register" },
+   151→]
+   152→
+   153→/** The copywriter personas — the agency-agents pattern: a named
+   154→ * specialist with a voice, injected into the copy system prompt. */
+   155→const PERSONAS = [
+   156→  { id: "warm", label: "Warm & local", note: "neighbourly, human, plain words", style: "Write in a warm, neighbourly, human voice — plain words, short sentences, like a local business owner talking to a regular." },
+   157→  { id: "premium", label: "Premium & minimal", note: "restrained, confident, few words", style: "Write in a restrained, premium voice — few words, no exclamation marks, confidence through specificity, never hype." },
+   158→  { id: "bold", label: "Bold & playful", note: "energetic, direct, a little cheeky", style: "Write in a bold, playful, energetic voice — direct address, a little cheeky, but never cringe." },
+   159→] as const
+   160→
+   161→function initialAssets(tpl: TemplateDef | null): Record<AssetId, AssetState> {
+   162→  const seed = tpl ?? TEMPLATES[0]
+   163→  const pos = seed.positioning.split("—")[0].trim()
+   164→  return {
+   165→    hero: {
+   166→      status: "idle",
+   167→      prompt: `${pos}, ${seed.city}, hero website background, soft natural light, photographic, no text`,
+   168→      size: "1344x768",
+   169→    },
+   170→    mark: {
+   171→      status: "idle",
+   172→      prompt: `minimal monogram for a business called "${seed.name}", premium, ${seed.kind.toLowerCase()}, flat vector, centered on plain background, no text effects`,
+   173→      size: "1024x1024",
+   174→    },
+   175→    still: {
+   176→      status: "idle",
+   177→      prompt: `editorial detail photograph for ${seed.kind.toLowerCase()} — ${pos}, ${seed.city}, shallow depth of field, magazine quality`,
+   178→      size: "1152x864",
+   179→    },
+   180→    reel: {
+   181→      status: "idle",
+   182→      prompt: `cinematic slow camera move through ${pos.toLowerCase()}, ${seed.city}, warm light, premium mood, no text overlays`,
+   183→    },
+   184→    voice: {
+   185→      status: "idle",
+   186→      prompt: "",
+   187→      voice: "tongtong",
+   188→      speed: 1,
+   189→    },
+   190→  }
+   191→}
+   192→
+   193→/** session persistence — the build survives reloads; heavy results
+   194→ * (base64 images, video urls, audio) are dropped, prompts and picks stay */
+   195→const SS_KEY = "gos:builder"
+   196→
+   197→function persist(s: BuilderState) {
+   198→  if (typeof window === "undefined" || typeof sessionStorage === "undefined") return
+   199→  try {
+   200→    const light: BuilderState = {
+   201→      ...s,
+   202→      copyBusy: false,
+   203→      copyError: null,
+   204→      refBusy: false,
+   205→      refError: null,
+   206→      refNote: null,
+   207→      assets: Object.fromEntries(
+   208→        Object.entries(s.assets).map(([k, a]) => [
+   209→          k,
+   210→          {
+   211→            ...a,
+   212→            image: undefined,
+   213→            video: undefined,
+   214→            audio: undefined,
+   215→            status: a.status === "running" || a.status === "done" ? "idle" : a.status,
+   216→            startedAt: undefined,
+   217→          },
+   218→        ]),
+   219→      ) as Record<AssetId, AssetState>,
+   220→    }
+   221→    sessionStorage.setItem(SS_KEY, JSON.stringify(light))
+   222→  } catch {
+   223→    /* quota exceeded or storage blocked — the in-memory build still works */
+   224→  }
+   225→}
+   226→
+   227→function loadPersisted(): BuilderState {
+   228→  const fallback: BuilderState = {
+   229→    brief: "",
+   230→    tplSlug: null,
+   231→    edition: null,
+   232→    genome: { ...NATIVE },
+   233→    name: "",
+   234→    city: "",
+   235→    pitch: "",
+   236→    persona: "warm",
+   237→    copy: null,
+   238→    copyRaw: "",
+   239→    copyBusy: false,
+   240→    copyError: null,
+   241→    refBusy: false,
+   242→    refError: null,
+   243→    refNote: null,
+   244→    personality: null,
+   245→    assets: initialAssets(null),
+   246→  }
+   247→  try {
+   248→    if (typeof window === "undefined" || typeof sessionStorage === "undefined") return fallback
+   249→    const raw = sessionStorage.getItem(SS_KEY)
+   250→    if (!raw) return fallback
+   251→    const parsed = JSON.parse(raw) as BuilderState
+   252→    if (!parsed || typeof parsed !== "object" || !parsed.assets) return fallback
+   253→    /* genome shape guard — a stale or foreign payload falls back cleanly */
+   254→    if (!parsed.genome || typeof parsed.genome !== "object") parsed.genome = { ...NATIVE }
+   255→    return { ...fallback, ...parsed }
+   256→  } catch {
+   257→    return fallback
+   258→  }
+   259→}
+   260→
+   261→let state: BuilderState = loadPersisted()
+   262→
+   263→const listeners = new Set<() => void>()
+   264→
+   265→function setState(patch: Partial<BuilderState>) {
+   266→  state = { ...state, ...patch }
+   267→  persist(state)
+   268→  listeners.forEach((l) => l())
+   269→}
+   270→
+   271→function setAsset(id: AssetId, patch: Partial<AssetState>) {
+   272→  setState({ assets: { ...state.assets, [id]: { ...state.assets[id], ...patch } } })
+   273→}
+   274→
+   275→function subscribe(l: () => void) {
+   276→  listeners.add(l)
+   277→  return () => {
+   278→    listeners.delete(l)
+   279→  }
+   280→}
+   281→
+   282→function useBuilder(): BuilderState {
+   283→  return useSyncExternalStore(subscribe, () => state, () => state)
+   284→}
+   285→
+   286→/* ── the generation actions — module-level so they outlive the view ── */
+   287→
+   288→async function generateImage(id: "hero" | "mark" | "still") {
+   289→  const a = state.assets[id]
+   290→  if (!a.prompt.trim() || a.status === "running") return
+   291→  track("ai_skill_used", `builder/image-${id}`)
+   292→  setAsset(id, { status: "running", error: undefined, image: undefined, startedAt: Date.now() })
+   293→  try {
+   294→    const { jobId } = await postJson<{ jobId: string }>("/api/ai/image", { prompt: a.prompt, size: a.size })
+   295→    await pollJob("image", jobId, (s: PollState) => {
+   296→      if (s.status === "done") setAsset(id, { status: "done", image: s.result?.image })
+   297→      else if (s.status === "error") setAsset(id, { status: "error", error: s.error })
+   298→      else setAsset(id, { status: "running" })
+   299→    })
+   300→  } catch (e) {
+   301→    setAsset(id, { status: "error", error: e instanceof Error ? e.message : "Could not start the render." })
+   302→  }
+   303→}
+   304→
+   305→async function generateReel() {
+   306→  const a = state.assets.reel
+   307→  if (!a.prompt.trim() || a.status === "running") return
+   308→  track("ai_skill_used", "builder/video-reel")
+   309→  setAsset("reel", { status: "running", error: undefined, video: undefined, startedAt: Date.now() })
+   310→  try {
+   311→    const { jobId } = await postJson<{ jobId: string }>("/api/ai/video", { prompt: a.prompt, quality: "quality" })
+   312→    await pollJob("video", jobId, (s: PollState) => {
+   313→      if (s.status === "done") setAsset("reel", { status: "done", video: s.result?.video })
+   314→      else if (s.status === "error") setAsset("reel", { status: "error", error: s.error })
+   315→      else setAsset("reel", { status: "running" })
+   316→    })
+   317→  } catch (e) {
+   318→    setAsset("reel", { status: "error", error: e instanceof Error ? e.message : "Could not start the render." })
+   319→  }
+   320→}
+   321→
+   322→async function generateVoice() {
+   323→  const a = state.assets.voice
+   324→  const text = a.prompt.trim()
+   325→  if (!text || a.status === "running") return
+   326→  track("ai_skill_used", "builder/tts-voiceover")
+   327→  setAsset("voice", { status: "running", error: undefined, audio: undefined, startedAt: Date.now() })
+   328→  try {
+   329→    const res = await postJson<{ parts?: string[]; error?: string }>("/api/ai/tts", {
+   330→      text,
+   331→      voice: a.voice ?? "tongtong",
+   332→      speed: a.speed ?? 1,
+   333→    })
+   334→    if (res.parts?.length) setAsset("voice", { status: "done", audio: res.parts })
+   335→    else throw new Error(res.error ?? "No audio came back.")
+   336→  } catch (e) {
+   337→    setAsset("voice", { status: "error", error: e instanceof Error ? e.message : "Speech synthesis failed." })
+   338→  }
+   339→}
+   340→
+   341→function templateDigest(t: TemplateDef): string {
+   342→  return [
+   343→    `Name: ${t.name}`,
+   344→    `Business: ${t.kind}, ${t.city}`,
+   345→    `Positioning: ${t.positioning}`,
+   346→    `Conversion goal: ${t.conversion}`,
+   347→    `Signature details: ${t.signature.join("; ")}`,
+   348→  ].join("\n")
+   349→}
+   350→
+   351→/** The reference-analysis entry point (the openmontage pattern): paste
+   352→ * any site URL, the Page Reader extracts it, the chat AI distills a
+   353→ * one-line brief, and the recommendations re-rank against it. */
+   354→async function analyzeReference(url: string) {
+   355→  if (!url.trim() || state.refBusy) return
+   356→  track("ai_skill_used", "builder/reference")
+   357→  setState({ refBusy: true, refError: null, refNote: null })
+   358→  try {
+   359→    const read = await postJson<{ text?: string; title?: string; error?: string }>("/api/ai/reader", { url })
+   360→    const text = (read.text ?? "").slice(0, 5000)
+   361→    if (!text) throw new Error(read.error ?? "That page returned no readable content.")
+   362→    const res = await postJson<{ reply?: string; error?: string }>("/api/ai/chat", {
+   363→      system:
+   364→        "You turn a website's readable text into a one-line business brief for a website builder. " +
+   365→        "Reply with EXACTLY one line, max 20 words, in the shape: 'a <what they do> in <city if known> that <conversion goal>'. " +
+   366→        "No quotes, no preamble, no explanation — just the line.",
+   367→      messages: [{ role: "user", content: `Website: ${read.title ?? url}\n\nPAGE TEXT:\n${text}` }],
+   368→    })
+   369→    const line = (res.reply ?? "").replace(/^["']|["']$/g, "").trim()
+   370→    if (!line) throw new Error(res.error ?? "Could not distill that page.")
+   371→    setState({ brief: line, refBusy: false, refNote: `From ${read.title ?? url} — edit freely, then pick a starting point.` })
+   372→  } catch (e) {
+   373→    setState({ refBusy: false, refError: e instanceof Error ? e.message : "Could not read that reference." })
+   374→  }
+   375→}
+   376→
+   377→async function writeCopy() {
+   378→  if (state.copyBusy) return
+   379→  const t = state.tplSlug ? findTemplate(state.tplSlug) : null
+   380→  if (!t) return
+   381→  track("ai_skill_used", "builder/copy")
+   382→  setState({ copyBusy: true, copyError: null })
+   383→  const business = state.name.trim() || t.name
+   384→  const city = state.city.trim() || t.city
+   385→  const pitch = state.pitch.trim()
+   386→  const persona = PERSONAS.find((p) => p.id === state.persona) ?? PERSONAS[0]
+   387→  try {
+   388→    const res = await postJson<{ reply?: string; error?: string }>("/api/ai/chat", {
+   389→      system:
+   390→        `You write launch copy for small-business websites. ${persona.style}\n` +
+   391→        `Grounded context about the reference template:\n${templateDigest(t)}\n` +
+   392→        `The client's business: name "${business}", city ${city}${pitch ? `, pitch: ${pitch}` : ""}.\n` +
+   393→        `Write fresh launch copy for THE CLIENT'S business (not the template's demo brand). Keep it concrete and honest, no hype words like "unlock" or "elevate".\n` +
+   394→        `Answer with EXACTLY four lines, each starting with the label, nothing else:\n` +
+   395→        `HEADLINE: <max 8 words>\nTAGLINE: <one sentence>\nCTA: <max 4 words, a button label>\nABOUT: <2 sentences>`,
+   396→      messages: [{ role: "user", content: `Write the launch copy for ${business} in ${city}.` }],
+   397→    })
+   398→    const raw = res.reply ?? ""
+   399→    if (!raw) throw new Error(res.error ?? "No copy came back.")
+   400→    const pick = (label: string) => {
+   401→      const m = raw.match(new RegExp(`^\\s*${label}\\s*:\\s*(.+)$`, "im"))
+   402→      return m ? m[1].trim() : ""
+   403→    }
+   404→    const block: CopyBlock = {
+   405→      headline: pick("HEADLINE"),
+   406→      tagline: pick("TAGLINE"),
+   407→      cta: pick("CTA"),
+   408→      about: pick("ABOUT"),
+   409→    }
+   410→    if (!block.headline && !block.tagline && !block.about) {
+   411→      /* model ignored the format — keep the raw text visible, still useful */
+   412→      setState({ copyRaw: raw, copy: null, copyBusy: false })
+   413→      return
+   414→    }
+   415→    setState({ copy: block, copyRaw: raw, copyBusy: false })
+   416→    /* re-seed untouched asset prompts with the client's OWN business —
+   417→       the template's demo brand never survives into the art step */
+   418→    const pos = state.pitch.trim() || t.positioning.split("—")[0].trim()
+   419→    const assets = { ...state.assets }
+   420→    if (assets.hero.status === "idle" && !assets.hero.touched)
+   421→      assets.hero = { ...assets.hero, prompt: `${pos}, ${city}, hero website background, soft natural light, photographic, no text` }
+   422→    if (assets.mark.status === "idle" && !assets.mark.touched)
+   423→      assets.mark = { ...assets.mark, prompt: `minimal monogram for a business called "${business}", premium, flat vector, centered on plain background, no text effects` }
+   424→    if (assets.still.status === "idle" && !assets.still.touched)
+   425→      assets.still = { ...assets.still, prompt: `editorial detail photograph — ${pos}, ${city}, shallow depth of field, magazine quality` }
+   426→    if (assets.reel.status === "idle" && !assets.reel.touched)
+   427→      assets.reel = { ...assets.reel, prompt: `cinematic slow camera move, ${pos.toLowerCase()}, ${city}, warm light, premium mood, no text overlays` }
+   428→    setState({ assets })
+   429→  } catch (e) {
+   430→    setState({ copyBusy: false, copyError: e instanceof Error ? e.message : "The copy service is briefly unavailable." })
+   431→  }
+   432→}
+   433→
+   434→/* ══ the step registry ════════════════════════════════════════════════ */
+   435→
+   436→interface StepDef {
+   437→  id: BuilderStepId
+   438→  n: number
+   439→  label: string
+   440→  icon: LucideIcon
+   441→  note: string
+   442→}
+   443→
+   444→const STEPS: StepDef[] = [
+   445→  { id: "brief", n: 1, label: "Brief", icon: MessageSquare, note: "Tell us what you're building" },
+   446→  { id: "design", n: 2, label: "Design", icon: Palette, note: "Pick the look" },
+   447→  { id: "content", n: 3, label: "Content", icon: PenLine, note: "Make it yours" },
+   448→  { id: "art", n: 4, label: "Art & media", icon: ImageIcon, note: "Images, film, voice" },
+   449→  { id: "motion", n: 5, label: "Motion", icon: Orbit, note: "Choose the movement" },
+   450→  { id: "launch", n: 6, label: "Launch", icon: Rocket, note: "Ship it" },
+   451→]
+   452→
+   453→const stepIndex = (id: BuilderStepId) => STEPS.findIndex((s) => s.id === id)
+   454→
+   455→/* ── shared atoms ─────────────────────────────────────────────────── */
+   456→
+   457→function CopyBtn({ text, label = "Copy" }: { text: string; label?: string }) {
+   458→  const [done, setDone] = useState(false)
+   459→  return (
+   460→    <button
+   461→      type="button"
+   462→      className={btnGhostCx}
+   463→      onClick={async () => {
+   464→        try {
+   465→          await navigator.clipboard.writeText(text)
+   466→          setDone(true)
+   467→          window.setTimeout(() => setDone(false), 1600)
+   468→        } catch {
+   469→          /* clipboard blocked */
+   470→        }
+   471→      }}
+   472→    >
+   473→      {done ? <Check className="size-3.5" aria-hidden /> : <Copy className="size-3.5" aria-hidden />}
+   474→      {done ? "Copied" : label}
+   475→    </button>
+   476→  )
+   477→}
+   478→
+   479→function StepShell({
+   480→  title,
+   481→  lead,
+   482→  children,
+   483→  onBack,
+   484→  onNext,
+   485→  nextLabel,
+   486→  nextDisabled,
+   487→  nextHint,
+   488→}: {
+   489→  title: string
+   490→  lead: string
+   491→  children: ReactNode
+   492→  onBack: (() => void) | null
+   493→  onNext: (() => void) | null
+   494→  nextLabel?: string
+   495→  nextDisabled?: boolean
+   496→  nextHint?: string
+   497→}) {
+   498→  return (
+   499→    <div className="mx-auto w-full max-w-4xl px-4 pb-20 pt-8 sm:px-6">
+   500→      <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{title}</h2>
+   501→      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">{lead}</p>
+   502→      <div className="mt-8">{children}</div>
+   503→      {(onBack || onNext) && (
+   504→        <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
+   505→          {onBack ? (
+   506→            <button type="button" className={btnGhostCx} onClick={onBack}>
+   507→              <ArrowLeft className="size-4" aria-hidden /> Back
+   508→            </button>
+   509→          ) : (
+   510→            <span />
+   511→          )}
+   512→          {onNext && (
+   513→            <button type="button" className={btnPrimaryCx} onClick={onNext} disabled={nextDisabled}>
+   514→              {nextLabel ?? "Continue"}
+   515→              <ArrowRight className="size-4" aria-hidden />
+   516→            </button>
+   517→          )}
+   518→        </div>
+   519→      )}
+   520→      {nextDisabled && nextHint ? <p className="mt-3 text-right text-xs text-muted-foreground">{nextHint}</p> : null}
+   521→    </div>
+   522→  )
+   523→}
+   524→
+   525→/* ── the step rail ────────────────────────────────────────────────── */
+   526→
+   527→function StepRail({ current }: { current: BuilderStepId }) {
+   528→  return (
+   529→    <nav aria-label="Builder steps" className="border-b border-border bg-background/90 backdrop-blur">
+   530→      <div className="mx-auto flex w-full max-w-5xl items-stretch gap-1 overflow-x-auto px-2 py-2 sm:px-4">
+   531→        {STEPS.map((s, i) => {
+   532→          const active = s.id === current
+   533→          const done = stepIndex(current) > i
+   534→          const reachable =
+   535→            done || active || (s.id !== "brief" && !!state.tplSlug) || s.id === "brief"
+   536→          return (
+   537→            <button
+   538→              key={s.id}
+   539→              type="button"
+   540→              disabled={!reachable}
+   541→              onClick={() => {
+   542→                if (reachable) go(`/build/${s.id}`)
+   543→              }}
+   544→              aria-current={active ? "step" : undefined}
+   545→              className={`flex min-h-11 flex-1 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-left text-[13px] font-medium transition-colors ${
+   546→                active
+   547→                  ? "bg-primary text-primary-foreground shadow-sm"
+   548→                  : done
+   549→                    ? "text-foreground hover:bg-muted"
+   550→                    : "text-muted-foreground hover:bg-muted"
+   551→              } disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent`}
+   552→            >
+   553→              <span
+   554→                className={`grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-bold ${
+   555→                  active ? "bg-primary-foreground/20" : done ? "bg-primary/15 text-primary" : "bg-muted"
+   556→                }`}
+   557→                aria-hidden
+   558→              >
+   559→                {done ? <Check className="size-3.5" /> : s.n}
+   560→              </span>
+   561→              <span className="hidden sm:inline">{s.label}</span>
+   562→            </button>
+   563→          )
+   564→        })}
+   565→      </div>
+   566→    </nav>
+   567→  )
+   568→}
+   569→
+   570→/* ── the "next up" recommendation card ────────────────────────────── */
+   571→
+   572→function nextUpOf(s: BuilderState): { step: BuilderStepId; label: string; why: string } {
+   573→  if (!s.tplSlug) return { step: "brief", label: "Describe what you're building", why: "One sentence is enough — you'll get honest template picks." }
+   574→  if (!s.copy) return { step: "content", label: "Write your launch copy", why: `AI copy for your business, seeded from your starting point.` }
+   575→  if (s.assets.hero.status !== "done") return { step: "art", label: "Generate the hero image", why: "The single highest-impact asset — 30–90 seconds." }
+   576→  if (s.assets.mark.status !== "done") return { step: "art", label: "Generate your brand mark", why: "A monogram for headers and social." }
+   577→  if (s.assets.reel.status !== "done") return { step: "art", label: "Render a cinematic reel", why: "A short film for your hero — takes a few minutes." }
+   578→  if (!s.personality) return { step: "motion", label: "Pick a motion personality", why: "How the site should move — felt, not described." }
+   579→  return { step: "launch", label: "Everything's ready — launch", why: "Open the finished site or take the whole build to any AI." }
+   580→}
+   581→
+   582→function NextUpCard({ current }: { current: BuilderStepId }) {
+   583→  const s = useBuilder()
+   584→  const rec = nextUpOf(s)
+   585→  if (rec.step === current) return null
+   586→  return (
+   587→    <div className="mx-auto w-full max-w-4xl px-4 pt-4 sm:px-6">
+   588→      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-primary/25 bg-primary/5 px-4 py-3">
+   589→        <Lightbulb className="size-4 shrink-0 text-primary" aria-hidden />
+   590→        <p className="min-w-0 flex-1 text-sm">
+   591→          <span className="font-semibold">Recommended next — {rec.label}.</span>{" "}
+   592→          <span className="text-muted-foreground">{rec.why}</span>
+   593→        </p>
+   594→        <button
+   595→          type="button"
+   596→          className={btnGhostCx}
+   597→          onClick={() => go(`/build/${rec.step}`)}
+   598→        >
+   599→          Go <ArrowRight className="size-3.5" aria-hidden />
+   600→        </button>
+   601→      </div>
+   602→    </div>
+   603→  )
+   604→}
+   605→
+   606→/* ── template card (shared by brief + design) ─────────────────────── */
+   607→
+   608→function TemplateCard({
+   609→  tpl,
+   610→  why,
+   611→  selected,
+   612→  onPick,
+   613→}: {
+   614→  tpl: TemplateDef
+   615→  why?: string
+   616→  selected?: boolean
+   617→  onPick: () => void
+   618→}) {
+   619→  const p = tpl[tpl.mode]
+   620→  return (
+   621→    <div
+   622→      className={`flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-shadow hover:shadow-md ${
+   623→        selected ? "border-primary ring-2 ring-primary/25" : "border-border"
+   624→      }`}
+   625→    >
+   626→      <div
+   627→        aria-hidden
+   628→        className="flex h-16 items-end justify-between px-4 pb-3"
+   629→        style={{ background: p.bg, borderBottom: "1px solid var(--border)" }}
+   630→      >
+   631→        <span className="size-6 rounded-md" style={{ background: p.primary }} />
+   632→        <span className="h-1.5 w-16 rounded-full" style={{ background: p.line }} />
+   633→      </div>
+   634→      <div className="flex flex-1 flex-col gap-1 p-4">
+   635→        <div className="flex items-baseline justify-between gap-2">
+   636→          <h4 className="truncate font-semibold">{tpl.name}</h4>
+   637→          {selected && <BadgeCheck className="size-4 shrink-0 text-primary" aria-hidden />}
+   638→        </div>
+   639→        <p className="text-xs text-muted-foreground">
+   640→          {industryOf(tpl.industry).label} · {tpl.kind}
+   641→        </p>
+   642→        {why ? <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{why}</p> : null}
+   643→        <button type="button" className={`${btnPrimaryCx} mt-3 w-full`} onClick={onPick}>
+   644→          {selected ? "Selected" : "Start with this"}
+   645→        </button>
+   646→      </div>
+   647→    </div>
+   648→  )
+   649→}
+   650→
+   651→/* ══ step 1 · brief ═══════════════════════════════════════════════════ */
+   652→
+   653→function BriefStep() {
+   654→  const s = useBuilder()
+   655→  const [refUrl, setRefUrl] = useState("")
+   656→  const answer: ConciergeAnswer = useMemo(
+   657→    () => (s.brief.trim() ? askConcierge(s.brief, 3) : { query: s.brief, confidence: "low", headline: "", note: "", items: [], chips: CONCIERGE_CHIPS }),
+   658→    [s.brief],
+   659→  )
+   660→  const picks = answer.items.map((i) => findTemplate(i.slug)).filter((t): t is TemplateDef => !!t)
+   661→
+   662→  return (
+   663→    <StepShell
+   664→      title="What are we building?"
+   665→      lead="Describe the business in one sentence — what it does and what the website should get people to do. You'll get honest picks from the real template library, each with the reason it matched."
+   666→      onBack={null}
+   667→      onNext={
+   668→        s.tplSlug
+   669→          ? () => go("/build/design")
+   670→          : null
+   671→      }
+   672→      nextDisabled={!s.tplSlug}
+   673→      nextHint="Pick a starting point first — or shuffle the look later."
+   674→    >
+   675→      <Field label="Your brief" hint="plain words, no jargon needed">
+   676→        <textarea
+   677→          className={`${inputCx} min-h-24 resize-y`}
+   678→          placeholder="e.g. a neighbourhood bakery that takes pre-orders"
+   679→          value={s.brief}
+   680→          onChange={(e) => setState({ brief: e.target.value })}
+   681→          aria-label="Describe the business"
+   682→        />
+   683→      </Field>
+   684→      <div className="mt-3 flex flex-wrap gap-2">
+   685→        {CONCIERGE_CHIPS.map((c) => (
+   686→          <button
+   687→            key={c}
+   688→            type="button"
+   689→            className="rounded-full border border-border bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+   690→            onClick={() => setState({ brief: c })}
+   691→          >
+   692→            {c}
+   693→          </button>
+   694→        ))}
+   695→      </div>
+   696→
+   697→      {/* the reference-analysis entry point — any site in, a brief out */}
+   698→      <div className="mt-6 rounded-xl border border-border bg-card p-4 shadow-sm">
+   699→        <p className="text-sm font-semibold">Or start from a reference site</p>
+   700→        <p className="mt-1 text-[12.5px] leading-relaxed text-muted-foreground">
+   701→          Paste any website — a competitor, a place you love — and the reader AI turns it into your brief.
+   702→        </p>
+   703→        <div className="mt-3 flex flex-wrap gap-2">
+   704→          <input
+   705→            className={`${inputCx} flex-1 min-w-48`}
+   706→            placeholder="reference.com"
+   707→            value={refUrl}
+   708→            onChange={(e) => setRefUrl(e.target.value)}
+   709→            aria-label="Reference website URL"
+   710→            onKeyDown={(e) => {
+   711→              if (e.key === "Enter") void analyzeReference(refUrl)
+   712→            }}
+   713→          />
+   714→          <button type="button" className={btnPrimaryCx} onClick={() => void analyzeReference(refUrl)} disabled={s.refBusy}>
+   715→            {s.refBusy ? "Reading…" : "Turn it into a brief"}
+   716→          </button>
+   717→        </div>
+   718→        {s.refBusy && (
+   719→          <div className="mt-3">
+   720→            <Busy label="Reading the page and distilling your brief — a few seconds…" />
+   721→          </div>
+   722→        )}
+   723→        {s.refError && (
+   724→          <div className="mt-3">
+   725→            <ErrorNote>{s.refError}</ErrorNote>
+   726→          </div>
+   727→        )}
+   728→        {s.refNote && !s.refBusy && <p className="mt-3 text-xs text-muted-foreground">{s.refNote}</p>}
+   729→      </div>
+   730→
+   731→      {picks.length > 0 ? (
+   732→        <div className="mt-8">
+   733→          <p className="mb-3 flex items-center gap-2 text-sm font-semibold">
+   734→            <Sparkles className="size-4 text-primary" aria-hidden />
+   735→            {answer.headline}
+   736→          </p>
+   737→          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+   738→            {picks.map((t) => {
+   739→              const item = answer.items.find((i) => i.slug === t.slug)!
+   740→              return (
+   741→                <TemplateCard
+   742→                  key={t.slug}
+   743→                  tpl={t}
+   744→                  why={item.why}
+   745→                  selected={s.tplSlug === t.slug}
+   746→                  onPick={() => {
+   747→                    setState({
+   748→                      tplSlug: t.slug,
+   749→                      genome: { ...NATIVE },
+   750→                      edition: null,
+   751→                      assets: initialAssets(t),
+   752→                      name: s.name || "",
+   753→                      city: t.city,
+   754→                    })
+   755→                    track("builder_template_picked", t.slug)
+   756→                    go("/build/design")
+   757→                  }}
+   758→                />
+   759→              )
+   760→            })}
+   761→          </div>
+   762→          <p className="mt-3 text-xs text-muted-foreground">{answer.note}</p>
+   763→        </div>
+   764→      ) : (
+   765→        <div className="mt-8 rounded-xl border border-dashed border-border bg-muted/20 px-5 py-6 text-sm text-muted-foreground">
+   766→          <p className="font-medium text-foreground">Not sure yet? Start from the whole library.</p>
+   767→          <p className="mt-1">
+   768→            Every template is finished and live — pick any industry and make it yours in the next steps.
+   769→          </p>
+   770→          <button type="button" className={`${btnGhostCx} mt-4`} onClick={() => go("/catalogue")}>
+   771→            <LayoutGrid className="size-4" aria-hidden /> Browse all {TEMPLATES.length} templates
+   772→          </button>
+   773→        </div>
+   774→      )}
+   775→    </StepShell>
+   776→  )
+   777→}
+   778→
+   779→/* ══ step 2 · design ══════════════════════════════════════════════════ */
+   780→
+   781→function DesignStep() {
+   782→  const s = useBuilder()
+   783→  const tpl = s.tplSlug ? findTemplate(s.tplSlug) : null
+   784→  const [device, setDevice] = useState<"mobile" | "desktop">("desktop")
+   785→
+   786→  if (!tpl) {
+   787→    return (
+   788→      <StepShell title="Pick the look" lead="Choose a starting point first." onBack={() => go("/build/brief")} onNext={null}>
+   789→        <button type="button" className={btnPrimaryCx} onClick={() => go("/build/brief")}>
+   790→          Go to the brief <ArrowRight className="size-4" aria-hidden />
+   791→        </button>
+   792→      </StepShell>
+   793→    )
+   794→  }
+   795→
+   796→  const applySkin = (id: EditionId | null) => {
+   797→    setState({
+   798→      edition: id,
+   799→      genome: id ? { ...NATIVE, ...EDITION_SITE[id].genome } : { ...NATIVE },
+   800→    })
+   801→    track("builder_skin", id ?? "native")
+   802→  }
+   803→
+   804→  return (
+   805→    <StepShell
+   806→      title="Pick the look"
+   807→      lead={`${tpl.name} is live below — re-skin it with one click, or shuffle for a fresh take. The preview is the real site, not a mockup.`}
+   808→      onBack={() => go("/build/brief")}
+   809→      onNext={() => go("/build/content")}
+   810→    >
+   811→      <div className="flex flex-wrap items-center justify-between gap-3">
+   812→        <div className="flex items-center gap-2" role="radiogroup" aria-label="Preview size">
+   813→          {([["desktop", Monitor], ["mobile", Smartphone]] as const).map(([id, Icon]) => (
+   814→            <button
+   815→              key={id}
+   816→              type="button"
+   817→              role="radio"
+   818→              aria-checked={device === id}
+   819→              onClick={() => setDevice(id)}
+   820→              className={`inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-xs font-semibold transition-colors ${
+   821→                device === id ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:bg-muted/60"
+   822→              }`}
+   823→            >
+   824→              <Icon className="size-4" aria-hidden />
+   825→              <span className="capitalize">{id}</span>
+   826→            </button>
+   827→          ))}
+   828→        </div>
+   829→        <button
+   830→          type="button"
+   831→          className={btnGhostCx}
+   832→          onClick={() => {
+   833→            const { genome } = randomGenome(3, s.genome)
+   834→            setState({ genome, edition: null })
+   835→            track("builder_shuffle")
+   836→          }}
+   837→        >
+   838→          <Dices className="size-4" aria-hidden /> Shuffle the look
+   839→        </button>
+   840→      </div>
+   841→
+   842→      <div className="mt-4 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+   843→        <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5">
+   844→          <span className="size-2.5 rounded-full bg-red-400/70" aria-hidden />
+   845→          <span className="size-2.5 rounded-full bg-amber-400/70" aria-hidden />
+   846→          <span className="size-2.5 rounded-full bg-green-500/70" aria-hidden />
+   847→          <span className="ml-2 truncate font-mono text-[11px] text-muted-foreground">
+   848→            {tpl.name.toLowerCase().replace(/\s+/g, "")}.com — live preview
+   849→          </span>
+   850→        </div>
+   851→        <div className="max-h-[30rem] overflow-y-auto">
+   852→          <SiteFrame
+   853→            tpl={tpl}
+   854→            genome={s.genome}
+   855→            page="home"
+   856→            width={device === "mobile" ? 390 : "100%"}
+   857→            style={{ margin: "0 auto" }}
+   858→            remountKey={`${s.edition ?? "native"}-${device}`}
+   859→          />
+   860→        </div>
+   861→      </div>
+   862→
+   863→      <div className="mt-8">
+   864→        <p className="mb-3 text-sm font-semibold">Skin — one click re-forges everything</p>
+   865→        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+   866→          <button
+   867→            type="button"
+   868→            onClick={() => applySkin(null)}
+   869→            className={`rounded-xl border p-3 text-left transition-colors ${
+   870→              s.edition === null ? "border-primary bg-primary/5 ring-2 ring-primary/20" : "border-border bg-card hover:bg-muted/50"
+   871→            }`}
+   872→          >
+   873→            <span className="block text-[13px] font-semibold">As designed</span>
+   874→            <span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">The template's own DNA</span>
+   875→          </button>
+   876→          {EDITION_ORDER.map((eid) => {
+   877→            const e = EDITIONS[eid]
+   878→            return (
+   879→              <button
+   880→                key={eid}
+   881→                type="button"
+   882→                onClick={() => applySkin(eid)}
+   883→                className={`rounded-xl border p-3 text-left transition-colors ${
+   884→                  s.edition === eid ? "border-primary bg-primary/5 ring-2 ring-primary/20" : "border-border bg-card hover:bg-muted/50"
+   885→                }`}
+   886→              >
+   887→                <span className="block text-[13px] font-semibold">{e.name}</span>
+   888→                <span className="mt-0.5 block truncate text-[11px] leading-snug text-muted-foreground">{e.tagline}</span>
+   889→              </button>
+   890→            )
+   891→          })}
+   892→        </div>
+   893→      </div>
+   894→
+   895→      <div className="mt-6 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-muted/20 px-4 py-3 text-xs text-muted-foreground">
+   896→        <span>Want a different starting point?</span>
+   897→        <button type="button" className="font-semibold text-primary hover:underline" onClick={() => go("/build/brief")}>
+   898→          Back to the picks
+   899→        </button>
+   900→        <span>·</span>
+   901→        <button type="button" className="font-semibold text-primary hover:underline" onClick={() => go("/catalogue")}>
+   902→          Browse all {TEMPLATES.length}
+   903→        </button>
+   904→      </div>
+   905→    </StepShell>
+   906→  )
+   907→}
+   908→
+   909→/* ══ step 3 · content ═════════════════════════════════════════════════ */
+   910→
+   911→function ContentStep() {
+   912→  const s = useBuilder()
+   913→  const tpl = s.tplSlug ? findTemplate(s.tplSlug) : null
+   914→  if (!tpl) {
+   915→    return (
+   916→      <StepShell title="Make it yours" lead="Pick a starting point first." onBack={() => go("/build/brief")} onNext={null}>
+   917→        <button type="button" className={btnPrimaryCx} onClick={() => go("/build/brief")}>
+   918→          Go to the brief <ArrowRight className="size-4" aria-hidden />
+   919→        </button>
+   920→      </StepShell>
+   921→    )
+   922→  }
+   923→  return (
+   924→    <StepShell
+   925→      title="Make it yours"
+   926→      lead="Tell us about the actual business. The copywriter AI turns it into launch copy, seeded from everything the template already knows."
+   927→      onBack={() => go("/build/design")}
+   928→      onNext={() => go("/build/art")}
+   929→      nextLabel="Skip to art"
+   930→    >
+   931→      <div className="grid gap-4 sm:grid-cols-2">
+   932→        <Field label="Business name">
+   933→          <input
+   934→            className={inputCx}
+   935→            placeholder={tpl.name}
+   936→            value={s.name}
+   937→            onChange={(e) => setState({ name: e.target.value })}
+   938→            aria-label="Business name"
+   939→          />
+   940→        </Field>
+   941→        <Field label="City">
+   942→          <input
+   943→            className={inputCx}
+   944→            placeholder={tpl.city}
+   945→            value={s.city}
+   946→            onChange={(e) => setState({ city: e.target.value })}
+   947→            aria-label="City"
+   948→          />
+   949→        </Field>
+   950→      </div>
+   951→      <div className="mt-4">
+   952→        <Field label="One-line pitch" hint="what makes it different — optional">
+   953→          <input
+   954→            className={inputCx}
+   955→            placeholder={`e.g. ${tpl.signature[0] ?? "sourdough loaves from a wood-fired oven"}`}
+   956→            value={s.pitch}
+   957→            onChange={(e) => setState({ pitch: e.target.value })}
+   958→            aria-label="One-line pitch"
+   959→          />
+   960→        </Field>
+   961→      </div>
+   962→
+   963→      <div className="mt-6">
+   964→        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Copywriter voice</p>
+   965→        <div className="grid gap-3 sm:grid-cols-3">
+   966→          {PERSONAS.map((p) => {
+   967→            const selected = s.persona === p.id
+   968→            return (
+   969→              <button
+   970→                key={p.id}
+   971→                type="button"
+   972→                aria-pressed={selected}
+   973→                onClick={() => setState({ persona: p.id })}
+   974→                className={`rounded-xl border p-3 text-left transition-colors ${
+   975→                  selected ? "border-primary bg-primary/5 ring-2 ring-primary/20" : "border-border bg-card hover:bg-muted/40"
+   976→                }`}
+   977→              >
+   978→                <span className="block text-[13px] font-semibold">{p.label}</span>
+   979→                <span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">{p.note}</span>
+   980→              </button>
+   981→            )
+   982→          })}
+   983→        </div>
+   984→      </div>
+   985→
+   986→      <div className="mt-6 flex flex-wrap items-center gap-3">
+   987→        <button type="button" className={btnPrimaryCx} onClick={() => void writeCopy()} disabled={s.copyBusy}>
+   988→          {s.copyBusy ? (
+   989→            <>
+   990→              <Sparkles className="size-4 animate-pulse" aria-hidden /> Writing…
+   991→            </>
+   992→          ) : (
+   993→            <>
+   994→              <PenLine className="size-4" aria-hidden /> {s.copy ? "Rewrite my copy" : "Write my copy"}
+   995→            </>
+   996→          )}
+   997→        </button>
+   998→        <span className="text-xs text-muted-foreground">Uses the chat AI · takes 2–4 seconds</span>
+   999→      </div>
+  1000→
+  1001→      {s.copyBusy && (
+  1002→        <div className="mt-4">
+  1003→          <Busy label="Writing your launch copy — headline, tagline, button and about line…" />
+  1004→        </div>
+  1005→      )}
+  1006→      {s.copyError && (
+  1007→        <div className="mt-4">
+  1008→          <ErrorNote>{s.copyError}</ErrorNote>
+  1009→        </div>
+  1010→      )}
+  1011→
+  1012→      {s.copy && (
+  1013→        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+  1014→          {(
+  1015→            [
+  1016→              ["Headline", s.copy.headline, "headline"],
+  1017→              ["Button label", s.copy.cta, "cta"],
+  1018→            ] as const
+  1019→          ).map(([label, value, key]) => (
+  1020→            <div key={key} className="rounded-xl border border-border bg-card p-4 shadow-sm">
+  1021→              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+  1022→              <p
+  1023→                className="mt-1.5 text-lg font-bold leading-snug"
+  1024→                contentEditable
+  1025→                suppressContentEditableWarning
+  1026→                onBlur={(e) => setState({ copy: { ...s.copy!, [key]: e.currentTarget.textContent ?? "" } })}
+  1027→                title="Click to edit"
+  1028→              >
+  1029→                {value}
+  1030→              </p>
+  1031→            </div>
+  1032→          ))}
+  1033→          <div className="rounded-xl border border-border bg-card p-4 shadow-sm sm:col-span-2">
+  1034→            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Tagline</p>
+  1035→            <p
+  1036→              className="mt-1.5 text-sm leading-relaxed"
+  1037→              contentEditable
+  1038→              suppressContentEditableWarning
+  1039→              onBlur={(e) => setState({ copy: { ...s.copy!, tagline: e.currentTarget.textContent ?? "" } })}
+  1040→              title="Click to edit"
+  1041→            >
+  1042→              {s.copy.tagline}
+  1043→            </p>
+  1044→          </div>
+  1045→          <div className="rounded-xl border border-border bg-card p-4 shadow-sm sm:col-span-2">
+  1046→            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">About</p>
+  1047→            <p
+  1048→              className="mt-1.5 text-sm leading-relaxed"
+  1049→              contentEditable
+  1050→              suppressContentEditableWarning
+  1051→              onBlur={(e) => setState({ copy: { ...s.copy!, about: e.currentTarget.textContent ?? "" } })}
+  1052→              title="Click to edit"
+  1053→            >
+  1054→              {s.copy.about}
+  1055→            </p>
+  1056→          </div>
+  1057→          <p className="text-xs text-muted-foreground sm:col-span-2">Every block is click-to-edit — this copy is yours.</p>
+  1058→        </div>
+  1059→      )}
+  1060→
+  1061→      {!s.copy && s.copyRaw && (
+  1062→        <div className="mt-6 rounded-xl border border-border bg-card p-4 text-sm leading-relaxed whitespace-pre-wrap shadow-sm">
+  1063→          {s.copyRaw}
+  1064→        </div>
+  1065→      )}
+  1066→    </StepShell>
+  1067→  )
+  1068→}
+  1069→
+  1070→/* ══ step 4 · art & media — the generation deck ══════════════════════ */
+  1071→
+  1072→function ImageCard({
+  1073→  id,
+  1074→  icon: Icon,
+  1075→  title,
+  1076→  how,
+  1077→}: {
+  1078→  id: "hero" | "mark" | "still"
+  1079→  icon: LucideIcon
+  1080→  title: string
+  1081→  how: string
+  1082→}) {
+  1083→  const s = useBuilder()
+  1084→  const a = s.assets[id]
+  1085→  const [elapsed, setElapsed] = useState(0)
+  1086→
+  1087→  useEffect(() => {
+  1088→    if (a.status !== "running" || !a.startedAt) return
+  1089→    const tick = () => setElapsed(Math.round((Date.now() - a.startedAt!) / 1000))
+  1090→    const first = window.setTimeout(tick, 0)
+  1091→    const t = window.setInterval(tick, 1000)
+  1092→    return () => {
+  1093→      window.clearTimeout(first)
+  1094→      window.clearInterval(t)
+  1095→    }
+  1096→  }, [a.status, a.startedAt])
+  1097→
+  1098→  return (
+  1099→    <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+  1100→      <div className="flex items-start gap-3 border-b border-border px-4 py-3">
+  1101→        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+  1102→          <Icon className="size-4.5" aria-hidden />
+  1103→        </span>
+  1104→        <div className="min-w-0">
+  1105→          <h4 className="text-sm font-semibold">{title}</h4>
+  1106→          <p className="mt-0.5 text-[11.5px] leading-snug text-muted-foreground">{how}</p>
+  1107→        </div>
+  1108→        {a.status === "done" && <Check className="ml-auto size-4 shrink-0 text-primary" aria-hidden />}
+  1109→      </div>
+  1110→      <div className="flex flex-1 flex-col gap-3 p-4">
+  1111→        <textarea
+  1112→          className={`${inputCx} min-h-16 resize-y text-[13px]`}
+  1113→          value={a.prompt}
+  1114→          onChange={(e) => setAsset(id, { prompt: e.target.value, touched: true })}
+  1115→          aria-label={`${title} prompt`}
+  1116→        />
+  1117→        <select
+  1118→          className={`${inputCx} text-[13px]`}
+  1119→          value={a.size}
+  1120→          onChange={(e) => setAsset(id, { size: e.target.value })}
+  1121→          aria-label={`${title} format`}
+  1122→        >
+  1123→          {IMAGE_SIZES.map((o) => (
+  1124→            <option key={o.value} value={o.value}>
+  1125→              {o.label}
+  1126→            </option>
+  1127→          ))}
+  1128→        </select>
+  1129→        <button
+  1130→          type="button"
+  1131→          className={btnPrimaryCx}
+  1132→          onClick={() => void generateImage(id)}
+  1133→          disabled={a.status === "running"}
+  1134→        >
+  1135→          {a.status === "running" ? (
+  1136→            <>
+  1137→              <Sparkles className="size-4 animate-pulse" aria-hidden /> Rendering… {elapsed}s
+  1138→            </>
+  1139→          ) : (
+  1140→            <>
+  1141→              <Wand2 className="size-4" aria-hidden /> {a.status === "done" ? "Generate again" : "Generate"}
+  1142→            </>
+  1143→          )}
+  1144→        </button>
+  1145→        {a.status === "running" && <Busy label="Runs as a background job — usually 30–90 seconds. Keep browsing, it lands here." />}
+  1146→        {a.status === "error" && a.error && <ErrorNote>{a.error}</ErrorNote>}
+  1147→        {a.status === "done" && a.image && (
+  1148→          <div className="min-h-0">
+  1149→            <img
+  1150→              src={a.image}
+  1151→              alt={`AI-generated ${title.toLowerCase()}`}
+  1152→              className="max-h-64 w-full rounded-lg object-cover shadow"
+  1153→            />
+  1154→            <a href={a.image} download={`builder-${id}.png`} className={`${btnGhostCx} mt-3 w-full`}>
+  1155→              <Download className="size-3.5" aria-hidden /> Download
+  1156→            </a>
+  1157→          </div>
+  1158→        )}
+  1159→      </div>
+  1160→    </div>
+  1161→  )
+  1162→}
+  1163→
+  1164→function ReelCard() {
+  1165→  const s = useBuilder()
+  1166→  const a = s.assets.reel
+  1167→  const [elapsed, setElapsed] = useState(0)
+  1168→
+  1169→  useEffect(() => {
+  1170→    if (a.status !== "running" || !a.startedAt) return
+  1171→    const tick = () => setElapsed(Math.round((Date.now() - a.startedAt!) / 1000))
+  1172→    const first = window.setTimeout(tick, 0)
+  1173→    const t = window.setInterval(tick, 1000)
+  1174→    return () => {
+  1175→      window.clearTimeout(first)
+  1176→      window.clearInterval(t)
+  1177→    }
+  1178→  }, [a.status, a.startedAt])
+  1179→
+  1180→  return (
+  1181→    <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm sm:col-span-2">
+  1182→      <div className="flex items-start gap-3 border-b border-border px-4 py-3">
+  1183→        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+  1184→          <Film className="size-4.5" aria-hidden />
+  1185→        </span>
+  1186→        <div className="min-w-0">
+  1187→          <h4 className="text-sm font-semibold">Cinematic hero reel</h4>
+  1188→          <p className="mt-0.5 text-[11.5px] leading-snug text-muted-foreground">
+  1189→            A short film for your hero section — the highest-impact asset after the still. Renders take a few minutes.
+  1190→          </p>
+  1191→        </div>
+  1192→        {a.status === "done" && <Check className="ml-auto size-4 shrink-0 text-primary" aria-hidden />}
+  1193→      </div>
+  1194→      <div className="flex flex-1 flex-col gap-3 p-4">
+  1195→        <textarea
+  1196→          className={`${inputCx} min-h-16 resize-y text-[13px]`}
+  1197→          value={a.prompt}
+  1198→          onChange={(e) => setAsset("reel", { prompt: e.target.value, touched: true })}
+  1199→          aria-label="Reel prompt"
+  1200→        />
+  1201→        <button type="button" className={btnPrimaryCx} onClick={() => void generateReel()} disabled={a.status === "running"}>
+  1202→          {a.status === "running" ? (
+  1203→            <>
+  1204→              <Clapperboard className="size-4 animate-pulse" aria-hidden /> Filming… {elapsed}s
+  1205→            </>
+  1206→          ) : (
+  1207→            <>
+  1208→              <Clapperboard className="size-4" aria-hidden /> {a.status === "done" ? "Film another" : "Start the render"}
+  1209→            </>
+  1210→          )}
+  1211→        </button>
+  1212→        {a.status === "running" && (
+  1213→          <Busy label="Video renders run several minutes in the background — leave this page open and it lands here." />
+  1214→        )}
+  1215→        {a.status === "error" && a.error && <ErrorNote>{a.error}</ErrorNote>}
+  1216→        {a.status === "done" && a.video && (
+  1217→          <video src={a.video} controls playsInline className="w-full rounded-lg shadow" aria-label="Generated hero reel" />
+  1218→        )}
+  1219→      </div>
+  1220→    </div>
+  1221→  )
+  1222→}
+  1223→
+  1224→function VoiceCard() {
+  1225→  const s = useBuilder()
+  1226→  const a = s.assets.voice
+  1227→  const player = useSequentialAudio()
+  1228→  const suggested = useMemo(() => {
+  1229→    if (a.prompt.trim()) return a.prompt
+  1230→    if (s.copy) return `${s.copy.headline}. ${s.copy.tagline}`
+  1231→    const tpl = s.tplSlug ? findTemplate(s.tplSlug) : null
+  1232→    return tpl ? `${tpl.positioning.split("—")[0].trim()}, in ${tpl.city}.` : ""
+  1233→  }, [a.prompt, s.copy, s.tplSlug])
+  1234→
+  1235→  return (
+  1236→    <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm sm:col-span-2">
+  1237→      <div className="flex items-start gap-3 border-b border-border px-4 py-3">
+  1238→        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+  1239→          <AudioLines className="size-4.5" aria-hidden />
+  1240→        </span>
+  1241→        <div className="min-w-0">
+  1242→          <h4 className="text-sm font-semibold">Site voiceover</h4>
+  1243→          <p className="mt-0.5 text-[11.5px] leading-snug text-muted-foreground">
+  1244→            Turn your copy into a spoken voiceover — for hero audio, phone greetings or a reel narration.
+  1245→          </p>
+  1246→        </div>
+  1247→        {a.status === "done" && <Check className="ml-auto size-4 shrink-0 text-primary" aria-hidden />}
+  1248→      </div>
+  1249→      <div className="flex flex-1 flex-col gap-3 p-4">
+  1250→        <textarea
+  1251→          className={`${inputCx} min-h-16 resize-y text-[13px]`}
+  1252→          value={a.prompt}
+  1253→          placeholder={suggested}
+  1254→          onChange={(e) => setAsset("voice", { prompt: e.target.value })}
+  1255→          aria-label="Voiceover script"
+  1256→        />
+  1257→        <div className="grid gap-3 sm:grid-cols-2">
+  1258→          <select
+  1259→            className={`${inputCx} text-[13px]`}
+  1260→            value={a.voice}
+  1261→            onChange={(e) => setAsset("voice", { voice: e.target.value })}
+  1262→            aria-label="Voice"
+  1263→          >
+  1264→            {VOICES.map((v) => (
+  1265→              <option key={v.value} value={v.value}>
+  1266→                {v.label}
+  1267→              </option>
+  1268→            ))}
+  1269→          </select>
+  1270→          <select
+  1271→            className={`${inputCx} text-[13px]`}
+  1272→            value={String(a.speed ?? 1)}
+  1273→            onChange={(e) => setAsset("voice", { speed: Number(e.target.value) })}
+  1274→            aria-label="Speaking rate"
+  1275→          >
+  1276→            <option value="0.8">Slow, unhurried</option>
+  1277→            <option value="1">Natural pace</option>
+  1278→            <option value="1.2">Brisk</option>
+  1279→          </select>
+  1280→        </div>
+  1281→        <div className="flex flex-wrap gap-2">
+  1282→          <button type="button" className={btnPrimaryCx} onClick={() => void generateVoice()} disabled={a.status === "running"}>
+  1283→            {a.status === "running" ? (
+  1284→              <>
+  1285→                <Music4 className="size-4 animate-pulse" aria-hidden /> Speaking…
+  1286→              </>
+  1287→            ) : (
+  1288→              <>
+  1289→                <Music4 className="size-4" aria-hidden /> {a.status === "done" ? "Speak again" : "Speak it"}
+  1290→              </>
+  1291→            )}
+  1292→          </button>
+  1293→          {a.status === "done" && a.audio && (
+  1294→            <button
+  1295→              type="button"
+  1296→              className={btnGhostCx}
+  1297→              onClick={() => (player.playing ? player.stop() : player.play(a.audio!))}
+  1298→            >
+  1299→              {player.playing ? (
+  1300→                <>
+  1301→                  <Square className="size-3.5" aria-hidden /> Stop ({player.part}/{player.total})
+  1302→                </>
+  1303→              ) : (
+  1304→                <>
+  1305→                  <Play className="size-3.5" aria-hidden /> Play voiceover
+  1306→                </>
+  1307→              )}
+  1308→            </button>
+  1309→          )}
+  1310→        </div>
+  1311→        {a.status === "error" && a.error && <ErrorNote>{a.error}</ErrorNote>}
+  1312→      </div>
+  1313→    </div>
+  1314→  )
+  1315→}
+  1316→
+  1317→function ArtStep() {
+  1318→  const s = useBuilder()
+  1319→  const tpl = s.tplSlug ? findTemplate(s.tplSlug) : null
+  1320→  if (!tpl) {
+  1321→    return (
+  1322→      <StepShell title="Generate the assets" lead="Pick a starting point first." onBack={() => go("/build/brief")} onNext={null}>
+  1323→        <button type="button" className={btnPrimaryCx} onClick={() => go("/build/brief")}>
+  1324→          Go to the brief <ArrowRight className="size-4" aria-hidden />
+  1325→        </button>
+  1326→      </StepShell>
+  1327→    )
+  1328→  }
+  1329→  const done = (Object.keys(s.assets) as AssetId[]).filter((k) => s.assets[k].status === "done").length
+  1330→  return (
+  1331→    <StepShell
+  1332→      title="Generate the assets"
+  1333→      lead={`Real generations for ${s.name.trim() || tpl.name} — every card is a live AI skill with its prompt pre-seeded from your build. Fire them in any order; renders continue in the background while you keep working.`}
+  1334→      onBack={() => go("/build/content")}
+  1335→      onNext={() => go("/build/motion")}
+  1336→      nextLabel={done > 0 ? "Continue" : "Skip to motion"}
+  1337→    >
+  1338→      <div className="grid gap-4 sm:grid-cols-2">
+  1339→        <ImageCard id="hero" icon={ImageIcon} title="Hero image" how="The first thing people see — photographic, no text baked in." />
+  1340→        <ImageCard id="mark" icon={Stamp} title="Brand mark" how="A clean monogram for headers, favicons and social." />
+  1341→        <ImageCard id="still" icon={Camera} title="Editorial still" how="A magazine-quality detail shot for galleries and cards." />
+  1342→        <ReelCard />
+  1343→        <VoiceCard />
+  1344→      </div>
+  1345→    </StepShell>
+  1346→  )
+  1347→}
+  1348→
+  1349→const Camera = CameraIcon
+  1350→
+  1351→/* ══ step 5 · motion ══════════════════════════════════════════════════ */
+  1352→
+  1353→function PersonalityDemo({ id, playing }: { id: string; playing: boolean }) {
+  1354→  const common = "grid h-24 w-full place-items-center overflow-hidden rounded-lg border border-border bg-muted/30"
+  1355→  const dot = "size-8 rounded-lg bg-primary"
+  1356→
+  1357→  if (id === "corporate") {
+  1358→    return (
+  1359→      <div className={common}>
+  1360→        <motion.div
+  1361→          className={dot}
+  1362→          animate={playing ? { opacity: [0, 1, 1, 0], scale: [0.95, 1, 1, 0.98] } : { opacity: 1, scale: 1 }}
+  1363→          transition={playing ? { duration: 2, times: [0, 0.35, 0.85, 1], ease: "easeInOut", repeat: Infinity, repeatDelay: 1.2 } : { duration: 0 }}
+  1364→        />
+  1365→      </div>
+  1366→    )
+  1367→  }
+  1368→  if (id === "organic") {
+  1369→    return (
+  1370→      <div className={common}>
+  1371→        <motion.div
+  1372→          className={dot}
+  1373→          animate={playing ? { y: [-6, 6, -6], rotate: [-2, 2, -2], borderRadius: ["30%", "45%", "30%"] } : { y: 0, rotate: 0 }}
+  1374→          transition={playing ? { duration: 3, ease: "easeInOut", repeat: Infinity } : { duration: 0 }}
+  1375→        />
+  1376→      </div>
+  1377→    )
+  1378→  }
+  1379→  if (id === "bold") {
+  1380→    return (
+  1381→      <div className={common}>
+  1382→        <motion.div
+  1383→          className={dot}
+  1384→          animate={playing ? { scale: [0.6, 1.15, 1], rotate: [0, 6, 0] } : { scale: 1, rotate: 0 }}
+  1385→          transition={playing ? { type: "spring", stiffness: 320, damping: 12, repeat: Infinity, repeatDelay: 1 } : { duration: 0 }}
+  1386→        />
+  1387→      </div>
+  1388→    )
+  1389→  }
+  1390→  /* cinematic */
+  1391→  return (
+  1392→    <div className={common}>
+  1393→      <motion.div
+  1394→        className={`${dot} w-24`}
+  1395→        animate={playing ? { opacity: [0, 1, 1, 0], filter: ["blur(6px)", "blur(0px)", "blur(0px)", "blur(3px)"], scaleX: [0.7, 1, 1, 0.96] } : { opacity: 1, filter: "blur(0px)", scaleX: 1 }}
+  1396→        transition={playing ? { duration: 3.6, times: [0, 0.45, 0.85, 1], ease: "easeOut", repeat: Infinity, repeatDelay: 1 } : { duration: 0 }}
+  1397→      />
+  1398→    </div>
+  1399→  )
+  1400→}
+  1401→
+  1402→function MotionStep() {
+  1403→  const s = useBuilder()
+  1404→  const tpl = s.tplSlug ? findTemplate(s.tplSlug) : null
+  1405→  const [playing, setPlaying] = useState(true)
+  1406→
+  1407→  const applicable = useMemo(
+  1408→    () => MOTION_SKILLS.filter((k) => ["brand", "feel", "choreography"].includes(k.category)).slice(0, 4),
+  1409→    [],
+  1410→  )
+  1411→
+  1412→  return (
+  1413→    <StepShell
+  1414→      title="Choose the movement"
+  1415→      lead="Motion is a brand decision, not decoration. Feel all four personalities live — the one you pick decides how every entrance, hover and scroll behaves on the site."
+  1416→      onBack={() => go("/build/art")}
+  1417→      onNext={() => go("/build/launch")}
+  1418→    >
+  1419→      <div className="mb-4 flex items-center justify-between gap-3">
+  1420→        <p className="text-xs text-muted-foreground">From the Wiggle master skill: brand personality → motion type.</p>
+  1421→        <button type="button" className={btnGhostCx} onClick={() => setPlaying((p) => !p)}>
+  1422→          {playing ? (
+  1423→            <>
+  1424→              <Square className="size-3.5" aria-hidden /> Pause
+  1425→            </>
+  1426→          ) : (
+  1427→            <>
+  1428→              <Play className="size-3.5" aria-hidden /> Play
+  1429→            </>
+  1430→          )}
+  1431→        </button>
+  1432→      </div>
+  1433→
+  1434→      <div className="grid gap-4 sm:grid-cols-2">
+  1435→        {Object.values(PERSONALITIES).map((p) => {
+  1436→          const selected = s.personality === p.id
+  1437→          return (
+  1438→            <button
+  1439→              key={p.id}
+  1440→              type="button"
+  1441→              onClick={() => {
+  1442→                setState({ personality: p.id })
+  1443→                track("builder_personality", p.id)
+  1444→              }}
+  1445→              className={`flex flex-col gap-3 rounded-xl border p-4 text-left transition-colors ${
+  1446→                selected ? "border-primary bg-primary/5 ring-2 ring-primary/20" : "border-border bg-card hover:bg-muted/40"
+  1447→              }`}
+  1448→              aria-pressed={selected}
+  1449→            >
+  1450→              <PersonalityDemo id={p.id} playing={playing} />
+  1451→              <span className="flex items-center justify-between gap-2">
+  1452→                <span className="text-sm font-semibold capitalize">{p.id}</span>
+  1453→                {selected ? (
+  1454→                  <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-primary">
+  1455→                    <Check className="size-3.5" aria-hidden /> Applied
+  1456→                  </span>
+  1457→                ) : (
+  1458→                  <span className="text-[11px] text-muted-foreground">Tap to apply</span>
+  1459→                )}
+  1460→              </span>
+  1461→              <span className="text-[11.5px] leading-snug text-muted-foreground">
+  1462→                {p.note} <span className="text-foreground/70">Fits: {p.brands}.</span>
+  1463→              </span>
+  1464→            </button>
+  1465→          )
+  1466→        })}
+  1467→      </div>
+  1468→
+  1469→      <div className="mt-8 rounded-xl border border-border bg-card p-4 shadow-sm">
+  1470→        <p className="text-sm font-semibold">What gets applied — from the motion registry</p>
+  1471→        <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
+  1472→          {applicable.map((k) => (
+  1473→            <li key={k.id} className="flex items-start gap-2 text-[12.5px] leading-snug">
+  1474→              <Orbit className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden />
+  1475→              <span>
+  1476→                <b className="font-semibold">{k.name}</b>
+  1477→                <span className="text-muted-foreground"> — {k.blurb}</span>
+  1478→              </span>
+  1479→            </li>
+  1480→          ))}
+  1481→        </ul>
+  1482→        <a href={href("/motion")} className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary hover:underline">
+  1483→          Feel all 19 skills in the Motion Lab <ExternalLink className="size-3.5" aria-hidden />
+  1484→        </a>
+  1485→      </div>
+  1486→    </StepShell>
+  1487→  )
+  1488→}
+  1489→
+  1490→/* ══ step 6 · launch ══════════════════════════════════════════════════ */
+  1491→
+  1492→function briefMarkdown(s: BuilderState): string {
+  1493→  const tpl = s.tplSlug ? findTemplate(s.tplSlug) : null
+  1494→  const lines = [
+  1495→    "# Website build brief",
+  1496→    "",
+  1497→    tpl ? `**Starting point:** ${tpl.name} (${industryOf(tpl.industry).label} · ${tpl.kind})` : "",
+  1498→    s.edition ? `**Skin:** ${EDITIONS[s.edition].name}` : "**Skin:** as designed",
+  1499→    s.name ? `**Business:** ${s.name}${s.city ? `, ${s.city}` : ""}` : "",
+  1500→    s.pitch ? `**Pitch:** ${s.pitch}` : "",
+  1501→    "",
+  1502→  ].filter(Boolean)
+  1503→  if (s.copy) {
+  1504→    lines.push("## Copy", `- Headline: ${s.copy.headline}`, `- Tagline: ${s.copy.tagline}`, `- CTA: ${s.copy.cta}`, `- About: ${s.copy.about}`, "")
+  1505→  }
+  1506→  if (s.personality) {
+  1507→    const p = PERSONALITIES[s.personality]
+  1508→    lines.push(`## Motion personality: ${s.personality}`, `- ${p.note}`, `- Keyframes ${p.keyframes}, ${p.duration}, ${p.fps}fps`, "")
+  1509→  }
+  1510→  const made = (Object.keys(s.assets) as AssetId[]).filter((k) => s.assets[k].status === "done")
+  1511→  if (made.length) {
+  1512→    lines.push("## Generated assets", ...made.map((k) => `- ${k}: prompt — "${s.assets[k].prompt || s.assets[k].voice || ""}"`), "")
+  1513→  }
+  1514→  lines.push(
+  1515→    "---",
+  1516→    "Feed this brief to any AI agent together with the skill manifest:",
+  1517→    "GET /api/skills?format=tools  (OpenAI-style tool manifest)",
+  1518→    "GET /api/skills?format=md     (agent system-prompt markdown)",
+  1519→  )
+  1520→  return lines.join("\n")
+  1521→}
+  1522→
+  1523→function LaunchStep() {
+  1524→  const s = useBuilder()
+  1525→  const tpl = s.tplSlug ? findTemplate(s.tplSlug) : null
+  1526→
+  1527→  if (!tpl) {
+  1528→    return (
+  1529→      <StepShell title="Ship it" lead="Pick a starting point first." onBack={() => go("/build/brief")} onNext={null}>
+  1530→        <button type="button" className={btnPrimaryCx} onClick={() => go("/build/brief")}>
+  1531→          Go to the brief <ArrowRight className="size-4" aria-hidden />
+  1532→        </button>
+  1533→      </StepShell>
+  1534→    )
+  1535→  }
+  1536→
+  1537→  const assetsDone = (Object.keys(s.assets) as AssetId[]).filter((k) => s.assets[k].status === "done")
+  1538→  const md = briefMarkdown(s)
+  1539→
+  1540→  return (
+  1541→    <StepShell
+  1542→      title="Ship it"
+  1543→      lead="This is your site — live, re-skinned, with generated assets and a motion personality. Open it full-screen, keep refining it, or take the whole build to any AI."
+  1544→      onBack={() => go("/build/motion")}
+  1545→      onNext={null}
+  1546→    >
+  1547→      {/* the assembled preview */}
+  1548→      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+  1549→        <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-4 py-2.5">
+  1550→          <span className="truncate font-mono text-[11px] text-muted-foreground">
+  1551→            {(s.name.trim() || tpl.name).toLowerCase().replace(/\s+/g, "")}.com
+  1552→          </span>
+  1553→          <button type="button" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline" onClick={() => go(`/site/${tpl.slug}`)}>
+  1554→            Open full screen <ExternalLink className="size-3.5" aria-hidden />
+  1555→          </button>
+  1556→        </div>
+  1557→        <div className="max-h-[32rem] overflow-y-auto">
+  1558→          <SiteFrame tpl={tpl} genome={s.genome} page="home" width="100%" remountKey={`launch-${s.edition ?? "n"}`} />
+  1559→        </div>
+  1560→      </div>
+  1561→
+  1562→      <div className="mt-6 flex flex-wrap gap-3">
+  1563→        <button type="button" className={btnPrimaryCx} onClick={() => go(`/site/${tpl.slug}`)}>
+  1564→          <Rocket className="size-4" aria-hidden /> Open the finished site
+  1565→        </button>
+  1566→        <button type="button" className={btnGhostCx} onClick={() => go(`/library/${tpl.slug}`)}>
+  1567→          <LayoutGrid className="size-4" aria-hidden /> Keep refining in the library
+  1568→        </button>
+  1569→        <button type="button" className={btnGhostCx} onClick={() => go("/catalogue")}>
+  1570→          Browse all templates
+  1571→        </button>
+  1572→      </div>
+  1573→
+  1574→      {/* generated assets recap */}
+  1575→      {assetsDone.length > 0 && (
+  1576→        <div className="mt-8">
+  1577→          <p className="mb-3 text-sm font-semibold">Your generated assets ({assetsDone.length})</p>
+  1578→          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+  1579→            {assetsDone.map((k) => {
+  1580→              const a = s.assets[k]
+  1581→              if (a.image) {
+  1582→                return (
+  1583→                  <figure key={k} className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+  1584→                    <img src={a.image} alt={`Generated ${k}`} className="h-28 w-full object-cover" />
+  1585→                    <figcaption className="flex items-center justify-between gap-2 px-3 py-2 text-[11px] text-muted-foreground">
+  1586→                      <span className="capitalize">{k}</span>
+  1587→                      <a href={a.image} download={`builder-${k}.png`} className="font-semibold text-primary hover:underline">
+  1588→                        Download
+  1589→                      </a>
+  1590→                    </figcaption>
+  1591→                  </figure>
+  1592→                )
+  1593→              }
+  1594→              if (a.video) {
+  1595→                return (
+  1596→                  <figure key={k} className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+  1597→                    <video src={a.video} className="h-28 w-full object-cover" muted playsInline />
+  1598→                    <figcaption className="flex items-center justify-between gap-2 px-3 py-2 text-[11px] text-muted-foreground">
+  1599→                      <span className="capitalize">{k}</span>
+  1600→                      <a href={a.video} target="_blank" rel="noreferrer" className="font-semibold text-primary hover:underline">
+  1601→                        Open
+  1602→                      </a>
+  1603→                    </figcaption>
+  1604→                  </figure>
+  1605→                )
+  1606→              }
+  1607→              return (
+  1608→                <figure key={k} className="flex flex-col justify-between rounded-xl border border-border bg-card p-3 shadow-sm">
+  1609→                  <figcaption className="text-[11px] capitalize text-muted-foreground">{k} — audio</figcaption>
+  1610→                  <audio controls src={a.audio?.[0]} className="mt-2 w-full" aria-label={`Generated ${k} audio`} />
+  1611→                </figure>
+  1612→              )
+  1613→            })}
+  1614→          </div>
+  1615→        </div>
+  1616→      )}
+  1617→
+  1618→      {/* the agent-agnostic export */}
+  1619→      <div className="mt-8 rounded-xl border border-primary/25 bg-primary/5 p-5">
+  1620→        <p className="text-sm font-bold">Take this build to any AI</p>
+  1621→        <p className="mt-1 text-[12.5px] leading-relaxed text-muted-foreground">
+  1622→          The whole platform is agent-agnostic: every skill — 8 AI engines and 19 motion masters from five sources — is
+  1623→          served as a plain manifest any agent or API can consume. No vendor lock-in, no special dialect.
+  1624→        </p>
+  1625→        <div className="mt-4 flex flex-wrap gap-2">
+  1626→          <CopyBtn text={md} label="Copy the build brief" />
+  1627→          <CopyBtn text="/api/skills?format=tools" label="Copy manifest URL" />
+  1628→          <a className={btnGhostCx} href="/api/skills?format=md" target="_blank" rel="noreferrer">
+  1629→            <ExternalLink className="size-3.5" aria-hidden /> Open the raw manifest
+  1630→          </a>
+  1631→        </div>
+  1632→        <pre className="mt-4 overflow-x-auto rounded-lg border border-border bg-background p-3 font-mono text-[11px] leading-relaxed text-muted-foreground">
+  1633→{`curl "/api/skills?format=tools" | jq '.[].function.name'
+  1634→# → the same skills any agent sees: emil.feel, gsap.timeline, ai.image, …`}
+  1635→        </pre>
+  1636→      </div>
+  1637→    </StepShell>
+  1638→  )
+  1639→}
+  1640→
+  1641→/* ══ the view ═════════════════════════════════════════════════════════ */
+  1642→
+  1643→export function BuilderView({ step }: { step: string | null }) {
+  1644→  const current: BuilderStepId = (BUILDER_STEPS as readonly string[]).includes(step ?? "")
+  1645→    ? (step as BuilderStepId)
+  1646→    : "brief"
+  1647→
+  1648→  useEffect(() => {
+  1649→    track("builder_step", current)
+  1650→  }, [current])
+  1651→
+  1652→  return (
+  1653→    <div className="flex min-h-screen flex-col bg-background">
+  1654→      {/* the builder's own header — direct, no shell chrome */}
+  1655→      <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md">
+  1656→        <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-3 px-4 sm:px-6">
+  1657→          <button
+  1658→            type="button"
+  1659→            onClick={() => go("/")}
+  1660→            className="flex shrink-0 items-center gap-2.5 text-foreground"
+  1661→            aria-label="Growth OS — home"
+  1662→          >
+  1663→            <span aria-hidden className="grid size-7 place-items-center rounded-[7px] bg-primary text-sm font-semibold text-primary-foreground">
+  1664→              G
+  1665→            </span>
+  1666→            <span className="hidden font-semibold sm:inline">Website Builder</span>
+  1667→          </button>
+  1668→          <span className="ml-auto hidden items-center gap-1.5 text-[11px] text-muted-foreground md:flex">
+  1669→            <Sparkles className="size-3.5 text-primary" aria-hidden />
+  1670→            8 AI skills · 19 motion masters · {TEMPLATES.length} templates — one flow
+  1671→          </span>
+  1672→          <button type="button" className={btnGhostCx} onClick={() => go("/ai")}>
+  1673→            AI Studio
+  1674→          </button>
+  1675→        </div>
+  1676→        <StepRail current={current} />
+  1677→      </header>
+  1678→
+  1679→      <NextUpCard current={current} />
+  1680→
+  1681→      {current === "brief" && <BriefStep />}
+  1682→      {current === "design" && <DesignStep />}
+  1683→      {current === "content" && <ContentStep />}
+  1684→      {current === "art" && <ArtStep />}
+  1685→      {current === "motion" && <MotionStep />}
+  1686→      {current === "launch" && <LaunchStep />}
+  1687→
+  1688→      <footer className="mt-auto border-t border-border bg-muted/30 px-4 py-6 text-center text-xs text-muted-foreground">
+  1689→        Every generation here is a live AI call · the build survives navigation ·{" "}
+  1690→        <a className="font-semibold text-primary hover:underline" href={href("/ai")}>
+  1691→          explore the skills behind it
+  1692→        </a>
+  1693→      </footer>
+  1694→    </div>
+  1695→  )
+  1696→}
+  1697→

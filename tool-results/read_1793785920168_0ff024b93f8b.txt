@@ -1,0 +1,470 @@
+   294→   294→   294→      'Reverse is free: the exit is the entrance played backwards, from wherever it currently is.',
+   295→   295→   295→    ],
+   296→   296→   296→    recipes: [
+   297→   297→   297→      {
+   298→   298→   298→        title: 'A three-act hero build',
+   299→   299→   299→        lang: 'js',
+   300→   300→   300→        code: `const tl = gsap.timeline({
+   301→   301→   301→  defaults: { duration: 0.6, ease: 'power3.out' },
+   302→   302→   302→})
+   303→   303→   303→tl.addLabel('curtain')
+   304→   304→   304→  .from('.veil', { scaleY: 1 }, 'curtain')
+   305→   305→   305→  .from('.hero-title', { y: 40, opacity: 0 }, 'curtain+=0.15')
+   306→   306→   306→  .addLabel('cast')
+   307→   307→   307→  .from('.hero-sub', { y: 24, opacity: 0 }, 'cast')
+   308→   308→   308→  .from('.hero-cta', { scale: 0.94, opacity: 0 }, 'cast+=0.1')
+   309→   309→   309→  .addLabel('lights')
+   310→   310→   310→  .to('.veil', { opacity: 0, display: 'none' }, 'lights')
+   311→   311→   311→// scrubbable: tl.progress(0.5) · tl.play('cast') · tl.reverse()`,
+   312→   312→   312→      },
+   313→   313→   313→    ],
+   314→   314→   314→    demo: 'timeline',
+   315→   315→   315→    runtime: 'The Motion Lab timeline stage — scrub it by hand, then read the same grammar as text.',
+   316→   316→   316→  },
+   317→   317→   317→  {
+   318→   318→   318→    id: 'gsap.stagger',
+   319→   319→   319→    kind: 'motion',
+   320→   320→   320→    name: 'Stagger Sweeps',
+   321→   321→   321→    source: src('gsap'),
+   322→   322→   322→    category: 'choreography',
+   323→   323→   323→    blurb: 'Grids and lists as one gesture: each, from center, grid sweeps — the ripple is the choreography.',
+   324→   324→   324→    principles: [
+   325→   325→   325→      ...TIMELINE_GRAMMAR.stagger.map((s) => `${s.token} — ${s.meaning}`),
+   326→   326→   326→      '30–80ms apart is the sweet spot — faster reads as one block, slower reads as lag.',
+   327→   327→   327→      'from: "center" ripples outward; grid: [cols, rows] sweeps a matrix like light.',
+   328→   328→   328→    ],
+   329→   329→   329→    recipes: [
+   330→   330→   330→      {
+   331→   331→   331→        title: 'Grid sweep from center',
+   332→   332→   332→        lang: 'js',
+   333→   333→   333→        code: `gsap.from('.tile', {
+   334→   334→   334→  opacity: 0, scale: 0.92, y: 16,
+   335→   335→   335→  duration: 0.5, ease: 'power3.out',
+   336→   336→   336→  stagger: { grid: [3, 3], from: 'center', each: 0.06 },
+   337→   337→   337→})`,
+   338→   338→   338→      },
+   339→   339→   339→    ],
+   340→   340→   340→    demo: 'stagger-grid',
+   341→   341→   341→    runtime: 'StaggerGrid kit module — mounted on factory templates and live in the Lab.',
+   342→   342→   342→  },
+   343→   343→   343→  {
+   344→   344→   344→    id: 'gsap.scroll',
+   345→   345→   345→    kind: 'motion',
+   346→   346→   346→    name: 'Scroll-Driven Timelines',
+   347→   347→   347→    source: src('gsap'),
+   348→   348→   348→    category: 'choreography',
+   349→   349→   349→    blurb: 'The scrollbar becomes the playhead: pin, scrub, parallax — one timeline mapped to scroll progress.',
+   350→   350→   350→    principles: [
+   351→   351→   351→      'ScrollTrigger on the timeline (or top-level tween), never on tweens inside a timeline.',
+   352→   352→   352→      'scrub: true links playhead to scroll 1:1; scrub: 0.5 lags half a second behind — smoother feel.',
+   353→   353→   353→      'Pin the stage while the timeline plays underneath (pin: true) — the section becomes a theatre.',
+   354→   354→   354→      'Parallax is just two elements moving at different rates on the same scroll progress.',
+   355→   355→   355→    ],
+   356→   356→   356→    recipes: [
+   357→   357→   357→      {
+   358→   358→   358→        title: 'Pinned scrub section',
+   359→   359→   359→        lang: 'js',
+   360→   360→   360→        code: `gsap.timeline({
+   361→   361→   361→  scrollTrigger: {
+   362→   362→   362→    trigger: '.act', start: 'top top',
+   363→   363→   363→    end: '+=120%', scrub: 0.6, pin: true,
+   364→   364→   364→  },
+   365→   365→   365→})
+   366→   366→   366→  .to('.bg', { yPercent: -18, ease: 'none' }, 0)
+   367→   367→   367→  .from('.fg-copy', { yPercent: 30, opacity: 0 }, 0)
+   368→   368→   368→  .to('.counter', { innerText: 100, snap: { innerText: 1 } }, 0)`,
+   369→   369→   369→      },
+   370→   370→   370→    ],
+   371→   371→   371→    demo: 'scrolltrack',
+   372→   372→   372→    runtime: 'RevealOnScroll in the site kit (viewport-triggered) + the Lab parallax track (progress-driven).',
+   373→   373→   373→  },
+   374→   374→   374→  {
+   375→   375→   375→    id: 'gsap.perf',
+   376→   376→   376→    kind: 'motion',
+   377→   377→   377→    name: 'Animation Performance',
+   378→   378→   378→    source: src('gsap'),
+   379→   379→   379→    category: 'foundation',
+   380→   380→   380→    blurb: 'The 60fps contract — what is allowed to animate, what never is, and how to stay smooth while the page is busy.',
+   381→   381→   381→    principles: [
+   382→   382→   382→      ...FPS_CONTRACT.animateOnly.map((p) => `Animate only: ${p}`),
+   383→   383→   383→      `Never animate: ${FPS_CONTRACT.neverAnimate.join(', ')} — they trigger layout + paint + composite.`,
+   384→   384→   384→      'CSS animations run off the main thread — they beat JS while the page is loading. Use CSS for predetermined motion, JS for dynamic and interruptible motion.',
+   385→   385→   385→      'Batch scroll-driven work; never create a ScrollTrigger per list item when one trigger can drive the batch.',
+   386→   386→   386→      'Force GC-friendly cleanup: kill timelines on unmount in React (useGSAP handles it).',
+   387→   387→   387→    ],
+   388→   388→   388→    recipes: [
+   389→   389→   389→      {
+   390→   390→   390→        title: 'React cleanup with useGSAP',
+   391→   391→   391→        lang: 'tsx',
+   392→   392→   392→        code: `import { useGSAP } from '@gsap/react'
+   393→   393→   393→useGSAP(() => {
+   394→   394→   394→  gsap.from('.row', { y: 16, opacity: 0, stagger: 0.05 })
+   395→   395→   395→}, { scope: ref })   // auto-kills on unmount, no useEffect leaks`,
+   396→   396→   396→      },
+   397→   397→   397→    ],
+   398→   398→   398→    runtime: 'The Lab demos profile live — the fps meter beside each stage proves the contract.',
+   399→   399→   399→  },
+   400→   400→   400→
+   401→   401→   401→  /* ————— Remotion ————— */
+   402→   402→   402→  {
+   403→   403→   403→    id: 'remotion.composition',
+   404→   404→   404→    kind: 'motion',
+   405→   405→   405→    name: 'Composition Thinking',
+   406→   406→   406→    source: src('remotion'),
+   407→   407→   407→    category: 'video',
+   408→   408→   408→    blurb: 'A video is a React component over time: Sequences are tracks, spring() is a first-class value, interpolate maps time to anything.',
+   409→   409→   409→    principles: [
+   410→   410→   410→      'Think in tracks, not tweens: every element is a Sequence with from/to — the timeline is the composition tree.',
+   411→   411→   411→      'spring() is a value like any other: const scale = spring({ frame, fps, config: { damping: 12 } }).',
+   412→   412→   412→      'interpolate(frame, [0, 30], [0, 1], { extrapolateRight: "clamp" }) maps time → any domain.',
+   413→   413→   413→      'useCurrentFrame() is the single clock — one source of truth, deterministic, renderable server-side.',
+   414→   414→   414→      'If it can be drawn in the browser, it can be rendered to MP4 — the same code, two outputs.',
+   415→   415→   415→    ],
+   416→   416→   416→    recipes: [
+   417→   417→   417→      {
+   418→   418→   418→        title: 'A composition with sequenced tracks',
+   419→   419→   419→        lang: 'tsx',
+   420→   420→   420→        code: `export const Reel = () => {
+   421→   421→   421→  const frame = useCurrentFrame()
+   422→   422→   422→  const title = spring({ frame: frame - 10, fps: 30, config: { damping: 14 } })
+   423→   423→   423→  return (
+   424→   424→   424→    <>
+   425→   425→   425→      <Sequence from={0} durationInFrames={30}>
+   426→   426→   426→        <Curtain />
+   427→   427→   427→      </Sequence>
+   428→   428→   428→      <Sequence from={12}>
+   429→   429→   429→        <h1 style={{ transform: \`scale(\${title})\` }}>The Reel</h1>
+   430→   430→   430→      </Sequence>
+   431→   431→   431→      <Audio src={staticFile("bed.mp3")} />
+   432→   432→   432→    </>
+   433→   433→   433→  )
+   434→   434→   434→}`,
+   435→   435→   435→      },
+   436→   436→   436→    ],
+   437→   437→   437→    demo: 'compositor',
+   438→   438→   438→    runtime: 'The Motion Lab Compositor — remotion-style tracks with a live preview, in-browser.',
+   439→   439→   439→  },
+   440→   440→   440→  {
+   441→   441→   441→    id: 'remotion.markup',
+   442→   442→   442→    kind: 'motion',
+   443→   443→   443→    name: 'Markup Inside Video',
+   444→   444→   444→    source: src('remotion'),
+   445→   445→   445→    category: 'video',
+   446→   446→   446→    blurb: 'HTML-in-canvas craft: measuring text, cropping, light leaks, audio visualization — the details that make generated video feel produced.',
+   447→   447→   447→    principles: [
+   448→   448→   448→      'Measure text before layout — fontFamily metrics decide breaks; never eyeball a caption.',
+   449→   449→   449→      'Light leaks: a blurred gradient layer with screen blend — cheap cinema.',
+   450→   450→   450→      'Audio visualization is just interpolate over volume samples — bars, waveform rings, whatever the brand needs.',
+   451→   451→   451→      'Crop with overflow + transform, never by re-rendering a different frame.',
+   452→   452→   452→    ],
+   453→   453→   453→    recipes: [
+   454→   454→   454→      {
+   455→   455→   455→        title: 'Waveform bars from audio samples',
+   456→   456→   456→        lang: 'tsx',
+   457→   457→   457→        code: `const bars = useMemo(() =>
+   458→   458→   458→  samples.slice(0, 48).map((v, i) => ({
+   459→   459→   459→    height: interpolate(v, [0, 1], [8, 90], { clamp: true }),
+   460→   460→   460→    delay: i * 0.02,
+   461→   461→   461→  })), [samples])`,
+   462→   462→   462→      },
+   463→   463→   463→    ],
+   464→   464→   464→    runtime: 'Feeds the AI Studio video path — /api/ai/video generates; this skill styles what lands around it.',
+   465→   465→   465→  },
+   466→   466→   466→  {
+   467→   467→   467→    id: 'remotion.pipeline',
+   468→   468→   468→    kind: 'motion',
+   469→   469→   469→    name: 'Player & Render Pipeline',
+   470→   470→   470→    source: src('remotion'),
+   471→   471→   471→    category: 'video',
+   472→   472→   472→    blurb: 'One composition, two outputs: the Player plays it in the browser, the server renders it to MP4. The bridge to this system\'s video engine.',
+   473→   473→   473→    principles: [
+   474→   474→   474→      '@remotion/player plays compositions in the browser — zero render cost for previews.',
+   475→   475→   475→      'Server rendering is a job, not a request: queue it, poll it — exactly this system\'s /api/ai/video contract.',
+   476→   476→   476→      'Keep compositions deterministic: same frame in, same pixels out — that is what makes server render trustworthy.',
+   477→   477→   477→      'Progress events, not spinners: a render that takes 40s must narrate itself.',
+   478→   478→   478→    ],
+   479→   479→   479→    recipes: [
+   480→   480→   480→      {
+   481→   481→   481→        title: 'Job-mode contract (this system\'s pattern)',
+   482→   482→   482→        lang: 'js',
+   483→   483→   483→        code: `// POST /api/ai/video → { jobId }   (202, accepted instantly)
+   484→   484→   484→// GET  /api/ai/video?jobId=… → { status: 'pending' | 'done', video? }
+   485→   485→   485→// 2.5s poll · 180s ceiling — any 30s+ operation is a job, never a request.`,
+   486→   486→   486→      },
+   487→   487→   487→    ],
+   488→   488→   488→    runtime: 'The AI Studio video skill runs this exact pipeline today; the Compositor previews compositions live.',
+   489→   489→   489→  },
+   490→   490→   490→
+   491→   491→   491→  /* ————— Wiggle ————— */
+   492→   492→   492→  {
+   493→   493→   493→    id: 'wiggle.philosophy',
+   494→   494→   494→    kind: 'motion',
+   495→   495→   495→    name: 'Motion Philosophy',
+   496→   496→   496→    source: src('wiggle'),
+   497→   497→   497→    category: 'brand',
+   498→   498→   498→    blurb: '30 seconds of philosophy before any keyframe: what personality does the brand have, what emotion should the motion evoke, what is the metaphor.',
+   499→   499→   499→    principles: [
+   500→   500→   500→      'Answer three questions before animating: personality (playful/professional/bold/elegant)? emotion (excitement/trust/curiosity)? metaphor (organic growth, mechanical precision, energetic burst)?',
+   501→   501→   501→      `Corporate: ${PERSONALITIES.corporate.keyframes} keyframes, ${PERSONALITIES.corporate.easing}, ${PERSONALITIES.corporate.fps}fps, ${PERSONALITIES.corporate.duration}.`,
+   502→   502→   502→      `Organic: ${PERSONALITIES.organic.keyframes}, ${PERSONALITIES.organic.easing}, ${PERSONALITIES.organic.fps}fps — dense keyframes at 60fps are what make it feel alive.`,
+   503→   503→   503→      `Bold: ${PERSONALITIES.bold.keyframes}, ${PERSONALITIES.bold.easing}, ${PERSONALITIES.bold.duration} — the entrance IS the brand voice.`,
+   504→   504→   504→      `Cinematic: ${PERSONALITIES.cinematic.keyframes} — time is the luxury signal. Slow means expensive.`,
+   505→   505→   505→      'Match motion to brand or don\'t ship it: corporate ≠ startup ≠ audio brand.',
+   506→   506→   506→    ],
+   507→   507→   507→    recipes: [
+   508→   508→   508→      {
+   509→   509→   509→        title: 'The personality table (as data)',
+   510→   510→   510→        lang: 'json',
+   511→   511→   511→        code: JSON.stringify(
+   512→   512→   512→          {
+   513→   513→   513→            corporate: { fps: 30, duration: '1.5-2s', ease: '0.42/0.58', keyframes: '8-12' },
+   514→   514→   514→            organic: { fps: 60, duration: '3s loop', ease: '0.25/0.75', keyframes: '25-45' },
+   515→   515→   515→            bold: { fps: 60, duration: '0.8-1.5s', ease: '0.34/1.56', keyframes: '15-25' },
+   516→   516→   516→            cinematic: { fps: 60, duration: '3-5s', ease: 'custom', keyframes: '50-120' },
+   517→   517→   517→          },
+   518→   518→   518→          null,
+   519→   519→   519→          2,
+   520→   520→   520→        ),
+   521→   521→   521→      },
+   522→   522→   522→    ],
+   523→   523→   523→    demo: 'personalities',
+   524→   524→   524→    runtime: 'engine/motion-craft.ts PERSONALITIES — the Lab renders all four live on one stage.',
+   525→   525→   525→  },
+   526→   526→   526→  {
+   527→   527→   527→    id: 'wiggle.text',
+   528→   528→   528→    kind: 'motion',
+   529→   529→   529→    name: 'The Wiggle — Text & Logo Motion',
+   530→   530→   530→    source: src('wiggle'),
+   531→   531→   531→    category: 'brand',
+   532→   532→   532→    blurb: 'The signature move: per-letter springs with phase offsets. A logo is text is a wave — same grammar at any size.',
+   533→   533→   533→    principles: [
+   534→   534→   534→      'Animate letters, not blocks: a per-letter phase offset (15–30 frames at 60fps) is what makes text feel designed.',
+   535→   535→   535→      'Never recreate text with drawing tools — extract the real glyphs, then transform them.',
+   536→   536→   536→      'Simultaneous entrance reads as one voice; staggered entrance (icon first, text +30 frames) tells a two-act story.',
+   537→   537→   537→      'Stagger guidance: 15 frames = subtle · 30 frames = noticeable sequence (most common) · 45 frames = dramatic two-act reveal.',
+   538→   538→   538→      'Perfect loops: last frame must equal first frame — validate or the loop visibly jumps.',
+   539→   539→   539→    ],
+   540→   540→   540→    recipes: [
+   541→   541→   541→      {
+   542→   542→   542→        title: 'Per-letter wave (the wiggle)',
+   543→   543→   543→        lang: 'tsx',
+   544→   544→   544→        code: `{'Growth'.split('').map((ch, i) => (
+   545→   545→   545→  <motion.span key={i}
+   546→   546→   546→    animate={{ y: [0, -10, 0], rotate: [0, 4, 0] }}
+   547→   547→   547→    transition={{
+   548→   548→   548→      duration: 1.6, repeat: Infinity,
+   549→   549→   549→      delay: i * 0.07,              // the phase offset IS the wiggle
+   550→   550→   550→      ease: 'easeInOut', times: [0, 0.5, 1],
+   551→   551→   551→    }}>
+   552→   552→   552→    {ch}
+   553→   553→   553→  </motion.span>
+   554→   554→   554→))}`,
+   555→   555→   555→      },
+   556→   556→   556→      {
+   557→   557→   557→        title: 'Lottie keyframe pair (wiggle easing)',
+   558→   558→   558→        lang: 'json',
+   559→   559→   559→        code: JSON.stringify(
+   560→   560→   560→          {
+   561→   561→   561→            fr: 60,
+   562→   562→   562→            ip: 0,
+   563→   563→   563→            op: 180,
+   564→   564→   564→            layers: [
+   565→   565→   565→              {
+   566→   566→   566→                ind: 1,
+   567→   567→   567→                ty: 4,
+   568→   568→   568→                ks: {
+   569→   569→   569→                  r: {
+   570→   570→   570→                    a: 1,
+   571→   571→   571→                    k: [
+   572→   572→   572→                      { t: 0, s: [-5], e: [5], i: { x: [LOTTIE_EASE.organic.i], y: [1] }, o: { x: [LOTTIE_EASE.organic.o], y: [0] } },
+   573→   573→   573→                      { t: 90, s: [5] },
+   574→   574→   574→                    ],
+   575→   575→   575→                  },
+   576→   576→   576→                },
+   577→   577→   577→              },
+   578→   578→   578→            ],
+   579→   579→   579→          },
+   580→   580→   580→          null,
+   581→   581→   581→          2,
+   582→   582→   582→        ),
+   583→   583→   583→      },
+   584→   584→   584→    ],
+   585→   585→   585→    demo: 'wiggle-text',
+   586→   586→   586→    runtime: 'WiggleText kit module — the Lab stage and every factory hero can run it.',
+   587→   587→   587→  },
+   588→   588→   588→  {
+   589→   589→   589→    id: 'wiggle.lottie',
+   590→   590→   590→    kind: 'motion',
+   591→   591→   591→    name: 'Lottie Keyframe Grammar',
+   592→   592→   592→    source: src('wiggle'),
+   593→   593→   593→    category: 'brand',
+   594→   594→   594→    blurb: 'The JSON spec behind every logo animation: layers, animated properties, i/o tangents — readable by any tool that speaks Lottie.',
+   595→   595→   595→    principles: [
+   596→   596→   596→      'Structure: v/fr/ip/op/w/h then layers[] and assets[] — frame rate and in/out points first.',
+   597→   597→   597→      'Animated properties: o (opacity), p (position), s (scale), r (rotation), a (anchor) — a:1 means animated, k[] holds the keys.',
+   598→   598→   598→      'Keyframes: t (frame), s (start), e (end), i/o tangents — the easing lives in the tangents.',
+   599→   599→   599→      `Tangent pairs: ${Object.entries(LOTTIE_EASE).map(([k, v]) => `${k} ${v.i}/${v.o}`).join(' · ')}.`,
+   600→   600→   600→      'External assets ("e": 0) while developing; embed base64 only after rendering succeeds.',
+   601→   601→   601→      'File budgets: website hero 30–80KB JSON, email signature 20–50KB, splash 30–100KB.',
+   602→   602→   602→    ],
+   603→   603→   603→    recipes: [
+   604→   604→   604→      {
+   605→   605→   605→        title: 'Minimal valid Lottie with a fade',
+   606→   606→   606→        lang: 'json',
+   607→   607→   607→        code: `{
+   608→   608→   608→  "v": "5.7.4", "fr": 60, "ip": 0, "op": 90, "w": 512, "h": 512,
+   609→   609→   609→  "layers": [{
+   610→   610→   610→    "ind": 1, "ty": 4, "nm": "mark",
+   611→   611→   611→    "ks": {
+   612→   612→   612→      "o": { "a": 1, "k": [
+   613→   613→   613→        { "t": 0,  "s": [0],   "e": [100],
+   614→   614→   614→          "i": { "x": [0.42], "y": [1] },
+   615→   615→   615→          "o": { "x": [0.58], "y": [0] } },
+   616→   616→   616→        { "t": 45, "s": [100] }
+   617→   617→   617→      ] }
+   618→   618→   618→    }
+   619→   619→   619→  }]
+   620→   620→   620→}`,
+   621→   621→   621→      },
+   622→   622→   622→    ],
+   623→   623→   623→    runtime: 'Served as data — any Lottie player or render farm can consume it unchanged.',
+   624→   624→   624→  },
+   625→   625→   625→
+   626→   626→   626→  /* ————— iArt AI ————— */
+   627→   627→   627→  {
+   628→   628→   628→    id: 'iart.micro',
+   629→   629→   629→    kind: 'motion',
+   630→   630→   630→    name: 'Micro-Interactions',
+   631→   631→   631→    source: src('iart'),
+   632→   632→   632→    category: 'interface',
+   633→   633→   633→    blurb: 'Hover, press, toggle, like, reorder — small functional motion that makes an interface feel responsive and alive.',
+   634→   634→   634→    principles: [
+   635→   635→   635→      'UI micro-interactions live in 100–250ms; anything over ~400ms feels laggy for a click response.',
+   636→   636→   636→      'Instant press feedback: scale 0.96 on tap with a fast spring (stiffness 400, damping 30).',
+   637→   637→   637→      'Asymmetric timing: enter slightly slower (ease-out), exit faster — arrive gracefully, leave promptly.',
+   638→   638→   638→      'Layout animation is the superpower: layout on a list item animates any position/size change through transforms.',
+   639→   639→   639→      'Shared elements: same layoutId on two components = magic move between them.',
+   640→   640→   640→      'State, not decoration: loading → success → error should be one continuous morph, not a jump cut.',
+   641→   641→   641→      'A plain layout element distorts border-radius and text during scale — use layout="position" or counter-scale the children.',
+   642→   642→   642→    ],
+   643→   643→   643→    recipes: [
+   644→   644→   644→      {
+   645→   645→   645→        title: 'The feedback trio',
+   646→   646→   646→        lang: 'tsx',
+   647→   647→   647→        code: `<motion.button
+   648→   648→   648→  whileHover={{ scale: 1.03 }}
+   649→   649→   649→  whileTap={{ scale: 0.96 }}
+   650→   650→   650→  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+   651→   651→   651→/>
+   652→   652→   652→<motion.li layout transition={{ type: 'spring', stiffness: 500, damping: 40 }} />
+   653→   653→   653→<motion.div layoutId="hero-card" />  // shared element — magic move`,
+   654→   654→   654→      },
+   655→   655→   655→    ],
+   656→   656→   656→    demo: 'micro',
+   657→   657→   657→    runtime: 'MagneticButton + kit modules — live on factory templates and the Lab stage.',
+   658→   658→   658→  },
+   659→   659→   659→  {
+   660→   660→   660→    id: 'iart.transitions',
+   661→   661→   661→    kind: 'motion',
+   662→   662→   662→    name: 'Page Transitions',
+   663→   663→   663→    source: src('iart'),
+   664→   664→   664→    category: 'interface',
+   665→   665→   665→    blurb: 'The seam between views is a design surface: shared-axis slides, crossfades, exit-through-enter — continuity over teleporting.',
+   666→   666→   666→    principles: [
+   667→   667→   667→      'Spatial model: pages that sit "beside" each other slide on the shared axis; hierarchical pages push; peers crossfade.',
+   668→   668→   668→      'Exit-through-enter: the outgoing view leaves as the incoming one arrives — overlap, never a blank frame.',
+   669→   669→   669→      'Keep the chrome pinned: only the content region swaps, the header stays — that is what makes it feel like one place.',
+   670→   670→   670→      'Reduced motion: swap with a 120ms opacity fade, keep the spatial logic for screen readers.',
+   671→   671→   671→    ],
+   672→   672→   672→    recipes: [
+   673→   673→   673→      {
+   674→   674→   674→        title: 'Shared-axis swap',
+   675→   675→   675→        lang: 'tsx',
+   676→   676→   676→        code: `<AnimatePresence mode="wait" initial={false}>
+   677→   677→   677→  <motion.div key={route}
+   678→   678→   678→    initial={{ opacity: 0, x: dir * 24 }}
+   679→   679→   679→    animate={{ opacity: 1, x: 0 }}
+   680→   680→   680→    exit={{ opacity: 0, x: dir * -24 }}
+   681→   681→   681→    transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}>
+   682→   682→   682→    {page}
+   683→   683→   683→  </motion.div>
+   684→   684→   684→</AnimatePresence>`,
+   685→   685→   685→      },
+   686→   686→   686→    ],
+   687→   687→   687→    demo: 'transitions',
+   688→   688→   688→    runtime: 'The Lab transition stage — three styles, one click each.',
+   689→   689→   689→  },
+   690→   690→   690→  {
+   691→   691→   691→    id: 'iart.glass',
+   692→   692→   692→    kind: 'motion',
+   693→   693→   693→    name: 'Glassmorphism',
+   694→   694→   694→    source: src('iart'),
+   695→   695→   695→    category: 'interface',
+   696→   696→   696→    blurb: 'Depth without weight: backdrop blur, layered translucency, a 1px light border — the material, not a coating.',
+   697→   697→   697→    principles: [
+   698→   698→   698→      'The recipe: translucent fill (8–16% opacity), backdrop-blur 12–24px, saturate(140–180%), 1px inner light border, soft ambient shadow.',
+   699→   699→   699→      'Glass needs something behind it to refract — a gradient or photo, never flat white.',
+   700→   700→   700→      'Keep text at full opacity on glass; the material dims, the content must not.',
+   701→   701→   701→      'Motion on glass: scale + blur shifts read as focus/defocus of the pane itself.',
+   702→   702→   702→    ],
+   703→   703→   703→    recipes: [
+   704→   704→   704→      {
+   705→   705→   705→        title: 'The glass card',
+   706→   706→   706→        lang: 'css',
+   707→   707→   707→        code: `.glass {
+   708→   708→   708→  background: color-mix(in oklab, var(--bg) 60%, transparent);
+   709→   709→   709→  backdrop-filter: blur(18px) saturate(160%);
+   710→   710→   710→  border: 1px solid color-mix(in oklab, white 14%, transparent);
+   711→   711→   711→  box-shadow: 0 8px 32px rgb(0 0 0 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.12);
+   712→   712→   712→  border-radius: 18px;
+   713→   713→   713→}`,
+   714→   714→   714→      },
+   715→   715→   715→    ],
+   716→   716→   716→    demo: 'glass',
+   717→   717→   717→    runtime: 'GlassPanel kit module — used by the shell consoles and the Lab.',
+   718→   718→   718→  },
+   719→   719→   719→  {
+   720→   720→   720→    id: 'iart.60fps',
+   721→   721→   721→    kind: 'motion',
+   722→   722→   722→    name: 'The 60fps Contract',
+   723→   723→   723→    source: src('iart'),
+   724→   724→   724→    category: 'foundation',
+   725→   725→   725→    blurb: 'The performance constitution: what may animate, what never may, and how to profile it honestly.',
+   726→   726→   726→    principles: [
+   727→   727→   727→      ...FPS_CONTRACT.rules,
+   728→   728→   728→      'Profile in the Performance panel: long frames come from layout/paint, almost never from composite.',
+   729→   729→   729→      'A stagger that janks once at the start is a layout thrash — someone animated a property from the never list.',
+   730→   730→   730→    ],
+   731→   731→   731→    recipes: [
+   732→   732→   732→      {
+   733→   733→   733→        title: 'Transform-only parallax',
+   734→   734→   734→        lang: 'css',
+   735→   735→   735→        code: `.parallax { will-change: transform; }
+   736→   736→   736→@media (prefers-reduced-motion: no-preference) {
+   737→   737→   737→  .parallax { transform: translate3d(0, calc(var(--scroll) * -0.3), 0); }
+   738→   738→   738→}`,
+   739→   739→   739→      },
+   740→   740→   740→    ],
+   741→   741→   741→    runtime: 'Every kit module is audited against this contract; the Lab shows the fps meter live.',
+   742→   742→   742→  },
+   743→   743→   743→]
+   744→   744→   744→
+   745→   745→   745→/* ── ai skills — the unified engine layer ──────────────────────────── */
+   746→   746→   746→
+   747→   747→   747→export const AI_SKILL_ENTRIES: UnifiedSkill[] = [
+   748→   748→   748→  { id: 'ai.chat', kind: 'ai', name: 'AI Chat', source: { label: 'zai.chat · in-system engine', url: '/ai' }, category: 'ai-engine', blurb: 'Conversation and generation over text — reasoning, rewriting, structured output.', endpoint: '/api/ai/chat', mode: 'sync', runtime: 'POST messages[] → text. Streams via job mode for long generations.' },
+   749→   749→   749→  { id: 'ai.image', kind: 'ai', name: 'Image Generation', source: { label: 'zai.images · in-system engine', url: '/ai' }, category: 'ai-engine', blurb: 'Photographic art from prompts — heroes, marks, textures. 7 aspect ratios.', endpoint: '/api/ai/image', mode: 'job', runtime: 'Job mode: 202 {jobId} → poll GET ?jobId= until done (30–90s).' },
+   750→   750→   750→  { id: 'ai.tts', kind: 'ai', name: 'Text to Speech', source: { label: 'zai.audio.tts · in-system engine', url: '/ai' }, category: 'ai-engine', blurb: 'Natural spoken audio — voiceovers, greetings, IVR trees. 7 voices.', endpoint: '/api/ai/tts', mode: 'sync', runtime: 'POST text → base64 audio.' },
+   751→   751→   751→  { id: 'ai.asr', kind: 'ai', name: 'Speech Recognition', source: { label: 'zai.audio.asr · in-system engine', url: '/ai' }, category: 'ai-engine', blurb: 'Spoken language to text — microphone or file.', endpoint: '/api/ai/asr', mode: 'sync', runtime: 'POST base64 audio → transcript.' },
+   752→   752→   752→  { id: 'ai.vlm', kind: 'ai', name: 'Vision (VLM)', source: { label: 'glm-4.6v · in-system engine', url: '/ai' }, category: 'ai-engine', blurb: 'The model that reads images — critique, metadata, extraction.', endpoint: '/api/ai/vlm', mode: 'sync', runtime: 'POST image + prompt → structured analysis.' },
+   753→   753→   753→  { id: 'ai.video', kind: 'ai', name: 'Video Generation', source: { label: 'zai.video · in-system engine', url: '/ai' }, category: 'ai-engine', blurb: 'Motion from prompts — cinematic reels and social teasers.', endpoint: '/api/ai/video', mode: 'job', runtime: 'Job mode: 202 {jobId} → poll — the remotion.pipeline contract.' },
+   754→   754→   754→  { id: 'ai.search', kind: 'ai', name: 'Web Search', source: { label: 'zai.search · in-system engine', url: '/ai' }, category: 'ai-engine', blurb: 'Live web retrieval — competitor scans, visual research.', endpoint: '/api/ai/search', mode: 'sync', runtime: 'POST query → ranked results.' },
+   755→   755→   755→  { id: 'ai.reader', kind: 'ai', name: 'Page Reader', source: { label: 'zai.reader · in-system engine', url: '/ai' }, category: 'ai-engine', blurb: 'Web content extraction — inspiration, audits.', endpoint: '/api/ai/reader', mode: 'sync', runtime: 'POST url → clean text.' },
+   756→   756→   756→]
+   757→   757→   757→
+   758→   758→   758→/* ── the unified surface ───────────────────────────────────────────── */
+   759→   759→   759→
+   760→   760→   760→export const ALL_SKILLS: UnifiedSkill[] = [...MOTION_SKILLS, ...AI_SKILL_ENTRIES]
+   761→   761→   761→
+   762→   762→   762→export const findSkill = (id: string) => ALL_SKILLS.find((s) => s.id === id)
+   763→   763→   763→

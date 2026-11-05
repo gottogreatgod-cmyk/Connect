@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "I can't find a 'Cinematic hero reel' card or a 'Site voiceover' card in this screenshot — neither is visible.\n\nThe screenshot shows the \"Art & media\" step (step 4) of a Website Builder flow with only three cards:\n\n1. **Hero image** — prompt textarea pre-filled (\"Three venues, one family…\"), size dropdown \"Wide — hero & banners (1344×768)\", and a \"✨ Generate\" button.\n2. **Brand mark** — prompt pre-filled (\"minimal monogram for a business called 'Fuoco & Figli'…\"), dropdown \"Square — marks & social (1024×1024)\", \"Generate\" button.\n3. **Editorial still** — prompt pre-filled (\"editorial detail photograph for restaurant group…\"), dropdown \"Landscape — cards (1152×864)\", \"Generate\" button.\n\nNone of these cards show a red error box, a video player, or a loading state — all three are in their default pre-generation state. If the 'Cinematic hero reel' and 'Site voiceover' cards exist, they're likely below the visible area (the Editorial still card is cut off at the bottom, suggesting the page continues) or on the next \"Motion\" step (step 5).",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1793789931,
+  "id": "2026110418584539be82f918ab4d6b",
+  "model": "glm-5.3-flash",
+  "object": "chat.completion",
+  "request_id": "2026110418584539be82f918ab4d6b",
+  "usage": {
+    "completion_tokens": 268,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1983,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2251
+  }
+}

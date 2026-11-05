@@ -1,0 +1,29 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "The screenshot doesn't show the two cards you're asking about. Only these cards are visible on the 'Art & media' page:\n\n- **Hero image**\n- **Brand mark**\n- **Editorial still**\n\nNeither \"Cinematic hero reel\" nor \"Site voiceover\" appears in the frame, so I can't determine whether the reel card has a red error message, what its button says, or whether there's a video player — and I can't report the voiceover card's state. They may be further down the page, outside this screenshot's view.",
+        "reasoning_content": "The visible cards are Hero image, Brand mark, Editorial still — no Cinematic hero reel or Site voiceover visible.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1793789941,
+  "id": "20261104185856bf882133c8d5474e",
+  "model": "glm-5.3-flash",
+  "object": "chat.completion",
+  "request_id": "20261104185856bf882133c8d5474e",
+  "usage": {
+    "completion_tokens": 142,
+    "completion_tokens_details": {
+      "reasoning_tokens": 24
+    },
+    "prompt_tokens": 2013,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2155
+  }
+}

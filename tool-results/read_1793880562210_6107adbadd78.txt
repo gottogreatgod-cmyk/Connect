@@ -1,0 +1,886 @@
+     1→"use client";
+     2→
+     3→/**
+     4→ * agent-chat — the unified agent: one conversation, every skill, and the
+     5→ * Growth OS Engine fully VISIBLE.
+     6→ *
+     7→ * This is the "just ask" door of the system. The engine on
+     8→ * POST /api/ai/agent runs the whole loop — context → planner → parallel
+     9→ * sub-agents → verification → memory → response — and this component
+    10→ * renders the evidence:
+    11→ *
+    12→ *   · the ENGINE TRACE under every reply: each loop step, its detail
+    13→ *     and its wall-clock time, staggered in — the analysis is shown,
+    14→ *     never claimed
+    15→ *   · the MEMORY notes: what the engine remembered about the client
+    16→ *   · site actions AUTO-STAGE — no clicking "stage" twice: the build
+    17→ *     lands in the shared Builder store and a LIVE PREVIEW WINDOW
+    18→ *     renders the actual site right inside the conversation
+    19→ *   · image/video/speak/search/read still run inline against the real
+    20→ *     skill routes
+    21→ *
+    22→ * The chat carries the live build context (staged template, business,
+    23→ * city, motion personality) every turn, so "now make a hero image for
+    24→ * it" works — whatever "it" is follows the conversation.
+    25→ *
+    26→ * The conversation AND every action's result live in module-level
+    27→ * stores — the same pattern as the Builder — so navigating away and
+    28→ * back never loses a word or a render: background jobs keep writing
+    29→ * into the result cache even while this view is unmounted.
+    30→ */
+    31→
+    32→import { useEffect, useMemo, useRef, useState } from "react";
+    33→import { motion } from "framer-motion";
+    34→import {
+    35→  ArrowRight,
+    36→  BadgeCheck,
+    37→  BookOpen,
+    38→  Brain,
+    39→  Check,
+    40→  Database,
+    41→  Download,
+    42→  ExternalLink,
+    43→  ImageIcon,
+    44→  Monitor,
+    45→  Palette,
+    46→  PenLine,
+    47→  Play,
+    48→  Route,
+    49→  Search as SearchIcon,
+    50→  Send,
+    51→  Smartphone,
+    52→  Sparkles,
+    53→  Square,
+    54→  Video,
+    55→  Volume2,
+    56→  type LucideIcon,
+    57→} from "lucide-react";
+    58→import { track } from "@/engine/analytics";
+    59→import { go } from "@/engine/nav";
+    60→import { findTemplate, industryOf, type TemplateDef } from "@/engine/registry";
+    61→import { NATIVE } from "@/engine/genome";
+    62→import { SiteFrame } from "../site-frame";
+    63→import { applyAgentBuild, type AgentSitePick } from "./builder";
+    64→import {
+    65→  Busy,
+    66→  EngineThinking,
+    67→  ErrorNote,
+    68→  btnGhostCx,
+    69→  btnPrimaryCx,
+    70→  inputCx,
+    71→  postJson,
+    72→  pollJob,
+    73→  useSequentialAudio,
+    74→  type PollState,
+    75→} from "./ai-kit";
+    76→
+    77→/* ── the action model ─────────────────────────────────────────────── */
+    78→
+    79→type AgentAction =
+    80→  | ({ rid: string } & AgentSitePick)
+    81→  | { rid: string; type: "image"; prompt: string; size: string }
+    82→  | { rid: string; type: "video"; prompt: string; quality: string }
+    83→  | { rid: string; type: "speak"; text: string; voice: string }
+    84→  | { rid: string; type: "search"; query: string }
+    85→  | { rid: string; type: "read"; url: string };
+    86→
+    87→/** the shape the route returns — same union, before rids are attached */
+    88→type IncomingAction =
+    89→  | AgentSitePick
+    90→  | { type: "image"; prompt: string; size: string }
+    91→  | { type: "video"; prompt: string; quality: string }
+    92→  | { type: "speak"; text: string; voice: string }
+    93→  | { type: "search"; query: string }
+    94→  | { type: "read"; url: string };
+    95→
+    96→/** one step of the engine loop, as reported by the backend */
+    97→interface TraceStep {
+    98→  id: string;
+    99→  label: string;
+   100→  detail: string;
+   101→  ms: number;
+   102→}
+   103→
+   104→interface AgentMsg {
+   105→  role: "user" | "assistant";
+   106→  text: string;
+   107→  actions?: AgentAction[];
+   108→  trace?: TraceStep[];
+   109→  memory?: string[];
+   110→}
+   111→
+   112→/* ── module-level persistence — survives view switches, like the Builder ── */
+   113→
+   114→const HELLO: AgentMsg = {
+   115→  role: "assistant",
+   116→  text: "I'm the Growth OS agent — one chat with every skill wired in, and the engine's whole loop shown under every reply. Ask me to build a website, generate its art, render a reel, speak the copy, search the web or read any page. What are we making?",
+   117→};
+   118→
+   119→/** actions from a previous session: site actions re-stage + re-preview
+   120→ *  (they're small and idempotent); render jobs (image/video/speak/
+   121→ *  search/read) don't carry their results across reloads, so they come
+   122→ *  back as descriptive shells instead of silently re-running. */
+   123→type AgentAction =
+   124→  | ({ rid: string } & AgentSitePick)
+   125→  | { rid: string; type: "image"; prompt: string; size: string }
+   126→  | { rid: string; type: "video"; prompt: string; quality: string }
+   127→  | { rid: string; type: "speak"; text: string; voice: string }
+   128→  | { rid: string; type: "search"; query: string }
+   129→  | { rid: string; type: "read"; url: string };
+   130→
+   131→interface PersistedAction {
+   132→  action: AgentAction;
+   133→  restored: boolean;
+   134→}
+   135→
+   136→interface AgentMsg {
+   137→  role: "user" | "assistant";
+   138→  text: string;
+   139→  actions?: AgentAction[];
+   140→  /** actions that came back from sessionStorage — site actions re-stage,
+   141→   *  render jobs show a "ran earlier" shell */
+   142→  restoredActions?: PersistedAction[];
+   143→  trace?: TraceStep[];
+   144→  memory?: string[];
+   145→}
+   146→
+   147→/* sessionStorage persistence — the CONVERSATION survives reloads, the
+   148→ * same contract the Builder's build state already has. Messages, traces
+   149→ * and memory notes persist verbatim; site actions persist fully (they
+   150→ * re-stage on restore); render jobs persist as descriptors only. */
+   151→const CHAT_KEY = "gos:agent-chat";
+   152→
+   153→function persistMessages(msgs: AgentMsg[]) {
+   154→  if (typeof window === "undefined" || typeof sessionStorage === "undefined") return;
+   155→  try {
+   156→    const light = msgs.map((m) => ({
+   157→      role: m.role,
+   158→      text: m.text.slice(0, 4000),
+   159→      /* site actions re-stage on restore (small, idempotent); render
+   160→         jobs come back as descriptors — never silently re-run */
+   161→      actions: m.actions?.filter((a) => a.type === "site"),
+   162→      restoredActions: m.actions
+   163→        ?.filter((a) => a.type !== "site")
+   164→        .map((a) => ({ action: a, restored: true })),
+   165→      trace: m.trace?.slice(0, 10),
+   166→      memory: m.memory?.slice(0, 8),
+   167→    }));
+   168→    sessionStorage.setItem(CHAT_KEY, JSON.stringify(light));
+   169→  } catch {
+   170→    /* quota or storage blocked — the in-memory conversation still works */
+   171→  }
+   172→}
+   173→
+   174→function loadPersisted(): AgentMsg[] {
+   175→  if (typeof window === "undefined" || typeof sessionStorage === "undefined") return [HELLO];
+   176→  try {
+   177→    const raw = sessionStorage.getItem(CHAT_KEY);
+   178→    if (!raw) return [HELLO];
+   179→    const parsed = JSON.parse(raw) as AgentMsg[];
+   180→    if (!Array.isArray(parsed) || parsed.length === 0) return [HELLO];
+   181→    return parsed;
+   182→  } catch {
+   183→    return [HELLO];
+   184→  }
+   185→}
+   186→
+   187→let savedMessages: AgentMsg[] = loadPersisted();
+   188→
+   189→type Phase = "running" | "done" | "error";
+   190→
+   191→interface ActionResult {
+   192→  phase: Phase;
+   193→  stage?: string;
+   194→  elapsed?: number;
+   195→  image?: string;
+   196→  video?: string;
+   197→  parts?: string[];
+   198→  hits?: { url: string; name: string; snippet: string }[];
+   199→  text?: string;
+   200→  title?: string;
+   201→  error?: string;
+   202→}
+   203→
+   204→/** results by action rid — background jobs write here even while the
+   205→ *  chat is unmounted, so nothing is ever lost to navigation */
+   206→const RESULTS = new Map<string, ActionResult>();
+   207→/** the currently-mounted writer target per rid — remounts re-register,
+   208→ *  so a still-running job updates whichever view is on screen */
+   209→const LIVE = new Map<string, (r: ActionResult) => void>();
+   210→/** dev StrictMode runs effects twice — actions must launch exactly once */
+   211→const EXECUTED = new Set<string>();
+   212→/** site actions auto-staged exactly once per rid */
+   213→const STAGED = new Set<string>();
+   214→
+   215→const rid = () =>
+   216→  typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `r-${Date.now()}-${Math.random()}`;
+   217→
+   218→/* ══ the engine trace — the analysis, made visible ═══════════════════ */
+   219→
+   220→const TRACE_ICONS: Record<string, LucideIcon> = {
+   221→  context: Database,
+   222→  plan: Route,
+   223→  designer: Palette,
+   224→  copywriter: PenLine,
+   225→  verify: BadgeCheck,
+   226→  memory: Brain,
+   227→  respond: Send,
+   228→  answer: PenLine,
+   229→  error: Square,
+   230→};
+   231→
+   232→function EngineTrace({ trace, memory }: { trace?: TraceStep[]; memory?: string[] }) {
+   233→  const [open, setOpen] = useState(true);
+   234→  if (!trace?.length && !memory?.length) return null;
+   235→  const total = trace?.reduce((a, t) => a + t.ms, 0) ?? 0;
+   236→  return (
+   237→    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+   238→      <button
+   239→        type="button"
+   240→        className="flex w-full items-center gap-2.5 border-b border-border bg-muted/30 px-3.5 py-2.5 text-left"
+   241→        onClick={() => setOpen((o) => !o)}
+   242→        aria-expanded={open}
+   243→      >
+   244→        <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+   245→          <Route className="size-3.5" aria-hidden />
+   246→        </span>
+   247→        <div className="min-w-0 flex-1">
+   248→          <p className="text-[12.5px] font-semibold leading-tight">Engine trace — the loop that produced this reply</p>
+   249→          <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+   250→            {trace?.length ?? 0} steps · ~{(total / 1000).toFixed(1)}s of engine work · context → plan → sub-agents → verify → memory
+   251→          </p>
+   252→        </div>
+   253→        <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{open ? "hide" : "show"}</span>
+   254→      </button>
+   255→      {open && (
+   256→        <ol className="space-y-0 px-3.5 py-3">
+   257→          {trace?.map((t, i) => {
+   258→            const Icon = TRACE_ICONS[t.id] ?? Route;
+   259→            return (
+   260→              <motion.li
+   261→                key={i}
+   262→                initial={{ opacity: 0, x: -6 }}
+   263→                animate={{ opacity: 1, x: 0 }}
+   264→                transition={{ delay: Math.min(i * 0.14, 1.2), duration: 0.25 }}
+   265→                className="relative flex items-start gap-2.5 pb-3 last:pb-0"
+   266→              >
+   267→                {i < (trace.length ?? 0) - 1 && <span className="absolute left-[13px] top-7 h-[calc(100%-16px)] w-px bg-border" aria-hidden />}
+   268→                <span className="z-10 grid size-7 shrink-0 place-items-center rounded-full border border-border bg-background text-primary">
+   269→                  <Icon className="size-3.5" aria-hidden />
+   270→                </span>
+   271→                <div className="min-w-0 flex-1 pt-0.5">
+   272→                  <p className="flex flex-wrap items-baseline gap-x-2 text-[12.5px] font-medium leading-snug">
+   273→                    {t.label}
+   274→                    <span className="font-mono text-[10px] text-muted-foreground">{t.ms}ms</span>
+   275→                  </p>
+   276→                  <p className="mt-0.5 break-words text-[11.5px] leading-snug text-muted-foreground">{t.detail}</p>
+   277→                </div>
+   278→              </motion.li>
+   279→            );
+   280→          })}
+   281→          {memory && memory.length > 0 && (
+   282→            <li className="mt-1 flex flex-wrap items-center gap-1.5 border-t border-border pt-3">
+   283→              <Brain className="size-3.5 text-primary" aria-hidden />
+   284→              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">remembered:</span>
+   285→              {memory.map((m) => (
+   286→                <span key={m} className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary">
+   287→                  {m}
+   288→                </span>
+   289→              ))}
+   290→            </li>
+   291→          )}
+   292→        </ol>
+   293→      )}
+   294→    </div>
+   295→  );
+   296→}
+   297→
+   298→/** the animated engine-loop indicator now lives in ai-kit — shared with
+   299→ *  the Builder's Generate flow (same loop, same stages, one engine) */
+   300→
+   301→/* ══ the action runners — each launches once, results cached forever ══ */
+   302→
+   303→function ActionShell({
+   304→  icon: Icon,
+   305→  title,
+   306→  note,
+   307→  children,
+   308→}: {
+   309→  icon: typeof ImageIcon;
+   310→  title: string;
+   311→  note: string;
+   312→  children: React.ReactNode;
+   313→}) {
+   314→  return (
+   315→    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+   316→      <div className="flex items-start gap-2.5 border-b border-border bg-muted/30 px-3.5 py-2.5">
+   317→        <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+   318→          <Icon className="size-3.5" aria-hidden />
+   319→        </span>
+   320→        <div className="min-w-0">
+   321→          <p className="text-[12.5px] font-semibold leading-tight">{title}</p>
+   322→          <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-muted-foreground">{note}</p>
+   323→        </div>
+   324→      </div>
+   325→      <div className="p-3.5">{children}</div>
+   326→    </div>
+   327→  );
+   328→}
+   329→
+   330→/** run-once launcher with cached results: writes to RESULTS always and
+   331→ *  to whichever component instance is currently mounted for the rid —
+   332→ *  so a render started before navigation keeps updating the view that
+   333→ *  remounts after it. */
+   334→function useLaunched(ridv: string, run: (write: (r: ActionResult) => void) => Promise<void>): ActionResult {
+   335→  const [state, setState] = useState<ActionResult>(() => RESULTS.get(ridv) ?? { phase: "running" });
+   336→
+   337→  useEffect(() => {
+   338→    /* this instance is now the live writer target for the rid */
+   339→    LIVE.set(ridv, setState);
+   340→    if (!EXECUTED.has(ridv)) {
+   341→      EXECUTED.add(ridv);
+   342→      void run((r) => {
+   343→        RESULTS.set(ridv, r);
+   344→        LIVE.get(ridv)?.(r);
+   345→      });
+   346→    } else {
+   347→      /* remount of a running/finished action — push the latest cached
+   348→         value through the subscription path (async, never a sync
+   349→         setState in the effect body); identical refs bail out in React,
+   350→         and later updates flow through LIVE as the job keeps writing */
+   351→      const cached = RESULTS.get(ridv);
+   352→      if (cached) queueMicrotask(() => LIVE.get(ridv)?.(cached));
+   353→    }
+   354→    return () => {
+   355→      if (LIVE.get(ridv) === setState) LIVE.delete(ridv);
+   356→    };
+   357→  }, [ridv, run]);
+   358→
+   359→  return state;
+   360→}
+   361→
+   362→/* ── the live preview window — any system-built site, right in the chat ── */
+   363→
+   364→function SitePreviewWindow({
+   365→  tpl,
+   366→  business,
+   367→  copy,
+   368→}: {
+   369→  tpl: TemplateDef;
+   370→  business?: string;
+   371→  copy?: { headline?: string; tagline?: string; cta?: string };
+   372→}) {
+   373→  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
+   374→  return (
+   375→    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+   376→      {/* the mini browser chrome */}
+   377→      <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-3.5 py-2.5">
+   378→        <span className="size-2.5 rounded-full bg-red-400/70" aria-hidden />
+   379→        <span className="size-2.5 rounded-full bg-amber-400/70" aria-hidden />
+   380→        <span className="size-2.5 rounded-full bg-green-500/70" aria-hidden />
+   381→        <span className="ml-1.5 min-w-0 flex-1 truncate font-mono text-[11px] text-muted-foreground">
+   382→          {(business || tpl.name).toLowerCase().replace(/[^a-z0-9]+/g, "")}.com — live preview, built by the engine
+   383→        </span>
+   384→        <div className="flex items-center gap-1" role="radiogroup" aria-label="Preview size">
+   385→          {([["desktop", Monitor], ["mobile", Smartphone]] as const).map(([id, Icon]) => (
+   386→            <button
+   387→              key={id}
+   388→              type="button"
+   389→              role="radio"
+   390→              aria-checked={device === id}
+   391→              aria-label={id}
+   392→              onClick={() => setDevice(id)}
+   393→              className={`grid size-7 place-items-center rounded-md border transition-colors ${
+   394→                device === id ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted/60"
+   395→              }`}
+   396→            >
+   397→              <Icon className="size-3.5" aria-hidden />
+   398→            </button>
+   399→          ))}
+   400→        </div>
+   401→      </div>
+   402→
+   403→      {/* the client's launch copy — written by the copywriter sub-agent,
+   404→          applied in the Builder's content step; shown here so the user sees
+   405→          THEIR business on the design, not just the demo brand */}
+   406→      {copy && (copy.headline || copy.tagline) && (
+   407→        <div className="border-b border-border bg-primary/5 px-3.5 py-2.5">
+   408→          <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[13px] leading-snug">
+   409→            <span className="rounded bg-primary/15 px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider text-primary">
+   410→              your launch copy
+   411→            </span>
+   412→            {copy.headline && <span className="font-semibold">{copy.headline}</span>}
+   413→            {copy.cta ? (
+   414→              <span className="rounded-md border border-primary/40 px-2 py-0.5 text-[11px] font-semibold text-primary">{copy.cta}</span>
+   415→            ) : null}
+   416→          </p>
+   417→          {copy.tagline && <p className="mt-1 text-[11.5px] leading-snug text-muted-foreground">{copy.tagline}</p>}
+   418→          <p className="mt-1.5 text-[10.5px] leading-snug text-muted-foreground/80">
+   419→            The design below ships with its demo content — this copy of yours is applied on top in the Builder&apos;s content step.
+   420→          </p>
+   421→        </div>
+   422→      )}
+   423→
+   424→      {/* the real site — the same renderer as the Builder and the full page view */}
+   425→      <div className="max-h-[26rem] overflow-y-auto">
+   426→        <SiteFrame
+   427→          tpl={tpl}
+   428→          genome={NATIVE}
+   429→          page="home"
+   430→          width={device === "mobile" ? 390 : "100%"}
+   431→          style={{ margin: "0 auto" }}
+   432→          remountKey={`${tpl.slug}-${device}`}
+   433→        />
+   434→      </div>
+   435→    </div>
+   436→  );
+   437→}
+   438→
+   439→function SiteRunner({ action }: { action: AgentSitePick & { rid: string } }) {
+   440→  const [applied, setApplied] = useState(() => STAGED.has(action.rid));
+   441→  const tpl: TemplateDef | null = useMemo(() => findTemplate(action.slug) ?? null, [action.slug]);
+   442→
+   443→  /* AUTO-STAGE: the engine's site action lands in the shared Builder
+   444→     store the moment it arrives — no "stage it" click between the
+   445→     answer and the preview. Run once per rid, ever. The setState is
+   446→     deferred through a microtask so no cascading render fires inside
+   447→     the effect body (same pattern as useLaunched below). */
+   448→  useEffect(() => {
+   449→    if (!STAGED.has(action.rid)) {
+   450→      STAGED.add(action.rid);
+   451→      applyAgentBuild(action);
+   452→      track("agent_site_autostaged", action.slug);
+   453→      queueMicrotask(() => setApplied(true));
+   454→    }
+   455→  }, [action]);
+   456→
+   457→  if (!tpl) return <ErrorNote>That template is not in the library.</ErrorNote>;
+   458→
+   459→  return (
+   460→    <div className="space-y-3">
+   461→      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-primary/25 bg-primary/5 px-3.5 py-3">
+   462→        <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-primary">
+   463→          <Check className="size-4" aria-hidden /> {applied ? "Staged automatically — it's in the Builder." : "Staging…"}
+   464→        </span>
+   465→        <span className="min-w-0 flex-1 truncate text-[11.5px] text-muted-foreground">
+   466→          {industryOf(tpl.industry).label} · {tpl.kind} · {action.city || tpl.city}
+   467→          {action.motion ? ` · motion: ${action.motion}` : ""}
+   468→        </span>
+   469→        <button type="button" className={btnGhostCx} onClick={() => go("/build/design")}>
+   470→          Open in Builder <ArrowRight className="size-3.5" aria-hidden />
+   471→        </button>
+   472→      </div>
+   473→
+   474→      {(action.headline || action.tagline) && (
+   475→        <p className="sr-only">Launch copy: {action.headline} — {action.tagline}</p>
+   476→      )}
+   477→
+   478→      {/* THE preview window — the system's build, live, immediately */}
+   479→      <SitePreviewWindow
+   480→        tpl={tpl}
+   481→        business={action.name}
+   482→        copy={{ headline: action.headline, tagline: action.tagline, cta: action.cta }}
+   483→      />
+   484→    </div>
+   485→  );
+   486→}
+   487→
+   488→function ImageRunner({ action }: { action: { rid: string; prompt: string; size: string } }) {
+   489→  const state = useLaunched(action.rid, async (write) => {
+   490→    write({ phase: "running", stage: "queued" });
+   491→    try {
+   492→      const { jobId } = await postJson<{ jobId: string }>("/api/ai/image", { prompt: action.prompt, size: action.size });
+   493→      await pollJob("image", jobId, (s: PollState) =>
+   494→        write(
+   495→          s.status === "done"
+   496→            ? { phase: "done", image: s.result?.image }
+   497→            : s.status === "error"
+   498→              ? { phase: "error", error: s.error ?? "The image render failed." }
+   499→              : { phase: "running", stage: s.stage, elapsed: s.elapsed },
+   500→        ),
+   501→      );
+   502→    } catch (e) {
+   503→      write({ phase: "error", error: e instanceof Error ? e.message : "The image render failed." });
+   504→    }
+   505→  });
+   506→
+   507→  return (
+   508→    <ActionShell icon={ImageIcon} title="Image generation" note={action.prompt}>
+   509→      {state.phase === "running" && <Busy label={`Rendering as a background job — usually 30–90 seconds (${Math.round((state.elapsed ?? 0) / 1000)}s so far).`} />}
+   510→      {state.phase === "error" && <ErrorNote>{state.error}</ErrorNote>}
+   511→      {state.phase === "done" && state.image && (
+   512→        <div>
+   513→          <img src={state.image} alt="AI-generated art from the agent" className="max-h-72 w-full rounded-lg object-contain shadow" />
+   514→          <a href={state.image} download="agent-image.png" className={`${btnGhostCx} mt-3`}>
+   515→            <Download className="size-3.5" aria-hidden /> Download
+   516→          </a>
+   517→        </div>
+   518→      )}
+   519→    </ActionShell>
+   520→  );
+   521→}
+   522→
+   523→function VideoRunner({ action }: { action: { rid: string; prompt: string; quality: string } }) {
+   524→  const state = useLaunched(action.rid, async (write) => {
+   525→    write({ phase: "running", stage: "queued" });
+   526→    try {
+   527→      const { jobId } = await postJson<{ jobId: string }>("/api/ai/video", { prompt: action.prompt, quality: action.quality });
+   528→      await pollJob("video", jobId, (s: PollState) =>
+   529→        write(
+   530→          s.status === "done"
+   531→            ? { phase: "done", video: s.result?.video }
+   532→            : s.status === "error"
+   533→              ? { phase: "error", error: s.error ?? "The video render failed." }
+   534→              : { phase: "running", stage: s.stage, elapsed: s.elapsed },
+   535→        ),
+   536→      );
+   537→    } catch (e) {
+   538→      write({ phase: "error", error: e instanceof Error ? e.message : "The video render failed." });
+   539→    }
+   540→  });
+   541→
+   542→  return (
+   543→    <ActionShell icon={Video} title="Video render" note={action.prompt}>
+   544→      {state.phase === "running" && (
+   545→        <Busy label={`Background render (${state.stage ?? "queued"}) — video takes 2–8 minutes. Keep chatting; it lands here. ${Math.round((state.elapsed ?? 0) / 1000)}s so far.`} />
+   546→      )}
+   547→      {state.phase === "error" && <ErrorNote>{state.error}</ErrorNote>}
+   548→      {state.phase === "done" && state.video && (
+   549→        <div>
+   550→          <video src={state.video} controls playsInline className="max-h-72 w-full rounded-lg shadow" aria-label="AI-generated video from the agent" />
+   551→          <a href={state.video} target="_blank" rel="noreferrer" className={`${btnGhostCx} mt-3`}>
+   552→            <ExternalLink className="size-3.5" aria-hidden /> Open video
+   553→          </a>
+   554→        </div>
+   555→      )}
+   556→    </ActionShell>
+   557→  );
+   558→}
+   559→
+   560→function SpeakRunner({ action }: { action: { rid: string; text: string; voice: string } }) {
+   561→  const state = useLaunched(action.rid, async (write) => {
+   562→    write({ phase: "running" });
+   563→    try {
+   564→      const res = await postJson<{ parts?: string[]; error?: string }>("/api/ai/tts", {
+   565→        text: action.text,
+   566→        voice: action.voice,
+   567→        speed: 1,
+   568→      });
+   569→      if (res.parts?.length) write({ phase: "done", parts: res.parts });
+   570→      else write({ phase: "error", error: res.error ?? "No audio came back." });
+   571→    } catch (e) {
+   572→      write({ phase: "error", error: e instanceof Error ? e.message : "Speech synthesis failed." });
+   573→    }
+   574→  });
+   575→  const player = useSequentialAudio();
+   576→
+   577→  return (
+   578→    <ActionShell icon={Volume2} title={`Spoken audio · ${action.voice}`} note={action.text}>
+   579→      {state.phase === "running" && <Busy label="Synthesizing the voice — a few seconds…" />}
+   580→      {state.phase === "error" && <ErrorNote>{state.error}</ErrorNote>}
+   581→      {state.phase === "done" && state.parts && (
+   582→        <div className="flex flex-wrap items-center gap-2">
+   583→          <button
+   584→            type="button"
+   585→            className={btnPrimaryCx}
+   586→            onClick={() => (player.playing ? player.stop() : player.play(state.parts!))}
+   587→          >
+   588→            {player.playing ? (
+   589→              <>
+   590→                <Square className="size-3.5" aria-hidden /> Stop ({player.part}/{player.total})
+   591→              </>
+   592→            ) : (
+   593→              <>
+   594→                <Play className="size-3.5" aria-hidden /> Play
+   595→              </>
+   596→            )}
+   597→          </button>
+   598→          <a href={state.parts[0]} download="agent-voice.wav" className={btnGhostCx}>
+   599→            <Download className="size-3.5" aria-hidden /> Download
+   600→          </a>
+   601→        </div>
+   602→      )}
+   603→    </ActionShell>
+   604→  );
+   605→}
+   606→
+   607→function SearchRunner({ action }: { action: { rid: string; query: string } }) {
+   608→  const state = useLaunched(action.rid, async (write) => {
+   609→    write({ phase: "running" });
+   610→    try {
+   611→      const res = await postJson<{ results?: { url: string; name: string; snippet: string; host_name: string }[] }>("/api/ai/search", {
+   612→        query: action.query,
+   613→        num: 5,
+   614→      });
+   615→      if (!res.results?.length) write({ phase: "error", error: "Nothing came back for that query." });
+   616→      else write({ phase: "done", hits: res.results });
+   617→    } catch (e) {
+   618→      write({ phase: "error", error: e instanceof Error ? e.message : "The search failed." });
+   619→    }
+   620→  });
+   621→
+   622→  return (
+   623→    <ActionShell icon={SearchIcon} title="Web search" note={action.query}>
+   624→      {state.phase === "running" && <Busy label="Searching the live web…" />}
+   625→      {state.phase === "error" && <ErrorNote>{state.error}</ErrorNote>}
+   626→      {state.phase === "done" && state.hits && (
+   627→        <ol className="max-h-64 space-y-2.5 overflow-y-auto pr-1">
+   628→          {state.hits.map((r) => (
+   629→            <li key={r.url} className="min-w-0 text-[12.5px] leading-snug">
+   630→              <a href={r.url} target="_blank" rel="noreferrer" className="font-semibold text-primary hover:underline">
+   631→                {r.name || r.url}
+   632→              </a>
+   633→              <p className="text-muted-foreground">{r.snippet?.slice(0, 140)}</p>
+   634→            </li>
+   635→          ))}
+   636→        </ol>
+   637→      )}
+   638→    </ActionShell>
+   639→  );
+   640→}
+   641→
+   642→function ReadRunner({ action }: { action: { rid: string; url: string } }) {
+   643→  const state = useLaunched(action.rid, async (write) => {
+   644→    write({ phase: "running" });
+   645→    try {
+   646→      const res = await postJson<{ text?: string; title?: string; error?: string }>("/api/ai/reader", { url: action.url });
+   647→      if (!res.text) write({ phase: "error", error: res.error ?? "That page returned no readable content." });
+   648→      else write({ phase: "done", text: res.text.slice(0, 2400), title: res.title ?? action.url });
+   649→    } catch (e) {
+   650→      write({ phase: "error", error: e instanceof Error ? e.message : "The reader failed." });
+   651→    }
+   652→  });
+   653→
+   654→  return (
+   655→    <ActionShell icon={BookOpen} title={`Page read — ${state.title || action.url}`} note={action.url}>
+   656→      {state.phase === "running" && <Busy label="Extracting the page's clean text…" />}
+   657→      {state.phase === "error" && <ErrorNote>{state.error}</ErrorNote>}
+   658→      {state.phase === "done" && state.text && (
+   659→        <div className="max-h-56 overflow-y-auto whitespace-pre-wrap break-words rounded-lg border border-border bg-muted/20 p-3 text-[12px] leading-relaxed text-muted-foreground">
+   660→          {state.text}
+   661→        </div>
+   662→      )}
+   663→    </ActionShell>
+   664→  );
+   665→}
+   666→
+   667→function ActionRunner({ action }: { action: AgentAction }) {
+   668→  switch (action.type) {
+   669→    case "site":
+   670→      return <SiteRunner action={action} />;
+   671→    case "image":
+   672→      return <ImageRunner action={action} />;
+   673→    case "video":
+   674→      return <VideoRunner action={action} />;
+   675→    case "speak":
+   676→      return <SpeakRunner action={action} />;
+   677→    case "search":
+   678→      return <SearchRunner action={action} />;
+   679→    case "read":
+   680→      return <ReadRunner action={action} />;
+   681→    default:
+   682→      return null;
+   683→  }
+   684→}
+   685→
+   686→/** a render job from an earlier session — its result didn't survive the
+   687→ *  reload (images are megabytes of base64), so we show what ran instead
+   688→ *  of silently firing the job again. */
+   689→const RESTORED_ICONS: Record<string, typeof ImageIcon> = {
+   690→  image: ImageIcon,
+   691→  video: Video,
+   692→  speak: Volume2,
+   693→  search: SearchIcon,
+   694→  read: BookOpen,
+   695→};
+   696→
+   697→function RestoredShell({ action }: { action: AgentAction }) {
+   698→  const Icon = RESTORED_ICONS[action.type] ?? ImageIcon;
+   699→  const note =
+   700→    action.type === "image" || action.type === "video"
+   701→      ? "prompt"
+   702→      : action.type === "speak"
+   703→        ? "script"
+   704→        : action.type === "search"
+   705→          ? "query"
+   706→          : "url";
+   707→  const detail =
+   708→    action.type === "image" || action.type === "video"
+   709→      ? action.prompt
+   710→      : action.type === "speak"
+   711→        ? action.text
+   712→        : action.type === "search"
+   713→          ? action.query
+   714→          : action.type === "read"
+   715→            ? action.url
+   716→            : "";
+   717→  return (
+   718→    <ActionShell icon={Icon} title={`${action.type} — ran in an earlier session`} note={`${note}: ${detail}`}>
+   719→      <p className="text-[12px] leading-relaxed text-muted-foreground">
+   720→        Render results don&apos;t survive a reload — ask again and it re-runs in seconds. The engine&apos;s memory of your
+   721→        business is untouched.
+   722→      </p>
+   723→    </ActionShell>
+   724→  );
+   725→}
+   726→
+   727→/* ══ the chat itself — module-level messages survive navigation ═════ */
+   728→
+   729→const CHIPS = [
+   730→  "Build me a website for a neighbourhood bakery",
+   731→  "Build a site for my dog grooming salon, then generate the hero image",
+   732→  "What should a plumbing site's homepage say?",
+   733→  "Generate a hero image for a Copenhagen restaurant",
+   734→];
+   735→
+   736→export function AgentChatPath({
+   737→  tpl,
+   738→  build,
+   739→}: {
+   740→  tpl: TemplateDef | null;
+   741→  build: { slug: string | null; business: string; city: string; personality: string | null; brief: string };
+   742→}) {
+   743→  const [messages, setMessagesState] = useState<AgentMsg[]>(() => savedMessages);
+   744→  const [input, setInput] = useState("");
+   745→  const [thinking, setThinking] = useState(false);
+   746→  const [error, setError] = useState<string | null>(null);
+   747→  const scrollRef = useRef<HTMLDivElement>(null);
+   748→
+   749→  const setMessages = (next: AgentMsg[]) => {
+   750→    savedMessages = next;
+   751→    persistMessages(next);
+   752→    setMessagesState(next);
+   753→  };
+   754→
+   755→  /* the live context rides every turn — this is what makes follow-ups
+   756→     like "now make a hero image for it" just work */
+   757→  const context = useMemo(
+   758→    () => ({
+   759→      template: build.slug ?? tpl?.slug ?? null,
+   760→      business: build.business,
+   761→      city: build.city,
+   762→      personality: build.personality,
+   763→      brief: build.brief,
+   764→    }),
+   765→    [build.slug, build.business, build.city, build.personality, build.brief, tpl?.slug],
+   766→  );
+   767→
+   768→  useEffect(() => {
+   769→    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+   770→  }, [messages, thinking]);
+   771→
+   772→  const send = async (raw: string) => {
+   773→    const text = raw.trim();
+   774→    if (!text || thinking) return;
+   775→    setInput("");
+   776→    setError(null);
+   777→    const history: AgentMsg[] = [...savedMessages, { role: "user", text }];
+   778→    setMessages(history);
+   779→    setThinking(true);
+   780→    track("agent_chat_used");
+   781→    try {
+   782→      const res = await postJson<{
+   783→        say?: string;
+   784→        actions?: IncomingAction[];
+   785→        trace?: TraceStep[];
+   786→        memory?: string[];
+   787→        error?: string;
+   788→      }>("/api/ai/agent", {
+   789→        messages: history.slice(-8).map((m) => ({ role: m.role, content: m.text })),
+   790→        context,
+   791→      });
+   792→      if (res.error) throw new Error(res.error);
+   793→      const actions = (res.actions ?? []).map((a) => ({ ...a, rid: rid() }) as AgentAction);
+   794→      setMessages([
+   795→        ...history,
+   796→        {
+   797→          role: "assistant",
+   798→          text: res.say ?? "Done.",
+   799→          actions,
+   800→          trace: Array.isArray(res.trace) ? res.trace.slice(0, 10) : undefined,
+   801→          memory: Array.isArray(res.memory) ? res.memory : undefined,
+   802→        },
+   803→      ]);
+   804→    } catch (e) {
+   805→      setError(e instanceof Error ? e.message : "The agent is briefly unavailable.");
+   806→    } finally {
+   807→      setThinking(false);
+   808→    }
+   809→  };
+   810→
+   811→  return (
+   812→    <div className="flex min-h-[34rem] flex-1 flex-col gap-3">
+   813→      <div ref={scrollRef} className="min-h-64 flex-1 space-y-4 overflow-y-auto rounded-xl border border-border bg-muted/20 p-4">
+   814→        {messages.map((m, i) => (
+   815→          <div key={i} className={m.role === "user" ? "ml-auto max-w-[85%]" : "mr-auto max-w-[92%] space-y-2.5"}>
+   816→            <div
+   817→              className={
+   818→                m.role === "user"
+   819→                  ? "rounded-xl rounded-br-sm bg-primary px-3.5 py-2.5 text-sm leading-relaxed text-primary-foreground shadow-sm"
+   820→                  : "whitespace-pre-wrap rounded-xl rounded-bl-sm border border-border bg-card px-3.5 py-2.5 text-sm leading-relaxed shadow-sm"
+   821→              }
+   822→            >
+   823→              {m.text}
+   824→            </div>
+   825→            {m.actions?.map((a) => (
+   826→              <ActionRunner key={a.rid} action={a} />
+   827→            ))}
+   828→            {m.restoredActions?.map((r, i) => (
+   829→              <RestoredShell key={`restored-${i}`} action={r.action} />
+   830→            ))}
+   831→            {(m.trace?.length || m.memory?.length) && <EngineTrace trace={m.trace} memory={m.memory} />}
+   832→          </div>
+   833→        ))}
+   834→        {thinking && (
+   835→          <div className="mr-auto w-[92%]">
+   836→            <EngineThinking />
+   837→          </div>
+   838→        )}
+   839→      </div>
+   840→      {error && <ErrorNote>{error}</ErrorNote>}
+   841→      <div className="flex flex-wrap items-center gap-2">
+   842→        {messages.length <= 1 ? (
+   843→          CHIPS.map((c) => (
+   844→            <button key={c} type="button" className={`${btnGhostCx} h-8 px-3 text-xs`} onClick={() => void send(c)}>
+   845→              {c}
+   846→            </button>
+   847→          ))
+   848→        ) : (
+   849→          <button
+   850→            type="button"
+   851→            className={`${btnGhostCx} h-8 px-3 text-xs`}
+   852→            onClick={() => {
+   853→              setMessages([HELLO])
+   854→              setError(null)
+   855→            }}
+   856→          >
+   857→            <Square className="size-3" aria-hidden /> New chat
+   858→          </button>
+   859→        )}
+   860→      </div>
+   861→      <form
+   862→        className="flex gap-2"
+   863→        onSubmit={(e) => {
+   864→          e.preventDefault();
+   865→          void send(input);
+   866→        }}
+   867→      >
+   868→        <input
+   869→          className={inputCx}
+   870→          value={input}
+   871→          onChange={(e) => setInput(e.target.value)}
+   872→          placeholder='Ask for anything — "build a site for my bakery, then make the hero image"'
+   873→          aria-label="Message the agent"
+   874→        />
+   875→        <button type="submit" className={btnPrimaryCx} disabled={thinking || !input.trim()} aria-label="Send message">
+   876→          <Send className="size-4" aria-hidden />
+   877→        </button>
+   878→      </form>
+   879→      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+   880→        <Sparkles className="size-3.5" aria-hidden />
+   881→        one engine, every skill — planner → parallel sub-agents → verification → memory · site builds auto-stage with a live preview · the conversation survives navigation
+   882→      </p>
+   883→    </div>
+   884→  );
+   885→}
+   886→

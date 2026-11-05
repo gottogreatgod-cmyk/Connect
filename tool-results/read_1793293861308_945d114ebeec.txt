@@ -1,0 +1,2002 @@
+     1→You can take that frameworks as reference but i need the best possible full HQ Website design for any 2 categories and that as much modules will be used, 3d, interactive, and so on, basically if there would be possible to turn all 340 modules in 1 website alone that would be amazing..  //// 
+     2→
+     3→
+     4→# Template Factory — Business Family Trees × Tier Ladders
+     5→
+     6→Every branch below is a **composable template spec**: same family tree, four tiers, each tier a complete site (not a stripped draft). Read as:
+     7→
+     8→- **T1 Starter (low) → T2 Growth (mid) → T3 Business (high) → T4 Flagship (premium)**
+     9→- `+` means **adds to the tier above** — nothing is removed, so a T4 site contains its T1 skeleton.
+    10→- **DNA** = the dominant conversion path (one primary CTA, secondary actions support it).
+    11→- **Premium moment** = the flagship-layer integration that makes the tier feel elite.
+    12→- All fictional proof carries `DemoContentBadge`. All compositions inherit the **global baseline**.
+    13→
+    14→**Global baseline (every template, every tier):** `SiteHeader` · `MobileNav` · `SiteFooter` · `StickyActionBar` · `Breadcrumb` · `SkipToContent` · `CookieConsent` + `ConsentGate` · `AnnouncementBar` · `ErrorBoundary` · `NotFound` · `FormField`/`InlineValidation`/`SuccessState` — then `ThemeToggle` + `BackToTop` from T2, `LanguageSwitcher` + `CommandPalette` from T3.
+    15→
+    16→**Tier entitlement rule (from the mapping doc):** T1 = contact/call · NAP+map · 1 simple hero · minimal motion · basic events. T2 = booking/quote/order · reviews+FAQ · blog · 1–2 heroes · refined motion. T3 = multi-step intake · staff/resource booking · case studies+credentials · schema · 2–3 heroes · signature motion · optional isolated 3D. T4 = portal-grade workflows · accounts/loyalty/B2B · programmatic local/SEO · 3–4 heroes · art-directed motion · optional immersive 3D + AI · full funnel + dashboards · full localized journeys.
+    17→
+    18→---
+    19→
+    20→## F1 · Home Services & Trades
+    21→**DNA:** urgent call + trust proof. **Premium signature:** dispatch telemetry, live ETAs, symptom-to-service AI.
+    22→
+    23→### 1.1 24/7 Emergency Plumbing — `nightflow`
+    24→- **T1:** `HeroUrgent` · `CallNowPanel` · `OpenNowBadge` · `ServiceCardGrid` · `GoogleMapEmbed` · `ReviewCarousel` · `FAQAccordion` · `ContactForm`
+    25→- **T2:** + `EmergencyTriage` · `PostcodeChecker` · `ServiceAreaMap` · `QuoteRequestForm` · `BeforeAfterSlider` · `TrustBar` · `WhatsAppButton` · `BlogIndex`
+    26→- **T3:** + `BookingCalendar` · `JobDispatchTeaser` · `FinancingCalculator` · `CredentialWall` · `GuaranteePanel` · `TeamGrid` · `NeighborhoodPages` · `CaseStudyCard` · `StructuredDataBlock` · `CallbackRequest`
+    27→- **T4:** + `ProjectStatusPortal` (live job status) · `AiConcierge` ("describe the leak" → service route) · `3DHeroObject` (cutaway pipework) · `AnimatedCounter` · `HeroCinematic` · `LiveChatLauncher` · full-funnel dashboards
+    28→
+    29→### 1.2 HVAC Company — `thermonorth`
+    30→- **T1:** `HeroLocal` · `ServiceCardGrid` · `CallNowPanel` · `HoursTable` · `FAQAccordion` · `GoogleReviewsEmbed` · `ContactForm`
+    31→- **T2:** + `HeroCampaign` (seasonal tune-up offer) · `CostCalculator` (system sizing) · `ProcessTimeline` · `ReviewWall` · `ServiceAreaMap` · `NewsletterSignup`
+    32→- **T3:** + `MembershipSignup` (maintenance plans) · `BookingCalendar` · `FinancingCalculator` · `ComparisonTable` (systems) · `TeamCredentials` · `CaseStudyIndex` · `QuoteCalculator` · `StructuredDataBlock`
+    33→- **T4:** + `Configurator` (efficiency packages) · `HeroVideo` (seasonal loop) · `AiConcierge` (comfort advisor) · `PersonalizedRecommendations` (seasonal service recalls) · `ClientDashboard` (bookings, invoices) · `BeforeAfterTransition` (energy bills)
+    34→
+    35→### 1.3 Solar & Battery Installer — `sungrid`
+    36→- **T1:** `HeroSplit` · `TrustBar` · `ServiceCardGrid` · `ContactForm` · `GoogleMapEmbed` · `FAQAccordion`
+    37→- **T2:** + `CostCalculator` (roof estimate → lead capture) · `QuoteCalculator` · `ProcessTimeline` · `ReviewWall` · `ServiceAreaMap` · `StickyActionBar` (estimate) · `BlogIndex`
+    38→- **T3:** + `PackageBuilder` (system tiers) · `FinancingCalculator` · `CredentialWall` (installer certs) · `GuaranteePanel` (production guarantee) · `CaseStudyIndex` (real bills) · `TeamGrid` · `StructuredDataBlock` · `LiveChatLauncher`
+    39→- **T4:** + `3DHeroObject` (panel array on roof) · `Configurator` (roof layout + battery sizing) · `AiConcierge` (savings advisor) · `HeroCinematic` · `PersonalizedRecommendations` · `ClientDashboard` (production monitoring portal) · `AnimatedCounter` (kW installed)
+    40→
+    41→### 1.4 Pool & Landscape Builder — `azureform`
+    42→- **T1:** `HeroPortfolio` · `BeforeAfterSlider` · `ServiceCardGrid` · `ContactForm` · `GoogleMapEmbed` · `FAQAccordion`
+    43→- **T2:** + `Lightbox` gallery · `QuoteRequestForm` (photos upload) · `ProcessTimeline` · `ReviewCarousel` · `TrustBar` · `StickyActionBar` (quote)
+    44→- **T3:** + `3DHeroObject` (isolated pool render) · `CostCalculator` · `PackageBuilder` · `CaseStudyDetail` · `FinancingCalculator` · `TeamGrid` · `ProjectStatusPortal` teaser · `StructuredDataBlock`
+    45→- **T4:** + `VirtualGallery` (3D backyard walkthrough) · `Configurator` (pool shapes/materials) · `HeroCinematic` · `HorizontalGallery` (project reel) · `ClientDashboard` (design approvals) · `AiConcierge`
+    46→
+    47→### 1.5 Cleaning Company — `pureloop`
+    48→- **T1:** `HeroEditorial` · `PricingTable` (simple) · `ContactForm` · `FAQAccordion` · `GoogleMapEmbed`
+    49→- **T2:** + `QuoteCalculator` (sqft) · `BookingCalendar` · `RecurringBooking` · `ReviewWall` · `TrustBar` (insured/bonded) · `ServiceAreaMap` · `StickyActionBar` (book)
+    50→- **T3:** + `MultiStepIntake` (home details) · `MembershipSignup` (plans) · `GiftCardModule` · `TeamGrid` (vetted staff) · `GuaranteePanel` · `ReferralPanel` · `CaseStudyCard`
+    51→- **T4:** + `ClientDashboard` (schedule, invoices) · `SubscriptionSelector` (cadence control) · `AiConcierge` (plan recommender) · `AnimatedCounter` (homes cleaned) · `HeroCinematic` · `PersonalizedRecommendations` (add-ons)
+    52→
+    53→### 1.6 Pest Control — `shieldline`
+    54→- **T1:** `HeroUrgent` · `CallNowPanel` · `OpenNowBadge` · `ServiceCardGrid` (by pest) · `FAQAccordion`
+    55→- **T2:** + `QuizWizard` (pest identifier) · `PostcodeChecker` · `SubscriptionSelector` (quarterly plans) · `ReviewCarousel` · `TrustBar` (licensed) · `ServiceAreaMap`
+    56→- **T3:** + `BookingCalendar` · `RecurringBooking` · `KnowledgeBase` (pest library) · `CredentialWall` · `GuaranteePanel` (re-treatment free) · `StructuredDataBlock`
+    57→- **T4:** + `AiConcierge` (photo-ID pest assistant) · `QueueStatus` · `JobDispatchTeaser` (technician ETA) · `ClientDashboard` · `HeroCinematic` · `AnimatedCounter` (homes protected)
+    58→
+    59→---
+    60→
+    61→## F2 · Health & Medical
+    62→**DNA:** book + insurance clarity + credential trust. **Premium signature:** patient portal, recall engine, disclaimed AI triage.
+    63→
+    64→### 2.1 Dental Clinic — `meridiandental`
+    65→- **T1:** `HeroLocal` · `DoctorProfiles` · `ServiceCardGrid` · `GoogleMapEmbed` · `HoursTable` · `GoogleReviewsEmbed` · `ContactForm`
+    66→- **T2:** + `AppointmentRequest` · `InsuranceChecker` · `BeforeAfterSlider` (smile gallery) · `ReviewWall` (by treatment) · `FAQAccordion` · `StickyActionBar` (book)
+    67→- **T3:** + `BookingCalendar` (provider + chair) · `PatientIntake` (e-sign) · `TelehealthLauncher` (consults) · `FinancingCalculator` (treatment plans) · `TeamCredentials` · `CaseStudyIndex` · `MembershipSignup` (whitening club) · `StructuredDataBlock` (MedicalClinic)
+    68→- **T4:** + `ClientDashboard` (appointments, records, recalls) · `ReminderOptIn` (SMS) · `AiConcierge` (symptom→service router, disclaimed) · `ImageRevealMask` (smile reveals) · `HeroCinematic` · `WaitlistForm` (new patients)
+    69→
+    70→### 2.2 Physio & Sports Rehab — `kineticlab`
+    71→- **T1:** `HeroLocal` · `DoctorProfiles` (physios) · `ServiceCardGrid` · `ContactForm`
+    72→- **T2:** + `BookingCalendar` · `InsuranceChecker` · `VideoLibrary` (exercise demos) · `TelehealthLauncher` · `FAQAccordion` · `ReviewCarousel`
+    73→- **T3:** + `MultiStepIntake` (medical history) · `RecurringBooking` (session packs) · `LearningPath` (rehab programs) · `QuizModule` (self-assessment) · `CaseStudyDetail` (athlete returns) · `TeamCredentials` · `StructuredDataBlock`
+    74→- **T4:** + `ClientDashboard` (program + progress) · `LessonPlayer` (prescribed exercises) · `AiConcierge` (program fit) · `GuidedTour` (first-visit walkthrough) · `AnimatedCounter` (recoveries) · `HeroCinematic`
+    75→
+    76→### 2.3 Med Spa / Aesthetics — `lumenaesthetics`
+    77→- **T1:** `HeroSplit` · `ServiceCardGrid` (price-from) · `BeforeAfterSlider` · `ContactForm` · `StorefrontGallery`
+    78→- **T2:** + `BookingCalendar` (deposit) · `ReviewWall` · `FAQAccordion` (safety) · `GiftCardModule` · `TrustBar` (FDA-cleared devices) · `NewsletterSignup`
+    79→- **T3:** + `MembershipSignup` (treatment clubs) · `MultiStepIntake` (consult + consents) · `FinancingCalculator` · `TeamCredentials` (injectors) · `CaseStudyDetail` · `StructuredDataBlock`
+    80→- **T4:** + `Configurator` (treatment planner) · `BeforeAfterTransition` (scroll) · `AiConcierge` (treatment advisor) · `LoyaltyPanel` (points) · `VirtualGallery` (clinic tour) · `HeroCinematic`
+    81→
+    82→### 2.4 Veterinary Clinic — `northpaws`
+    83→- **T1:** `HeroLocal` · `OpenNowBadge` · `HoursTable` · `DoctorProfiles` (vets) · `EmergencyTriage` (after-hours path) · `ContactForm`
+    84→- **T2:** + `AppointmentRequest` · `ServiceCardGrid` (vaccines/dental) · `FAQAccordion` · `ReviewCarousel` · `PostcodeChecker` (house calls) · `NewsletterSignup`
+    85→- **T3:** + `BookingCalendar` (species + vet) · `PatientIntake` (pet history) · `ReferralForm` (specialists) · `InsuranceChecker` (pet insurance) · `TeamCredentials` · `KnowledgeBase` (pet health) · `StructuredDataBlock`
+    86→- **T4:** + `ClientDashboard` (pet portal: bookings, vaccine reminders) · `ReminderOptIn` · `AiConcierge` (symptom triage, vet disclaimer) · `QueueStatus` (day-surgery updates) · `HeroCinematic` · `AnimatedCounter`
+    87→
+    88→---
+    89→
+    90→## F3 · Food & Hospitality
+    91→**DNA:** reserve or order — never both equally weighted. **Premium signature:** cinematic plating, concierge pairing, loyalty.
+    92→
+    93→### 3.1 Fine Dining — `maison-eclat`
+    94→- **T1:** `HeroMenu` · `MenuBoard` · `HoursTable` · `ReservationWidget` · `GoogleMapEmbed` · `ContactForm`
+    95→- **T2:** + `ReservationFlow` · `WineList` · `DailySpecials` · `ReviewCarousel` · `FounderStory` (chef) · `GiftCardModule` · `StickyActionBar` (reserve)
+    96→- **T3:** + `PrivateDiningEnquiry` · `MenuPDFDownload` · `PressMentions` · `AwardStrip` · `LoyaltySignup` · `NewsletterSignup` (seasonal openings) · `StructuredDataBlock` (Restaurant + Menu)
+    97→- **T4:** + `HeroCinematic` (kitchen) · `VirtualGallery` (dining room) · `AiConcierge` (sommelier pairing) · `PersonalizedRecommendations` (tasting menu) · `EventCalendar` (supper clubs) · `PageTransition` · `MarqueeStrip` (awards)
+    98→
+    99→### 3.2 Neighborhood Café & Bakery — `cortado-co`
+   100→- **T1:** `HeroMenu` · `MenuBoard` · `HoursTable` · `OpenNowBadge` · `GoogleMapEmbed` · `ContactForm`
+   101→- **T2:** + `OrderFlow` (pickup) · `CartDrawer` · `LoyaltyPanel` (digital stamp) · `DailySpecials` · `StorefrontGallery` · `ReviewCarousel`
+   102→- **T3:** + `CateringRequest` · `SubscriptionSelector` (beans) · `ProductGrid` (retail) · `PromoCodeField` · `GiftCardModule` · `BlogIndex` (brew guides) · `StructuredDataBlock`
+   103→- **T4:** + `WholesalePortal` (beans B2B) · `PersonalizedRecommendations` (past orders) · `HeroVideo` (roastery loop) · `AnimatedCounter` (cups today) · `HeroCinematic`
+   104→
+   105→### 3.3 Pizzeria with Delivery — `forno-nero`
+   106→- **T1:** `HeroMenu` · `MenuBoard` · `HoursTable` · `CallNowPanel` · `GoogleMapEmbed`
+   107→- **T2:** + `OrderFlow` (delivery/pickup) · `CartDrawer` · `CheckoutForm` · `TaxShippingEstimator` (zones) · `PromoCodeField` · `StickyActionBar` (order)
+   108→- **T3:** + `OrderTracking` · `LoyaltyPanel` · `ReservationFlow` (dining room) · `GiftCardModule` · `MenuPDFDownload` · `StructuredDataBlock`
+   109→- **T4:** + `Configurator` (build-your-own, visual) · `HeroCinematic` (oven fire) · `QueueStatus` (kitchen countdown) · `PersonalizedRecommendations` · `AnimatedCounter` (pizzas tonight)
+   110→
+   111→### 3.4 Boutique Hotel — `lodgemark`
+   112→- **T1:** `HeroLocal` · `RoomCard` grid · `RoomDetail` · `AmenityGrid` · `HousePolicyPanel` · `GoogleMapEmbed` · `ContactForm`
+   113→- **T2:** + `ReservationFlow` (dates, guests) · `PackageCard` (bundles) · `StorefrontGallery` · `ReviewCarousel` · `SeasonalCalendar` · `NewsletterSignup`
+   114→- **T3:** + `GroupBookingForm` (weddings/retreats) · `EventCalendar` (experiences) · `ExperienceBooking` (local tours) · `LoyaltySignup` · `MultiLocationMap` (sister properties) · `StructuredDataBlock` (Hotel)
+   115→- **T4:** + `HeroCinematic` (drone→lobby) · `VirtualGallery` (3D rooms) · `AiConcierge` (itinerary planner) · `PersonalizedRecommendations` (upgrades) · `ClientDashboard` (stays) · `LanguageSwitcher` (full localized) — *full page-by-page below*
+   116→
+   117→### 3.5 Catering Company — `banquet-theory`
+   118→- **T1:** `HeroEditorial` · `ServiceCardGrid` (event types) · `Lightbox` · `ContactForm` · `FAQAccordion`
+   119→- **T2:** + `CateringRequest` (guest count, date) · `QuoteCalculator` (per-head) · `MenuBoard` (packages) · `ReviewCarousel` · `TrustBar` · `ProcessTimeline`
+   120→- **T3:** + `PackageBuilder` (event builder) · `BookingCalendar` (tastings) · `CaseStudyDetail` · `LogoCloud` (venue partners) · `TeamGrid` (staff) · `StructuredDataBlock`
+   121→- **T4:** + `EventPackageBuilder` (full: catering/AV/staffing) · `Configurator` (menu designer) · `AiConcierge` (menu pairing) · `HeroCinematic` (plating macro) · `HorizontalGallery` (event reel) · `ClientDashboard` (BEOs, payments)
+   122→
+   123→### 3.6 Winery / Brewery — `vessel-vine`
+   124→- **T1:** `HeroEditorial` · `HoursTable` · `StorefrontGallery` · `GoogleMapEmbed` · `ContactForm`
+   125→- **T2:** + `ExperienceBooking` (tastings/tours) · `EventCalendar` (releases, live music) · `WineList` · `ProductGrid` (bottles/merch) · `NewsletterSignup` (club)
+   126→- **T3:** + `MembershipSignup` (club tiers) · `SubscriptionSelector` · `GroupBookingForm` (private tours) · `PressMentions` · `GiftCardModule` · `StructuredDataBlock` (LocalBusiness + Event)
+   127→- **T4:** + `VirtualGallery` (barrel hall) · `HeroCinematic` (harvest) · `AiConcierge` (palate quiz → wine recs) · `PersonalizedRecommendations` (club shipments) · `MarqueeStrip` (medals) · `AnimatedCounter`
+   128→
+   129→---
+   130→
+   131→## F4 · Real Estate & Property
+   132→**DNA:** search → save → viewing. **Premium signature:** 3D tours, gated off-market, client portal.
+   133→
+   134→### 4.1 Residential Brokerage — `keyfield`
+   135→- **T1:** `HeroListing` (search) · `ListingGrid` · `ListingCard` · `ListingDetail` · `AgentProfile` · `ContactForm` · `GoogleMapEmbed`
+   136→- **T2:** + `MapSearch` · `SavedSearch` · `PropertyAlerts` · `MortgageCalculator` · `FAQAccordion` · `StickyActionBar` (book viewing)
+   137→- **T3:** + `ViewingBooking` · `NeighborhoodGuide` · `VirtualTourEmbed` · `FloorplanViewer` · `CaseStudyIndex` (sold) · `TestimonialVideo` · `DocumentRequest` · `StructuredDataBlock`
+   138→- **T4:** + `AiConcierge` (home matcher) · `PersonalizedRecommendations` (listings) · `HeroCinematic` (neighborhood film) · `ClientDashboard` (saved homes, tour schedule) · `HorizontalGallery` (developments) · `PriceAlert` push
+   139→
+   140→### 4.2 Luxury Property Specialist — `atelier-estates`
+   141→- **T1:** `HeroPortfolio` (hero estate) · `ListingDetail` · `AgentProfile` · `ContactForm`
+   142→- **T2:** + `VirtualTourEmbed` · `TestimonialVideo` · `PressMentions` · `ReviewCarousel` · `NewsletterSignup` (off-market)
+   143→- **T3:** + `CaseStudyDetail` (record sales) · `AwardStrip` · `ViewingBooking` (private) · `FloorplanViewer` · `SavedItems` (shortlist with advisor) · `StructuredDataBlock`
+   144→- **T4:** + `VirtualGallery` (estate walkthroughs) · `HeroCinematic` (aerial film) · `HorizontalGallery` (portfolio) · `CursorContextLayer` ("View estate") · `AiConcierge` (buyer-brief matching) · `WaitlistForm` (off-market access) · `LanguageSwitcher` (international) · `PageTransition`
+   145→
+   146→### 4.3 Property Management — `harborline`
+   147→- **T1:** `HeroLocal` · `ServiceCardGrid` (owner/tenant) · `ContactForm` · `FAQAccordion` · `GoogleMapEmbed`
+   148→- **T2:** + `ListingGrid` (rentals) · `RentAffordabilityCalculator` · `QuoteRequestForm` (management quote) · `IntakeDocumentUpload` (maintenance photos) · `ProcessTimeline` (onboarding) · `ReviewCarousel`
+   149→- **T3:** + `ProjectStatusPortal` (maintenance tickets) · `ClientDashboard` (owner portal) · `DocumentRequest` (leases) · `MultiLocationMap` (portfolios) · `CaseStudyCard` · `StructuredDataBlock`
+   150→- **T4:** + Portal-grade `ClientDashboard` (owners + tenants) · `AiConcierge` (maintenance triage) · `PersonalizedRecommendations` (vendor services) · `AnimatedCounter` (units managed) · `HeroCinematic`
+   151→
+   152→### 4.4 Interior Design Studio — `formwork-studio`
+   153→- **T1:** `HeroPortfolio` · `BeforeAfterSlider` · `ServiceCardGrid` · `ContactForm` · `StorefrontGallery`
+   154→- **T2:** + `ProcessTimeline` · `PackageCard` (design packages) · `QuoteRequestForm` (room scope) · `ReviewCarousel` · `Lightbox` · `BlogIndex`
+   155→- **T3:** + `PackageBuilder` (room-by-room) · `CaseStudyDetail` · `TeamGrid` (designers) · `ConsultationBooking` · `StructuredDataBlock` · `ProductGrid` (shoppable selections)
+   156→- **T4:** + `Configurator` (style quiz → mood boards) · `VirtualGallery` (3D room) · `3DHeroObject` (statement furniture) · `AiConcierge` (style advisor) · `HeroCinematic` · `ClientDashboard` (designs, orders, installs) · `HorizontalGallery`
+   157→
+   158→---
+   159→
+   160→## F5 · Automotive
+   161→**DNA:** book service / book test drive. **Premium signature:** VIN-aware portal, build configurator, symptom AI.
+   162→
+   163→### 5.1 Independent Repair Shop — `torqueyard`
+   164→- **T1:** `HeroLocal` · `OpenNowBadge` · `ServiceCardGrid` (price-from) · `CallNowPanel` · `HoursTable` · `GoogleReviewsEmbed`
+   165→- **T2:** + `ServiceBooking` · `QuoteRequestForm` (vehicle + issue) · `MaintenancePackages` · `RecallChecker` · `DirectionsCta` · `TrustBar` (warranty) · `StickyActionBar` (book)
+   166→- **T3:** + `BookingCalendar` (bays) · `FinancingCalculator` (repairs) · `WarrantyPanel` · `PartsCatalogue` teaser · `TeamCredentials` (ASE) · `ReferralPanel` · `StructuredDataBlock` (AutoRepair)
+   167→- **T4:** + `ClientDashboard` (vehicle history, service reminders) · `ReminderOptIn` (mileage-based) · `AiConcierge` (noise/symptom advisor) · `QueueStatus` (waiting lounge) · `AnimatedCounter` (cars serviced) · `HeroVideo` (shop documentary)
+   168→
+   169→### 5.2 Luxury Dealership — `meridianmotors`
+   170→- **T1:** `VehicleGrid` · `VehicleDetail` · `ContactForm` · `GoogleMapEmbed`
+   171→- **T2:** + `FinanceCalculator` · `TradeInValuation` · `SavedItems` (shortlist) · `TestDriveBooking` teaser · `ReviewCarousel` · `StickyActionBar` (test drive)
+   172→- **T3:** + `TestDriveBooking` full (home delivery option) · `CompareDrawer` · `WarrantyPanel` · `ProductRecommendations` · `PressMentions` · `StructuredDataBlock` (Vehicle)
+   173→- **T4:** + `Configurator` (build & price) · `3DHeroObject` (showroom model) · `VirtualGallery` (interior 360) · `HeroCinematic` (driving film) · `AiConcierge` (vehicle match) · `ClientDashboard` (service contracts) · `LanguageSwitcher`
+   174→
+   175→### 5.3 Detailing Studio — `glosswork`
+   176→- **T1:** `HeroPortfolio` (gloss shots) · `BeforeAfterSlider` · `ServiceCardGrid` (packages) · `ContactForm`
+   177→- **T2:** + `BookingCalendar` (bays) · `PackageBuilder` · `ReviewWall` · `GiftCardModule` · `FAQAccordion` · `StickyActionBar` (book)
+   178→- **T3:** + `MembershipSignup` (monthly maintenance) · `QuoteCalculator` (size-based) · `CaseStudyIndex` (show cars) · `TeamCredentials` (certified) · `StructuredDataBlock`
+   179→- **T4:** + `Configurator` (coating packages) · `HeroCinematic` (polish macro) · `BeforeAfterTransition` · `AiConcierge` (condition recommender) · `LoyaltyPanel` · `AnimatedCounter`
+   180→
+   181→---
+   182→
+   183→## F6 · Professional & Legal
+   184→**DNA:** case evaluation → consultation. **Premium signature:** secure portal, disclaimed AI routing, fee transparency.
+   185→
+   186→### 6.1 Family Law Firm — `alder-vane`
+   187→- **T1:** `HeroEditorial` (empathy-first) · `PracticeAreaGrid` · `AttorneyProfile` · `FAQAccordion` · `ContactForm`
+   188→- **T2:** + `CaseEvaluationForm` · `FeeTransparencyPanel` · `LegalProcessTimeline` · `TestimonialVideo` (anonymized) · `ConsultationBooking` · `TrustBar` · `StickyActionBar` (book consult)
+   189→- **T3:** + `SecureDocumentUpload` · `ClientPortalTeaser` · `TeamCredentials` · `ResultsStatStrip` (outcomes, no names) · `Glossary` (plain terms) · `MultilingualLegalNotice` · `StructuredDataBlock` (LegalService)
+   190→- **T4:** + `ClientPortal` (case status) · `AiConcierge` (practice-area router, disclaimed) · `QuizWizard` ("do I need a lawyer?") · `LanguageSwitcher` · `ImageRevealMask` · `AnimatedCounter` (matters resolved)
+   191→
+   192→### 6.2 Corporate Law Firm — `blackwell-chambers`
+   193→- **T1:** `HeroEditorial` · `PracticeAreaGrid` · `LeadershipTeam` · `LogoCloud` (clients) · `ContactForm`
+   194→- **T2:** + `IndustrySolutionPage` · `CaseStudyIndex` · `PressMentions` · `ConsultationBooking` · `ArticleTemplate`/`BlogIndex` (insights)
+   195→- **T3:** + `RFPResponseForm` · `SecurityCompliancePanel` (data handling) · `TeamCredentials` (partners) · `KnowledgeBase` (legal updates) · `EventCalendar` (CLE seminars) · `StructuredDataBlock`
+   196→- **T4:** + `ClientPortal` · `AiConcierge` (matter intake router) · `CommandPalette` (practice finder) · `ParallaxMedia` · `PersonalizedRecommendations` (insights by industry) · `LanguageSwitcher`
+   197→
+   198→### 6.3 Accounting Firm — `ledgerline`
+   199→- **T1:** `HeroLocal` · `ServiceCardGrid` (tax, bookkeeping, payroll) · `ContactForm` · `FAQAccordion` (tax season) · `HoursTable`
+   200→- **T2:** + `QuoteRequestForm` · `EventCalendar` (deadline dates) · `ReviewCarousel` · `TrustBar` (CPA) · `ProcessTimeline` (onboarding) · `NewsletterSignup` (deadline reminders)
+   201→- **T3:** + `BookingCalendar` (advisor) · `ClientPortalTeaser` · `SecureDocumentUpload` (prior returns) · `CaseStudyCard` (savings) · `TeamCredentials` · `StructuredDataBlock`
+   202→- **T4:** + `ClientPortal` (documents, filings, invoices) · `AiConcierge` (deduction explainer, disclaimed) · `ROIcalculator` (outsourcing savings) · `CostCalculator` (estimate teaser) · `PersonalizedRecommendations` (service reminders) · `AnimatedCounter` (returns filed)
+   203→
+   204→### 6.4 Architecture Firm — `mass-light`
+   205→- **T1:** `HeroPortfolio` · `CaseStudyCard` · `ServiceCardGrid` (phases) · `ContactForm`
+   206→- **T2:** + `CaseStudyDetail` · `ProcessTimeline` (design phases) · `Lightbox` · `PressMentions` · `AwardStrip` · `BlogIndex`
+   207→- **T3:** + `DownloadableAsset` (capability deck, gated) · `TeamCredentials` · `RFPResponseForm` (competitions) · `TestimonialVideo` (client journeys) · `StructuredDataBlock`
+   208→- **T4:** + `VirtualGallery` (built works, 3D) · `HorizontalGallery` (drawing sequences) · `HeroCinematic` (building film) · `StickySection` (case-study scroll) · `CursorContextLayer` ("Explore") · `ImageRevealMask` · `AiConcierge` (project fit)
+   209→
+   210→---
+   211→
+   212→## F7 · Beauty & Personal Care
+   213→**DNA:** book a stylist/artist. **Premium signature:** artist match, loyalty, editorial motion.
+   214→
+   215→### 7.1 Hair Salon — `crown-row`
+   216→- **T1:** `HeroMenu` (salon edition) · `ServiceCardGrid` (price-from) · `TeamGrid` (stylists) · `GoogleMapEmbed` · `ContactForm` · `OpenNowBadge`
+   217→- **T2:** + `BookingCalendar` (stylist + service) · `StaffSelector` · `ReviewWall` (by stylist) · `BeforeAfterSlider` (color) · `GiftCardModule` · `StickyActionBar` (book)
+   218→- **T3:** + `RecurringBooking` (standing appointments) · `ProductGrid` (haircare) · `SubscriptionSelector` · `ConsultationBooking` (color consult) · `CareersBoard` (hiring stylists) · `StructuredDataBlock` (HairSalon)
+   219→- **T4:** + `HeroCinematic` (editorial shoot) · `AiConcierge` (stylist match) · `PersonalizedRecommendations` (by hair profile) · `VirtualGallery` (salon) · `LoyaltyPanel` · `AnimatedCounter` (five-star reviews)
+   220→
+   221→### 7.2 Barbershop — `blade-basin`
+   222→- **T1:** `HeroLocal` · `ServiceCardGrid` (cuts, fades, shaves) · `CallNowPanel` (walk-ins) · `HoursTable` · `ContactForm`
+   223→- **T2:** + `QueueStatus` (live wait) · `BookingCalendar` · `ReviewCarousel` · `MembershipSignup` (club cuts) · `ProductGrid` (pomade) · `StickyActionBar` (check-in)
+   224→- **T3:** + `GiftCardModule` · `TeamGrid` (barbers) · `RecurringBooking` · `LoyaltyPanel` · `CareersBoard` · `StructuredDataBlock`
+   225→- **T4:** + `HeroVideo` (shop culture film) · `AiConcierge` (cut recommendation) · `BeforeAfterSlider` · `AnimatedCounter` (cuts today) · `PersonalizedRecommendations`
+   226→
+   227→### 7.3 Tattoo Studio — `iron-meridian`
+   228→- **T1:** `HeroPortfolio` (artists) · `TeamGrid` (artists by style) · `ContactForm` (consult) · `FAQAccordion` (aftercare) · `GoogleMapEmbed`
+   229→- **T2:** + `ConsultationBooking` · `QuoteRequestForm` (size/placement) · `BookingCalendar` (deposits) · `ReviewCarousel` · `KnowledgeBase` (aftercare) · `TrustBar` (licensed, sterile)
+   230→- **T3:** + `IntakeDocumentUpload` (reference images) · `SignaturePad` + `ConsentCheckbox` (waivers) · `CaseStudyDetail` (large pieces) · `ProductGrid` (merch) · `StructuredDataBlock`
+   231→- **T4:** + `PortfolioReel` (artists) · `HorizontalGallery` (flash sheets) · `HeroCinematic` (machine macro) · `AiConcierge` (style → artist match) · `ClientDashboard` (appointments, aftercare docs) · `WaitlistForm` (artist books)
+   232→
+   233→### 7.4 Day Spa — `stillhouse-spa`
+   234→- **T1:** `HeroSplit` · `ServiceCardGrid` (massages, facials) · `GoogleMapEmbed` · `ContactForm` · `GiftCardModule` teaser
+   235→- **T2:** + `BookingCalendar` (treatment rooms) · `PackageCard` · `ReviewCarousel` · `AmenityGrid` (sauna, pool) · `NewsletterSignup`
+   236→- **T3:** + `MembershipSignup` (monthly wellness) · `GroupBookingForm` (spa days) · `ProductGrid` (skincare) · `StructuredDataBlock` (DaySpa)
+   237→- **T4:** + `HeroCinematic` (water/steam) · `VirtualGallery` (treatment rooms) · `AudioAtmosphere` (opt-in) · `AiConcierge` (ritual recommender) · `LoyaltyPanel` · `PersonalizedRecommendations`
+   238→
+   239→---
+   240→
+   241→## F8 · Fitness & Sports
+   242→**DNA:** trial → membership. **Premium signature:** progress portal, streaks, class personalization.
+   243→
+   244→### 8.1 Boutique Gym — `forge-society`
+   245→- **T1:** `HeroSplit` (offer) · `PricingTable` · `ClassTimetable` · `ContactForm` · `GoogleMapEmbed` · `FAQAccordion`
+   246→- **T2:** + `ClassTimetable` with booking · `RecurringBooking` · `LeadMagnetForm` (free trial) · `CoachProfiles` · `ReviewCarousel` · `BeforeAfterSlider` (transformations) · `StickyActionBar` (join)
+   247→- **T3:** + `MembershipSignup` (tiered) · `PackageBuilder` (nutrition add-ons) · `TeamCredentials` (coaches) · `ReferralPanel` (buddy pass) · `CareersBoard` · `StructuredDataBlock` (ExerciseGym)
+   248→- **T4:** + `ClientDashboard` (bookings, progress) · `AiConcierge` (program fit) · `PersonalizedRecommendations` (classes) · `LoyaltyPanel` (streaks) · `AnimatedCounter` (member PRs) · `HeroCinematic` · `PageTransition`
+   249→
+   250→### 8.2 Yoga & Pilates Studio — `salt-stretch`
+   251→- **T1:** `HeroEditorial` (calm) · `ClassTimetable` · `PricingTable` (intro offer) · `ContactForm`
+   252→- **T2:** + `ClassTimetable` booking · `RecurringBooking` (packs) · `CoachProfiles` · `EventCalendar` (workshops) · `ReviewCarousel` · `LeadMagnetForm` (free class) · `StickyActionBar`
+   253→- **T3:** + `MembershipSignup` (unlimited) · `PackageCard` + `ExperienceBooking` (retreats) · `LearningPath` (workshop series) · `TeamCredentials` (RYT) · `GiftCardModule` · `StructuredDataBlock`
+   254→- **T4:** + `HeroCinematic` (sunrise class) · `AudioAtmosphere` (opt-in) · `ClientDashboard` (bookings) · `PersonalizedRecommendations` (by mood) · `AiConcierge` (practice guide) · `VirtualGallery` (studio)
+   255→
+   256→### 8.3 Martial Arts Academy — `ironline-academy`
+   257→- **T1:** `HeroLocal` (kids + adults) · `ServiceCardGrid` (disciplines) · `ClassTimetable` · `ContactForm` · `FAQAccordion` (beginners)
+   258→- **T2:** + `BookingCalendar` (trial class) · `LeadMagnetForm` (free trial) · `CoachProfiles` (lineage) · `ReviewCarousel` (parents) · `TrustBar` (sanctioned) · `StickyActionBar` (trial)
+   259→- **T3:** + `MembershipSignup` · `ProjectStatusPortal` reused as belt progression · `EventCalendar` (camps) · `ProductGrid` (gear) · `TeamCredentials` (competitive records) · `StructuredDataBlock` (SportsActivityLocation)
+   260→- **T4:** + `HeroCinematic` (sparring) · `ClientDashboard` (training progress) · `PersonalizedRecommendations` (classes) · `AiConcierge` (discipline match) · `LiveClassSchedule` (streaming) · `AnimatedCounter` (champions)
+   261→
+   262→---
+   263→
+   264→## F9 · Education & Learning
+   265→**DNA:** assessment → enroll. **Premium signature:** student dashboard, tutor-matching AI.
+   266→
+   267→### 9.1 Tutoring Center — `northstar-tutors`
+   268→- **T1:** `HeroLocal` (subjects + grades) · `ServiceCardGrid` · `TestimonialCarousel` (parents) · `FAQAccordion` · `GoogleMapEmbed` · `ContactForm`
+   269→- **T2:** + `TutorBooking` · `ResultsStatStrip` (grade improvements) · `ReviewWall` · `QuizModule` (assessment) · `ProcessTimeline` (onboarding) · `StickyActionBar` (book assessment)
+   270→- **T3:** + `MultiStepIntake` (student profile) · `LearningPath` (subject plans) · `PackageBuilder` (hour bundles) · `ScholarshipPanel` (aid) · `CaseStudyDetail` · `StructuredDataBlock` (EducationalOrganization)
+   271→- **T4:** + `StudentDashboard` (sessions, progress) · `LessonPlayer` (online sessions) · `AiConcierge` (tutor match) · `PersonalizedRecommendations` (subjects) · `AnimatedCounter` (hours taught) · parent-facing `ClientDashboard`
+   272→
+   273→### 9.2 Music School — `cadence-conservatory`
+   274→- **T1:** `HeroLocal` · `ServiceCardGrid` (instruments) · `CoachProfiles` (teachers) · `ContactForm` · `GoogleReviewsEmbed`
+   275→- **T2:** + `TutorBooking` (lesson slots) · `RecurringBooking` (terms) · `ClassTimetable` (groups) · `EventCalendar` (recitals) · `ReviewCarousel` · `StickyActionBar` (book trial)
+   276→- **T3:** + `MembershipSignup` (term plans) · `ProductDetail` (instrument rentals) · `LearningPath` (exam prep) · `VideoLibrary` (recitals) · `TeamCredentials` (conservatory) · `StructuredDataBlock`
+   277→- **T4:** + `StudentDashboard` (practice logs) · `LessonPlayer` (recordings) · `AiConcierge` (instrument match) · `HeroCinematic` (recital stage) · `PersonalizedRecommendations` · `AnimatedCounter`
+   278→
+   279→### 9.3 Coding Bootcamp — `bracket-school`
+   280→- **T1:** `HeroProduct` (outcome: hired) · `CourseCard` · `CurriculumAccordion` teaser · `ResultsStatStrip` (placement) · `ContactForm`
+   281→- **T2:** + `CourseDetail` · `CurriculumAccordion` full · `LeadMagnetForm` (free course) · `AlumniStories` · `LiveClassSchedule` (cohorts) · `FAQAccordion` (financing) · `StickyActionBar` (apply)
+   282→- **T3:** + `ApplicationForm` · `FinancingCalculator` (ISAs) · `ScholarshipPanel` · `CaseStudyIndex` (career switches) · `PartnerProgram` (hiring partners) · `StudentDashboard` teaser · `StructuredDataBlock` (Course)
+   283→- **T4:** + `StudentDashboard` (projects, mentors) · `LessonPlayer` · `CommunityForum` · `AiConcierge` (curriculum advisor) · `EventCalendar` (demo days) · `AnimatedCounter` (grads hired)
+   284→
+   285→### 9.4 Language School — `fluenta`
+   286→- **T1:** `HeroEditorial` · `ServiceCardGrid` (languages/levels) · `ContactForm` · `FAQAccordion` · `ReviewCarousel`
+   287→- **T2:** + `QuizModule` (placement test) · `TutorBooking` · `LiveClassSchedule` (timezones) · `PricingTable` (group/private) · `LanguageSwitcher` (site itself) · `StickyActionBar` (test level)
+   288→- **T3:** + `MultiStepIntake` (goals) · `LearningPath` (CEFR levels) · `WholesalePortal` (corporate accounts) · `TeamCredentials` (certified examiners) · `StructuredDataBlock`
+   289→- **T4:** + `StudentDashboard` · `LessonPlayer` · `CommunityForum` (language exchange) · `AiConcierge` (conversation partner) · full localized journeys via `LanguageSwitcher` · `PersonalizedRecommendations` · `AnimatedCounter`
+   290→
+   291→---
+   292→
+   293→## F10 · Creative Studios & Agencies
+   294→**DNA:** check availability / request proposal. **Premium signature:** the site itself is the portfolio — art-directed.
+   295→
+   296→### 10.1 Wedding Photographer — `everline-photo`
+   297→- **T1:** `HeroPortfolio` · `PackageCard` (collections) · `Lightbox` · `ContactForm` · `FAQAccordion`
+   298→- **T2:** + `TestimonialVideo` · `ProcessTimeline` (booking→delivery) · `AvailabilityChecker` via `BookingCalendar` teaser · `LeadMagnetForm` (pricing guide) · `ReviewCarousel` · `StickyActionBar` (check date)
+   299→- **T3:** + `ConsultationBooking` · `BookingCalendar` (deposit-secured) · `CaseStudyDetail` (real weddings) · `PressMentions` · `AwardStrip` · `LogoCloud` (vendor network) · `StructuredDataBlock`
+   300→- **T4:** + `PortfolioReel` · `HorizontalGallery` (galleries) · `HeroCinematic` (wedding film) · `CursorContextLayer` ("View") · `ClientDashboard` (password-protected client galleries) · `AiConcierge` (collection advisor) · `PageTransition`
+   301→
+   302→### 10.2 Branding & Design Agency — `northsign-studio`
+   303→- **T1:** `HeroEditorial` · `CaseStudyCard` · `ServiceCardGrid` (brand, web, motion) · `ContactForm` · `LogoCloud`
+   304→- **T2:** + `CaseStudyDetail` · `ProcessTimeline` (sprint model) · `TeamGrid` · `PressMentions` · `ConsultationBooking` · `BlogIndex`
+   305→- **T3:** + `RFPResponseForm` · `PackageBuilder` (engagement scopes) · `ResultsStatStrip` (rebrand impact) · `AwardStrip` · `CareersCulture` · `StructuredDataBlock`
+   306→- **T4:** + `HorizontalGallery` (work reel, scroll-controlled) · `HeroCinematic` (showreel) · `StickySection` (case studies) · `CursorContextLayer` ("Drag") · `ImageRevealMask` · `AiConcierge` (scope advisor) · `MarqueeStrip` · art-directed `PageTransition`
+   307→
+   308→### 10.3 Video Production — `framecraft`
+   309→- **T1:** `HeroVideo` (showreel) · `ServiceCardGrid` (corporate, docs, events) · `ContactForm` · `LogoCloud`
+   310→- **T2:** + `PortfolioReel` · `PackageCard` (day rates) · `QuoteRequestForm` (brief) · `ProcessTimeline` (pre→post) · `TestimonialVideo` · `ConsultationBooking`
+   311→- **T3:** + `CaseStudyDetail` (campaign metrics) · `RFPResponseForm` · `TeamCredentials` (crew) · `PressMentions` · `CareersBoard` (crew calls) · `StructuredDataBlock`
+   312→- **T4:** + `HeroCinematic` (natively) · `HorizontalGallery` (timeline scrub) · `CursorContextLayer` ("Play") · `Lightbox` (project archive) · `AiConcierge` (quote estimator) · `RelatedContent` (similar productions)
+   313→
+   314→---
+   315→
+   316→## F11 · Retail & Commerce
+   317→**DNA:** add to cart / book a fitting. **Premium signature:** 3D product, personalized feeds, trade portals.
+   318→
+   319→### 11.1 Fashion Boutique — `fold-drape`
+   320→- **T1:** `ProductGrid` · `ProductCard` · `ProductDetail` · `HoursTable` (store) · `GoogleMapEmbed` · `ContactForm`
+   321→- **T2:** + `CartDrawer` · `CheckoutForm` · `Wishlist` · `StockStatus` · `PromoCodeField` · `TaxShippingEstimator` · `StoreLocator` · `StickyActionBar` (shop)
+   322→- **T3:** + `ProductGallery` (zoom) · `VariantSelector` · `ProductRecommendations` · `OrderTracking` · `ReturnsPortal` · `LoyaltyPanel` · `GiftCardModule` · `StructuredDataBlock` (Product)
+   323→- **T4:** + `HeroCinematic` (lookbook film) · `3DHeroObject` (garment) · `HorizontalGallery` (lookbook) · `PersonalizedRecommendations` (style feed) · `AiConcierge` (stylist chat) · `WholesalePortal` (stylists) · `PageTransition`
+   324→
+   325→### 11.2 Furniture Showroom — `grain-glider`
+   326→- **T1:** `ProductGrid` (by room) · `ProductDetail` · `ContactForm` (delivery quote) · `GoogleMapEmbed` · `HoursTable`
+   327→- **T2:** + `VariantSelector` (materials) · `InventoryByStore` (showroom vs warehouse) · `ProductGallery` (360) · `TaxShippingEstimator` · `Wishlist` · `ReviewCarousel` · `StickyActionBar` (visit)
+   328→- **T3:** + `Configurator` (fabric/finish — isolated 3D allowed) · `ConsultationBooking` (design service) · `WholesalePortal` (trade program) · `FinancingCalculator` · `CaseStudyCard` (real homes) · `StructuredDataBlock`
+   329→- **T4:** + `3DHeroObject` (sofa in room) · `VirtualGallery` (3D room scenes) · `AiConcierge` (space advisor) · `PersonalizedRecommendations` · `HeroCinematic` (workshop film) · `ClientDashboard` (orders, deliveries)
+   330→
+   331→### 11.3 Florist — `stem-society`
+   332→- **T1:** `ProductGrid` (arrangements) · `ProductDetail` · `ContactForm` (weddings) · `HoursTable` (holiday hours critical) · `GoogleMapEmbed`
+   333→- **T2:** + `CartDrawer` · `CheckoutForm` + `TaxShippingEstimator` (delivery zones) · `DailySpecials` (seasonal) · `SubscriptionSelector` (weekly blooms) · `PromoCodeField` · `StickyActionBar` (order)
+   334→- **T3:** + `ConsultationBooking` (weddings) · `EventCalendar` (workshops, holidays) · `GiftCardModule` · `CaseStudyDetail` (weddings) · `ReviewCarousel` · `StructuredDataBlock` (Florist)
+   335→- **T4:** + `Configurator` (bouquet builder) · `HeroCinematic` (arranging) · `AiConcierge` (occasion advisor) · `PersonalizedRecommendations` (by occasion) · `LoyaltyPanel`
+   336→
+   337→### 11.4 Jeweler — `ore-atelier`
+   338→- **T1:** `HeroProduct` (signature piece) · `ProductGrid` · `ProductDetail` · `ContactForm` (appointments) · `GoogleMapEmbed`
+   339→- **T2:** + `BookingCalendar` (consults, sizing) · `ProductGallery` (360) · `WarrantyPanel` (lifetime care) · `GiftCardModule` · `ReviewCarousel` · `StickyActionBar` (book consult)
+   340→- **T3:** + `ProcessTimeline` (bespoke process) · `ConsultationBooking` (custom) · `TradeInValuation` (gold trade-in) · `CertificateModule` (authenticity docs) · `DocumentRequest` (appraisals) · `StructuredDataBlock` (JewelryStore)
+   341→- **T4:** + `3DHeroObject` (rotatable ring) · `Configurator` (diamond builder) · `HeroCinematic` (artisan macro) · `AiConcierge` (diamond guide) · `PersonalizedRecommendations` · `ClientDashboard` (appraisals, service history)
+   342→
+   343→---
+   344→
+   345→## F12 · Events & Venues
+   346→**DNA:** check date → request proposal. **Premium signature:** 3D walkthroughs, event portals, seat maps.
+   347→
+   348→### 12.1 Wedding Venue — `hollowbrook-barn`
+   349→- **T1:** `HeroPortfolio` (venue shot) · `VenueSpaceCard` (capacities) · `Lightbox` · `ContactForm` · `FAQAccordion`
+   350→- **T2:** + `VenueAvailability` (date checker) · `PackageCard` (wedding packages) · `ReviewCarousel` (couples) · `LogoCloud` (preferred vendors) · `LeadMagnetForm` (brochure) · `StickyActionBar` (check date)
+   351→- **T3:** + `ViewingBooking` (private tours) · `EventCalendar` (open houses) · `CaseStudyDetail` (real weddings) · `FloorplanViewer` (layouts) · `PressMentions` · `BookingCalendar` (tastings) · `StructuredDataBlock` (EventVenue)
+   352→- **T4:** + `VirtualGallery` (3D walkthrough) · `HeroCinematic` (day→night film) · `EventPackageBuilder` (full) · `AiConcierge` (date + package advisor) · `ClientDashboard` (wedding portal: vendors, timeline, payments) · `HorizontalGallery` (seasons) · `PageTransition`
+   353→
+   354→### 12.2 Conference Center — `summitworks`
+   355→- **T1:** `HeroEditorial` · `VenueSpaceCard` (capacities, AV) · `ContactForm` · `LogoCloud` (clients) · `FAQAccordion`
+   356→- **T2:** + `VenueAvailability` · `EventPackageBuilder` teaser · `CaseStudyCard` · `TrustBar` (certifications) · `LeadMagnetForm` (brochure)
+   357→- **T3:** + `RFPResponseForm` full · `EventPackageBuilder` (catering, AV, staffing) · `FloorplanViewer` (room configs) · `IntegrationGrid` (AV partners) · `TestimonialVideo` (planners) · `AgendaTimeline` (sample agendas) · `StructuredDataBlock`
+   358→- **T4:** + `VirtualGallery` (3D floor tour) · `Configurator` (room configurator) · `AiConcierge` (space fit calculator) · `ClientDashboard` (event portal) · `HeroCinematic` (event sizzle)
+   359→
+   360→### 12.3 Theater / Music Venue — `grand-marquee`
+   361→- **T1:** `EventCard` (now playing) · `EventDetail` · `PerformancesCalendar` · `ContactForm` · `HoursTable` (box office) · `GoogleMapEmbed`
+   362→- **T2:** + `TicketSelector` · `SeatMap` · `PressMentions` · `NewsletterSignup` (presales) · `GiftCardModule` · `StickyActionBar` (book)
+   363→- **T3:** + `TicketSelector` full (tiers) · `SeatMap` (accessibility seats + legend) · `MembershipSignup` (season passes) · `GroupBookingForm` · `PressKitDownload` · `PartnerProgram` (sponsors) · `StructuredDataBlock` (Event)
+   364→- **T4:** + `HeroCinematic` (stage lights) · `VirtualTourEmbed` (seat-view preview) · `AiConcierge` (seat recommender) · `PersonalizedRecommendations` (shows) · `MarqueeStrip` (what's on) · `PageTransition`
+   365→
+   366→### 12.4 Party & Equipment Rentals — `confetti-works`
+   367→- **T1:** `HeroEditorial` · `ProductGrid` (items) · `ContactForm` · `FAQAccordion` (delivery)
+   368→- **T2:** + `QuoteRequestForm` (event list) · `ServiceAreaMap` (delivery) · `TaxShippingEstimator` · `SavedItems` (shortlist → quote) · `ReviewCarousel` · `StickyActionBar` (quote)
+   369→- **T3:** + `RFQForm` full (cart → RFQ) · `PackageBuilder` (party bundles) · `EventCalendar` (seasonality) · `CaseStudyCard` (corporate) · `WholesalePortal` (planners) · `StructuredDataBlock`
+   370→- **T4:** + `Configurator` (event builder) · `AiConcierge` (rental list from guest count) · `ClientDashboard` (quotes, orders) · `HeroCinematic` (setup timelapse) · `PersonalizedRecommendations`
+   371→
+   372→---
+   373→
+   374→## F13 · B2B, Industrial & SaaS
+   375→**DNA:** demo / RFP / trial. **Premium signature:** interactive demos, compliance center, customer portals.
+   376→
+   377→### 13.1 Vertical SaaS — `chartwell`
+   378→- **T1:** `ProductHero` · `FeatureSection` · `LogoCloud` · `PricingTable` teaser · `ContactForm` · `FAQAccordion`
+   379→- **T2:** + `RequestDemoForm` · `UseCaseSection` (personas) · `IntegrationGrid` · `CaseStudyCard` · `ROIcalculator` teaser · `StickyActionBar` (demo) · `BlogIndex`
+   380→- **T3:** + `PricingCalculator` (seats) · `EnterpriseCta` · `SecurityPage` (SOC 2) · `APISection` · `DocsSearch` · `StatusPageEmbed` · `CaseStudyIndex` · `ProductTour` · `ChangelogFeed` · `StructuredDataBlock` (SoftwareApp)
+   381→- **T4:** + `GuidedTour` (interactive demo) · `AiConcierge` (product fit) · `ComplianceCenter` (DPA download) · `RFPResponseForm` · `CustomerPortalTeaser` (live sandbox login) · `PartnerProgram` (resellers) · `PersonalizedRecommendations` (use cases) · `TabbedShowcase`
+   382→
+   383→### 13.2 Manufacturing / Industrial — `vulcanworks`
+   384→- **T1:** `HeroEditorial` (capabilities) · `ProductGrid` (catalog teaser) · `SpecSheet` · `RFQForm` · `LogoCloud` (OEMs) · `GoogleMapEmbed` (plant)
+   385→- **T2:** + `RFQForm` full (specs, files) · `TrustBar` (ISO certs) · `CaseStudyCard` · `NewsletterSignup` · `PartsCatalogue` (compat search)
+   386→- **T3:** + `WholesalePortal` (distributors) · `DownloadableAsset` (gated spec sheets) · `IntegrationGrid` (ERP compatibility) · `TeamCredentials` (engineers) · `SecurityCompliancePanel` (certs) · `CareersBoard` (skilled labor) · `StructuredDataBlock`
+   387→- **T4:** + `3DHeroObject` (exploded part view) · `Configurator` (part configurator) · `AiConcierge` (spec matcher) · `VirtualGallery` (plant tour) · `HeroCinematic` (factory floor) · `ClientDashboard` (order status) · `LanguageSwitcher` (global buyers)
+   388→
+   389→### 13.3 Logistics / 3PL — `freightline`
+   390→- **T1:** `HeroEditorial` (coverage) · `ServiceCardGrid` (warehousing, freight, last mile) · `ContactForm` · `TrustBar` (carrier partners) · `FAQAccordion`
+   391→- **T2:** + `ROIcalculator` (savings) · `QuoteRequestForm` (lanes) · `IntegrationGrid` (WMS/ERP) · `ProcessTimeline` (onboarding) · `ServiceAreaMap` (coverage) · `CaseStudyCard`
+   392→- **T3:** + `RFPResponseForm` · `ClientPortalTeaser` (tracking) · `SecurityCompliancePanel` · `WholesalePortal` (volume accounts) · `TeamCredentials` · `StructuredDataBlock`
+   393→- **T4:** + `ClientDashboard` (shipment tracking + analytics) · `AiConcierge` (quote assistant) · `StatusPageEmbed` (network status) · `AnimatedCounter` (on-time %) · `HeroCinematic` (distribution center) · `LanguageSwitcher`
+   394→
+   395→### 13.4 Construction / General Contractor — `cornerstone-build`
+   396→- **T1:** `HeroPortfolio` (projects) · `ServiceCardGrid` (residential, commercial, reno) · `BeforeAfterSlider` · `ContactForm` · `FAQAccordion`
+   397→- **T2:** + `QuoteRequestForm` (plan upload via `FileUpload`) · `ProcessTimeline` (pre-construction→handover) · `CaseStudyDetail` · `ReviewCarousel` · `TrustBar` (licensed, bonded) · `ServiceAreaMap`
+   398→- **T3:** + `ProjectStatusPortal` teaser · `FinancingCalculator` · `TeamCredentials` (licenses) · `RFPResponseForm` (commercial bids) · `SafetyCompliancePanel` (OSHA) · `StructuredDataBlock`
+   399→- **T4:** + `ClientDashboard` (schedule, selections, change orders) · `AiConcierge` (budget advisor) · `HeroCinematic` (timelapse) · `HorizontalGallery` (portfolio) · `VirtualGallery` (3D plans → builds) · `AnimatedCounter` (projects delivered)
+   400→
+   401→### 13.5 IT / Managed Services — `northgrid-it`
+   402→- **T1:** `HeroEditorial` · `ServiceCardGrid` (managed IT, security, cloud) · `ContactForm` · `LogoCloud` · `FAQAccordion`
+   403→- **T2:** + `ROIcalculator` (downtime cost) · `CaseStudyCard` · `ConsultationBooking` (IT audit) · `TrustBar` (Microsoft/Cisco partners) · `NewsletterSignup`
+   404→- **T3:** + `SecurityPage` + `ComplianceCenter` · `RFPResponseForm` · `IntegrationGrid` · `StatusPageEmbed` (client NOC) · `CareersBoard` · `StructuredDataBlock`
+   405→- **T4:** + `ClientPortal` (tickets, assets, invoices) · `AiConcierge` (tier-0 triage) · `PersonalizedRecommendations` (risk assessments) · `ResultsStatStrip` + `MarqueeStrip` (uptime, vendors) · `AnimatedCounter` (uptime)
+   406→
+   407→---
+   408→
+   409→## F14 · Nonprofit & Public Sector
+   410→**DNA:** donate / volunteer. **Premium signature:** impact storytelling, donor portal, matching AI.
+   411→
+   412→### 14.1 Charity — `wellspring-foundation`
+   413→- **T1:** `MissionHero` · `ImpactMetrics` · `DonationTiers` teaser · `ContactForm` · `FAQAccordion`
+   414→- **T2:** + `DonationTiers` full (impact copy per amount) · `FundraiserPage` (peer-to-peer) · `VolunteerSignup` · `EventFundraiser` (gala) · `NewsletterSignup` · `StickyActionBar` (donate)
+   415→- **T3:** + `DonationFlow` (monthly option) · `ProgramDetail` · `TransparencyReports` · `CaseStudyDetail` (consented beneficiary story) · `AdvocacyCampaign` · `StructuredDataBlock` (NGO)
+   416→- **T4:** + `ClientDashboard` (donor portal: receipts, recurring gifts) · `AiConcierge` (impact advisor) · `AnimatedCounter` (lives changed) · `HeroCinematic` (field story) · `PersonalizedRecommendations` (campaigns by cause affinity) · `LanguageSwitcher`
+   417→
+   418→### 14.2 Animal Shelter — `secondchance-paws`
+   419→- **T1:** `MissionHero` · `ListingGrid` reused for adoptable pets · `ListingCard`/`ListingDetail` (pet profiles) · `ContactForm` · `HoursTable`
+   420→- **T2:** + `ApplicationForm` (adoption) · `VolunteerSignup` · `DonationTiers` · `EventCalendar` (fundraisers) · `ClientStories` (happy tails) · `StickyActionBar` (adopt)
+   421→- **T3:** + `FundraiserPage` (per-pet sponsorship) · `ProductGrid` (merch) · `CaseStudyCard` (adoption stories) · `KnowledgeBase` (pet care) · `StructuredDataBlock` (NGO)
+   422→- **T4:** + `AiConcierge` (pet-matching quiz) · `PersonalizedRecommendations` (pets by lifestyle) · `AnimatedCounter` (adoptions) · `HeroCinematic` (shelter story) · `PageTransition`
+   423→
+   424→### 14.3 Museum — `meridian-museum`
+   425→- **T1:** `HeroLocal` (current exhibit) · `HoursTable` · `GoogleMapEmbed` · `TicketSelector` teaser · `ContactForm`
+   426→- **T2:** + `EventCalendar` (programs) · `TicketSelector` · `EventDetail` (exhibitions) · `MembershipSignup` · `NewsletterSignup` · `Lightbox` (collection highlights)
+   427→- **T3:** + `GroupBookingForm` (schools) · `VenueSpaceCard` (event rentals) · `DonationTiers` (support) · `AccessibilityStatement` · `VirtualTourEmbed` (exhibit) · `PressKitDownload` · `StructuredDataBlock` (Museum)
+   428→- **T4:** + `VirtualGallery` (3D collection) · `HeroCinematic` (exhibit film) · `AiConcierge` (collection guide) · `PersonalizedRecommendations` (exhibits by interest) · `LanguageSwitcher` · `PageTransition`
+   429→
+   430→---
+   431→
+   432→## F15 · Finance & Lending
+   433→**DNA:** calculator → prequalification → appointment. **Premium signature:** compliance-first AI, status portals, calculators that convert.
+   434→
+   435→### 15.1 Financial Advisory — `cardinal-wealth`
+   436→- **T1:** `HeroEditorial` (trust) · `AdvisorProfile` · `ServiceCardGrid` (planning, retirement, tax) · `ContactForm` · `FAQAccordion` (fiduciary)
+   437→- **T2:** + `RetirementCalculator` · `RiskProfileQuiz` · `ConsultationBooking` · `ReviewCarousel` · `CredentialWall` (CFP) · `NewsletterSignup` (market notes) · `StickyActionBar` (book)
+   438→- **T3:** + `ClientPortalTeaser` · `SecureDocumentUpload` · `TeamCredentials` · `DisclosurePanel` (full regulatory) · `CaseStudyDetail` (compliance-safe outcomes) · `StructuredDataBlock` (FinancialService)
+   439→- **T4:** + `ClientPortal` (portfolio, docs, meetings) · `AiConcierge` (education-only Q&A, disclaimed) · `PersonalizedRecommendations` (content by life stage) · `QuizWizard` full · `AnimatedCounter` (families served — not AUM, compliance-safe) · `LanguageSwitcher`
+   440→
+   441→### 15.2 Mortgage Brokerage — `keystone-lending`
+   442→- **T1:** `HeroSplit` (rate teaser) · `MortgageCalculator` · `ContactForm` (prequal) · `FAQAccordion` · `TrustBar` (licensed) · `GoogleReviewsEmbed`
+   443→- **T2:** + `QuoteRequestForm` (scenario) · `ProcessTimeline` (approval steps) · `ReviewWall` · `ResultsStatStrip` (closings) · `RentAffordabilityCalculator` · `StickyActionBar` (get prequalified)
+   444→- **T3:** + `MultiStepIntake` (application) · `SecureDocumentUpload` · `AppointmentScheduling` (loan officer) · `ComparisonTable` (loan types) · `TeamCredentials` (NMLS) · `StructuredDataBlock`
+   445→- **T4:** + `ClaimsTracker` reused as application status portal · `AiConcierge` (rate scenario advisor) · `PersonalizedRecommendations` (loan products) · `ClientStories` · `AnimatedCounter` (loans closed) · `LanguageSwitcher`
+   446→
+   447→---
+   448→
+   449→## F16 · Travel & Outdoors
+   450→**DNA:** book an experience. **Premium signature:** cinematic destination film, trip-matching AI, traveler portal.
+   451→
+   452→### 16.1 Tour Operator — `wayfare-collective`
+   453→- **T1:** `HeroListing` (destinations) · `PackageCard` (trips) · `ContactForm` · `FAQAccordion` · `GoogleReviewsEmbed`
+   454→- **T2:** + `ExperienceBooking` (dates, guests) · `PackageCard` full (inclusions) · `SeasonalCalendar` (when to go) · `ReviewCarousel` (travelers) · `TeamCredentials` (guides) · `StickyActionBar` (book)
+   455→- **T3:** + `GroupBookingForm` (private groups) · `BookingCalendar` (departures) · `IntakeDocumentUpload` (passports, docs) · `InsuranceChecker` (travel insurance) · `CaseStudyDetail` (custom itineraries) · `BlogIndex` (guides) · `StructuredDataBlock`
+   456→- **T4:** + `HeroCinematic` (drone film) · `VirtualGallery` (destinations) · `AiConcierge` (trip-matcher quiz) · `PersonalizedRecommendations` (trips) · `ClientDashboard` (bookings, packing lists) · `HorizontalGallery` (itineraries) · `LanguageSwitcher`
+   457→
+   458→### 16.2 Adventure / Outfitter — `ridgeline-outfitters`
+   459→- **T1:** `HeroPortfolio` (action shot) · `ExperienceBooking` teaser · `ContactForm` · `FAQAccordion` (fitness required) · `GoogleReviewsEmbed`
+   460→- **T2:** + `ExperienceBooking` full (difficulty levels) · `SeasonalCalendar` (weather windows) · `DownloadableAsset` (gear lists) · `CoachProfiles` (guides) · `SafetyCompliancePanel` (certs, insurance) · `StickyActionBar` (book)
+   461→- **T3:** + `MultiStepIntake` + `SignaturePad` (waivers) · `GroupBookingForm` (corporate retreats) · `ProductGrid` (gear rentals) · `StatusPageEmbed` reused for trail/river conditions · `StructuredDataBlock`
+   462→- **T4:** + `HeroCinematic` (expedition film) · `AiConcierge` (trip-readiness quiz) · `ClientDashboard` (bookings, gear lists, signed waivers) · `PersonalizedRecommendations` (next challenge) · `AnimatedCounter` (summits logged)
+   463→
+   464→### 16.3 Campground / RV Park — `cedar-hollow`
+   465→- **T1:** `HeroLocal` · `ListingGrid` reused as site grid · `HoursTable` (season) · `ContactForm` · `GoogleMapEmbed`
+   466→- **T2:** + `ResourceBooking` (site booking) · `AmenityGrid` (pool, showers) · `SeasonalCalendar` · `ReviewCarousel` · `HousePolicyPanel` (rules) · `StickyActionBar` (book)
+   467→- **T3:** + `RecurringBooking` (seasonal sites) · `EventCalendar` (music weekends) · `ProductGrid` (camp store) · `GroupBookingForm` (rallies) · `LocalLandingPage` (nearby attractions) · `StructuredDataBlock` (Campground)
+   468→- **T4:** + `MapSearch` (interactive site picking) · `VirtualTourEmbed` (360° sites) · `AiConcierge` (site recommender) · `PersonalizedRecommendations` · `ClientDashboard` (bookings) · `HeroCinematic` (golden hour)
+   469→
+   470→---
+   471→
+   472→## Elite Layer Entitlement — How the Premium Tier Gets Earned
+   473→
+   474→| Layer | T1 Low | T2 Mid | T3 High | T4 Premium |
+   475→|---|---|---|---|---|
+   476→| **Motion** | none or `RevealOnScroll` only | `RevealOnScroll`, `TabbedShowcase`, one `MarqueeStrip` | + `AnimatedCounter`, `TiltCard`, `ParallaxMedia`, `StickySection` | + `HeroCinematic`, `PageTransition`, `HorizontalGallery`, `CursorContextLayer`, `ImageRevealMask`, `ShaderAccent` (art-directed, never full-screen) |
+   477→| **3D / Immersive** | none | none | one isolated instance (`3DHeroObject` or `VirtualTourEmbed`) | + `VirtualGallery`, `Configurator`, `3DHeroObject`, always with poster fallback + reduced-motion branch |
+   478→| **AI** | none | none | optional: one grounded assistant | + `AiConcierge` + `PersonalizedRecommendations` + `GuidedTour` |
+   479→| **Non-negotiables** | every layer: `prefers-reduced-motion` branch, LCP protected, content survives with motion off, `DemoContentBadge` on fictional proof | ← | ← | ← |
+   480→
+   481→**Rule of thumb:** a T4 page earns its cinematic hero only if its T1 skeleton (headline, subhead, CTA, hours/phone) still converts with images disabled and motion off. That's what makes the elite layer defensible rather than decorative.
+   482→
+   483→---
+   484→
+   485→## Flagship Deep Dive — Boutique Hotel `lodgemark` (page-by-page)
+   486→
+   487→| Page | Modules |
+   488→|---|---|
+   489→| **Home** | `HeroCinematic` (drone→lobby, poster fallback) · `RoomCard` (3 featured) · `PackageCard` (bundles) · `ReviewCarousel` · `LocationCard` + `GoogleMapEmbed` · `NewsletterSignup` |
+   490→| **Rooms** | `RoomCard` grid → `RoomDetail` (gallery, bed options, policies, book CTA) · `VirtualGallery` (3D room) · `HousePolicyPanel` |
+   491→| **Dining** | `MenuBoard` · `WineList` · `ReservationFlow` (restaurant) · `PrivateDiningEnquiry` |
+   492→| **Experiences** | `ExperienceBooking` (tours, classes) · `EventCalendar` (seasonal programming) · `SeasonalCalendar` |
+   493→| **Weddings & Groups** | `VenueSpaceCard` · `GroupBookingForm` · `CaseStudyDetail` (real wedding) · `FloorplanViewer` |
+   494→| **Booking flow** | `ReservationFlow` → `BookingConfirmation` (add-to-calendar, directions, policies) → `ReminderOptIn` |
+   495→| **Portal** | `ClientDashboard` (upcoming stays, receipts, `LoyaltyPanel` tier perks) · `AiConcierge` (itinerary planner) · `PersonalizedRecommendations` (upgrades) |
+   496→| **Local** | `LocalLandingPage` × neighborhood · `MultiLocationMap` (sister properties) · `StructuredDataBlock` (Hotel + Offer) · hreflang via `LanguageSwitcher` |
+   497→
+   498→**Dominant CTA:** *Check availability* (header, hero, every room card). Secondary: reserve dining, book experiences. Nothing competes.
+   499→
+   500→---
+   501→
+   502→## Tracked Events → Family Conversion Mapping
+   503→
+   504→| Family | Primary events | Secondary |
+   505→|---|---|---|
+   506→| Home Services | `call_clicked`, `quote_completed`, `booking_completed` | `form_started`/`form_abandoned`, `directions_clicked` |
+   507→| Health | `booking_completed`, `booking_started` | `portal_login`, `call_clicked` |
+   508→| Food & Hospitality | `booking_completed`, `purchase_completed` | `add_to_cart`, `cta_clicked` |
+   509→| Real Estate | `booking_completed` (viewings), `quote_completed` | `filter_used`, `search_used`, `media_opened` |
+   510→| Automotive | `booking_completed` (test drive/service), `quote_completed` | `product_viewed` |
+   511→| Professional/Legal | `form_submitted` (evaluation), `booking_completed` | `portal_login` |
+   512→| Beauty/Fitness | `booking_completed`, `purchase_completed` (membership) | `cta_clicked` |
+   513→| Education | `form_submitted` (application), `booking_completed` (trial) | `search_used` |
+   514→| Retail | `purchase_completed` | `add_to_cart`, `checkout_started`, `recommendation_clicked` |
+   515→| Events/Venues | `quote_completed` (RFP), `purchase_completed` (tickets) | `booking_started` |
+   516→| B2B/SaaS | `form_submitted` (demo/RFP), `portal_login` | `cta_clicked`, `search_used` |
+   517→| Nonprofit | `donation_completed` | `donation_started`, `form_submitted` (volunteer) |
+   518→| Finance | `form_submitted` (prequal), `booking_completed` | `portal_login` |
+   519→| Travel | `booking_completed` | `quote_started`, `media_opened` |
+   520→
+   521→---
+   522→
+   523→## Build Note
+   524→
+   525→Each tier ladder is ordered by the build priority from the playbook: **global system → conversion core → trust core → commerce/booking → content → industry modules → portal → premium.** A tier isn't "done" when its modules exist — it's done when every module has real copy, a mobile layout, keyboard support, a reduced-motion branch, and an empty/error state. The elite layer is the last 5% that only works because the other 95% is unshakeable.
+   526→
+   527→Want me to expand any single branch into a **full generated scaffold** (routes, component files, props, event wiring) like the `lodgemark` deep dive — or generate the **96-template master index** as a machine-readable spec (JSON/YAML) for the factory pipeline?
+   528→
+   529→
+   530→
+   531→+++
+   532→
+   533→
+   534→Flagship Master System Architecture
+   535→We will build the next 10 Flagship Website Designs by orchestrating your 344-module taxonomy into production-ready website templates.
+   536→
+   537→
+   538→Every design is built upon a Unified HQ Design Token Engine:
+   539→
+   540→
+   541→* Visual Rhythm: 8px baseline grid, $140\text{rem}$ ($2240\text{px}$) maximum frame width, responsive container typography via clamp().
+   542→  
+   543→* Motion Standard: Pure CSS keyframe marquees with prefers-reduced-motion fallbacks, 500ms cubic-bezier(0.16, 1, 0.3, 1) easing for elite reveals.
+   544→  
+   545→* Component Architecture: Atomic layout rules, WCAG 2.1 AA compliant contrast ratios, integrated JSON-LD schema generation, and zero zero-state layout shifts.
+   546→  
+   547→The 10 Flagship Designs
+   548→```
+   549→┌────────────────────────────────────────────────────────────────────────────────────────┐
+   550→│                               10 FLAGSHIP DESIGNS MAP                                  │
+   551→├───────────────┬─────────────────────────────┬─────────────────────┬────────────────────┤
+   552→│ Industry      │ Brand & Identity            │ Core Engine         │ Primary Action     │
+   553→├───────────────┼─────────────────────────────┼─────────────────────┼────────────────────┤
+   554→│ 01. Solar/En. │ Solaria Energy HQ           │ ROI & Net-Zero      │ Savings Estimate   │
+   555→│ 02. SaaS      │ Nexus Data Platform         │ Live API & Terminal │ Enterprise Demo    │
+   556→│ 03. Law Firm  │ Vance & Sterling Law        │ Case Evaluation     │ Confidential Form  │
+   557→│ 04. Lux. Real │ Meridian Luxury Estate      │ Interactive Gallery │ Private Viewing    │
+   558→│ 05. Health    │ Apex Health & Dental        │ Patient Portal      │ Live Appointment   │
+   559→│ 06. Hospit.   │ Kintsugi Fine Dining        │ Reserve & Tasting   │ Table Reservation  │
+   560→│ 07. E-Com     │ AURA Atelier Fashion        │ Variant Config      │ Express Checkout   │
+   561→│ 08. Trades    │ ProLine Commercial HVAC     │ Emergency Triage    │ Urgent Call / Book │
+   562→│ 09. Logistics │ FreightFlow Global Logistics│ Live Tracking       │ Instant Rate RFQ   │
+   563→│ 10. Non-Prof  │ Terra Vanguard Conservation │ Impact Metrics      │ Tiered Giving      │
+   564→└───────────────┴─────────────────────────────┴─────────────────────┴────────────────────┘
+   565→
+   566→```
+   567→Design 01: Solaria Energy HQ
+   568→* Industry Sector: Energy & Sustainability (B2B/B2C)
+   569→  
+   570→* Primary Conversion: Instant Solar Savings Estimate & Consultation
+   571→  
+   572→* Style System: Clean Technical High-Contrast (#0B0F19 void background, #22C55E live green, #F8FAFC slate text)
+   573→  
+   574→Modular Blueprint & Architecture
+   575→1. Global Core: SiteHeader (with Theme/Locale switcher), MobileNav, StickyActionBar, Breadcrumb
+   576→  
+   577→2. Hero Module: HeroLocal + CostCalculator hybrid split
+   578→  
+   579→3. Value & Mechanism: ValueProposition $\rightarrow$ HowItWorks $\rightarrow$ SpecSheet
+   580→  
+   581→4. Proof & Trust: ResultsStatStrip $\rightarrow$ CertificationWall $\rightarrow$ GoogleReviewsEmbed
+   582→  
+   583→5. Primary Conversion: QuoteCalculator + FinancingCalculator with immediate lead capture
+   584→  
+   585→6. Footer & Compliance: SiteFooter, CookieConsent, StructuredDataBlock (LocalBusiness + Service)
+   586→  
+   587→JavaScript
+   588→```
+   589→// SpecSheet & Calculator Core Component Engine
+   590→export function SolariaSavingsCalculator() {
+   591→  const [kw, setKw] = useState(12);
+   592→  const annualSavings = Math.round(kw * 1420 * 0.18);
+   593→  const offsetTons = (kw * 0.85).toFixed(1);
+   594→
+   595→  return (
+   596→    <section className="border-y border-border bg-card/50 py-16">
+   597→      <div className="mx-auto max-w-6xl px-5 lg:px-10">
+   598→        <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+   599→          <div>
+   600→            <p className="font-mono text-xs uppercase tracking-widest text-primary">Interactive Estimate</p>
+   601→            <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight">Calculate Your Commercial Yield</h2>
+   602→            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+   603→              Adjust your system capacity to simulate immediate operational savings and carbon offset values based on EPA regional grids.
+   604→            </p>
+   605→            <div className="mt-8 space-y-6">
+   606→              <div>
+   607→                <div className="flex justify-between text-sm font-medium">
+   608→                  <label htmlFor="capacity">System Scale (kW Direct Current)</label>
+   609→                  <span className="font-mono text-primary">{kw} kW</span>
+   610→                </div>
+   611→                <input
+   612→                  id="capacity"
+   613→                  type="range"
+   614→                  min="5"
+   615→                  max="100"
+   616→                  value={kw}
+   617→                  onChange={(e) => setKw(Number(e.target.value))}
+   618→                  className="mt-3 w-full accent-primary"
+   619→                />
+   620→              </div>
+   621→            </div>
+   622→          </div>
+   623→          <div className="border border-border bg-background p-8 shadow-2xl">
+   624→            <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Estimated Annual Offset</p>
+   625→            <p className="mt-2 font-heading text-5xl font-bold tracking-tight text-foreground">${annualSavings.toLocaleString()}<span className="text-sm font-normal text-muted-foreground">/yr</span></p>
+   626→            <div className="mt-6 grid grid-cols-2 gap-4 border-t border-border pt-6 text-sm">
+   627→              <div>
+   628→                <p className="text-xs text-muted-foreground">$\text{CO}_2$ Reduction</p>
+   629→                <p className="font-mono text-lg font-semibold text-foreground">{offsetTons} Metric Tons</p>
+   630→              </div>
+   631→              <div>
+   632→                <p className="text-xs text-muted-foreground">Payback Period</p>
+   633→                <p className="font-mono text-lg font-semibold text-foreground">3.8 Years</p>
+   634→              </div>
+   635→            </div>
+   636→            <a href="/quote" className="mt-8 block w-full rounded-sm bg-primary py-3.5 text-center text-sm font-semibold text-primary-foreground">
+   637→              Lock In Free Site Assessment
+   638→            </a>
+   639→          </div>
+   640→        </div>
+   641→      </div>
+   642→    </section>
+   643→  );
+   644→}
+   645→
+   646→```
+   647→Design 02: Nexus Data Platform
+   648→* Industry Sector: Enterprise SaaS / Horizontal Tech
+   649→  
+   650→* Primary Conversion: Request Enterprise Interactive Demo & API Trial
+   651→  
+   652→* Style System: Dark Industrial Terminal (#030712, #3B82F6 electric blue, Monospace telemetry typography)
+   653→  
+   654→Modular Blueprint & Architecture
+   655→1. Global Core: SiteHeader with CommandPalette (Ctrl+K), MobileNav, SiteFooter
+   656→  
+   657→2. Hero Module: ProductHero + HeroVideo (live ambient dashboard interaction)
+   658→  
+   659→3. Value & Mechanism: UseCaseMatrix $\rightarrow$ IntegrationGrid $\rightarrow$ APISection / CodeSamples
+   660→  
+   661→4. Proof & Trust: LogoCloud (MarqueeStrip) $\rightarrow$ SecurityTrustPage (SOC2 Type II + GDPR verified)
+   662→  
+   663→5. Primary Conversion: PricingTable (Monthly/Annual toggle) $\rightarrow$ RequestDemoForm
+   664→  
+   665→6. Footer: SiteFooter, ChangelogFeed, StatusPageEmbed
+   666→  
+   667→JavaScript
+   668→```
+   669→// Interactive Terminal Code Sample Module
+   670→export function NexusTerminalPreview() {
+   671→  const [activeTab, setActiveTab] = useState("curl");
+   672→
+   673→  const snippets = {
+   674→    curl: `curl -X POST https://api.nexusdata.io/v1/stream \\
+   675→  -H "Authorization: Bearer nx_live_99214" \\
+   676→  -d '{"dataset": "telemetry", "window": "5m"}'`,
+   677→    python: `import nexus
+   678→client = nexus.Client(api_key="nx_live_99214")
+   679→stream = client.telemetry.stream(window="5m")
+   680→print(stream.next_batch())`,
+   681→    node: `import { Nexus } from '@nexus/sdk';
+   682→const client = new Nexus({ apiKey: 'nx_live_99214' });
+   683→const data = await client.telemetry.stream({ window: '5m' });`
+   684→  };
+   685→
+   686→  return (
+   687→    <div className="rounded-md border border-border bg-slate-950 p-6 font-mono text-xs shadow-2xl">
+   688→      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+   689→        <div className="flex gap-2">
+   690→          <span className="h-3 w-3 rounded-full bg-red-500/80" />
+   691→          <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
+   692→          <span className="h-3 w-3 rounded-full bg-green-500/80" />
+   693→        </div>
+   694→        <div className="flex gap-3">
+   695→          {Object.keys(snippets).map((lang) => (
+   696→            <button
+   697→              key={lang}
+   698→              onClick={() => setActiveTab(lang)}
+   699→              className={`uppercase tracking-wider transition-colors ${activeTab === lang ? "text-blue-400 font-bold" : "text-slate-500"}`}
+   700→            >
+   701→              {lang}
+   702→            </button>
+   703→          ))}
+   704→        </div>
+   705→      </div>
+   706→      <pre className="mt-4 overflow-x-auto text-slate-200 leading-relaxed">
+   707→        <code>{snippets[activeTab]}</code>
+   708→      </pre>
+   709→    </div>
+   710→  );
+   711→}
+   712→
+   713→```
+   714→Design 03: Vance & Sterling Law HQ
+   715→* Industry Sector: Legal & Regulated Professional Services
+   716→  
+   717→* Primary Conversion: Instant Confidential Case Evaluation Request
+   718→  
+   719→* Style System: Executive Prestige (#0F172A deep navy, #D4AF37 metallic muted gold, #FFFFFF high readability serif balance)
+   720→  
+   721→Modular Blueprint & Architecture
+   722→1. Global Core: SiteHeader (Direct phone cluster), StickyActionBar, Breadcrumb
+   723→  
+   724→2. Hero Module: HeroEditorial (Authority positioning + direct evaluation trigger)
+   725→  
+   726→3. Value & Mechanism: PracticeAreaGrid $\rightarrow$ LegalProcessTimeline
+   727→  
+   728→4. Proof & Trust: AttorneyProfile $\rightarrow$ ResultsStatStrip ($500M+ recovered) $\rightarrow$ CredentialWall
+   729→  
+   730→5. Primary Conversion: CaseEvaluationForm + SecureDocumentUpload (AES-256 encrypted indicator)
+   731→  
+   732→6. Footer & Compliance: FeeTransparencyPanel, DisclosurePanel, SiteFooter
+   733→  
+   734→Design 04: Meridian Luxury Estate
+   735→* Industry Sector: Luxury Real Estate & Developments
+   736→  
+   737→* Primary Conversion: Schedule Private Gallery Viewing / Valuation Request
+   738→  
+   739→* Style System: Architectural Gallery (#000000, #F5F5F0 warm alabaster, #18181B border accents)
+   740→  
+   741→Modular Blueprint & Architecture
+   742→1. Global Core: Minimalist SiteHeader, MobileNav full-screen overlay, LanguageSwitcher
+   743→  
+   744→2. Hero Module: HeroCinematic (High-resolution architecture loop + key specs overlay)
+   745→  
+   746→3. Value & Mechanism: ListingDetail $\rightarrow$ VirtualTourEmbed $\rightarrow$ FloorPlanViewer
+   747→  
+   748→4. Proof & Trust: HeroPortfolio $\rightarrow$ PressMentions (Architectural Digest, FT)
+   749→  
+   750→5. Primary Conversion: ValuationRequest + AppointmentRequest
+   751→  
+   752→6. Footer: SiteFooter, PropertyAlerts, AgentProfile
+   753→  
+   754→Design 05: Apex Health & Dental Care
+   755→* Industry Sector: Healthcare, Dental & Clinical Practice
+   756→  
+   757→* Primary Conversion: Live Online Appointment Booking & Telehealth Launch
+   758→  
+   759→* Style System: Clinical Assurance (#FAFAFA sterile white, #0284C7 clinical cyan, #0F172A deep charcoal text)
+   760→  
+   761→Modular Blueprint & Architecture
+   762→1. Global Core: SiteHeader (Emergency flag + direct call bar), MobileNav, Breadcrumb
+   763→  
+   764→2. Hero Module: HeroLocal + EmergencyTriage panel integration
+   765→  
+   766→3. Value & Mechanism: ServiceCardGrid $\rightarrow$ BeforeAfterSlider (Invisalign/Aesthetic results)
+   767→  
+   768→4. Proof & Trust: DoctorProfiles $\rightarrow$ InsuranceChecker $\rightarrow$ GoogleReviewsEmbed
+   769→  
+   770→5. Primary Conversion: BookingCalendar + PatientIntake (HIPAA-compliant flow)
+   771→  
+   772→6. Footer & Legal: ComplianceCenter, SiteFooter, QueueStatus
+   773→  
+   774→Design 06: Kintsugi Fine Dining & Omakase
+   775→* Industry Sector: Luxury Hospitality & Food
+   776→  
+   777→* Primary Conversion: Real-Time Table Reservation & Private Dining Inquiry
+   778→  
+   779→* Style System: Mood Minimalist (#080808 obsidian, #E2E8F0 soft silver, #C2410C terracotta ambient focus)
+   780→  
+   781→Modular Blueprint & Architecture
+   782→1. Global Core: Minimalist floating SiteHeader, MobileNav drawer
+   783→  
+   784→2. Hero Module: HeroMenu (Full-screen seasonal course highlight + direct reserve CTA)
+   785→  
+   786→3. Value & Mechanism: MenuBoard (Dietary tags) $\rightarrow$ DailySpecials $\rightarrow$ PrivateDiningEnquiry
+   787→  
+   788→4. Proof & Trust: Michelin star recognition strip $\rightarrow$ TestimonialVideo
+   789→  
+   790→5. Primary Conversion: ReservationFlow (Integration with party size & dietary restrictions)
+   791→  
+   792→6. Footer: HoursTable, DirectionsCta, GiftCardModule, SiteFooter
+   793→  
+   794→Design 07: AURA Atelier Fashion
+   795→* Industry Sector: E-Commerce & Luxury Retail
+   796→  
+   797→* Primary Conversion: Product Variant Selection & Express Drawer Checkout
+   798→  
+   799→* Style System: Editorial High-Fashion (#FFFFFF stark white, #000000 pitch black, typography-first grid)
+   800→  
+   801→Modular Blueprint & Architecture
+   802→1. Global Core: Floating sticky SiteHeader, SearchOverlay, CartDrawer persistent state
+   803→  
+   804→2. Hero Module: Editorial ProductHero + VariantSelector
+   805→  
+   806→3. Value & Mechanism: ProductGrid with live filter params $\rightarrow$ ProductGallery (360° view)
+   807→  
+   808→4. Proof & Trust: ReviewWall $\rightarrow$ SustainabilityPanel (Traceable fabric origins)
+   809→  
+   810→5. Primary Conversion: Inline CheckoutForm with PromoCodeField & instant Apple Pay trigger
+   811→  
+   812→6. Footer: ReturnsPortal, SizeGuideModal, SiteFooter
+   813→  
+   814→Design 08: ProLine Commercial HVAC & Trades
+   815→* Industry Sector: Trades, Industrial & Local Emergency Services
+   816→  
+   817→* Primary Conversion: 24/7 Urgent Dispatch Call / Service Request
+   818→  
+   819→* Style System: Industrial High-Contrast (#0F172A deep navy, #EAB308 warning amber, #F8FAFC light grey cards)
+   820→  
+   821→Modular Blueprint & Architecture
+   822→1. Global Core: AnnouncementBar ("24/7 Dispatch Operating"), SiteHeader, StickyActionBar (Phone + Book buttons pinned)
+   823→  
+   824→2. Hero Module: HeroUrgent + CallNowPanel
+   825→  
+   826→3. Value & Mechanism: ServiceDetail $\rightarrow$ MaintenancePackages $\rightarrow$ CoverageMap
+   827→  
+   828→4. Proof & Trust: OpenNowBadge $\rightarrow$ GuaranteePanel (100% Workmanship Warranty) $\rightarrow$ GoogleReviewsEmbed
+   829→  
+   830→5. Primary Conversion: QuoteRequestForm (With photo upload for instant damage diagnosis)
+   831→  
+   832→6. Footer: ServiceAreaMap, HoursTable, SiteFooter
+   833→  
+   834→Design 09: FreightFlow Global Logistics
+   835→* Industry Sector: Supply Chain, Logistics & B2B Freight
+   836→  
+   837→* Primary Conversion: Real-Time Waybill Tracking & Instant Rate RFQ
+   838→  
+   839→* Style System: Freight Technical (#020617 space void, #0EA5E9 signal cyan, #64748B slate structural lines)
+   840→  
+   841→Modular Blueprint & Architecture
+   842→1. Global Core: SiteHeader (Portals + Tracking entry points), MobileNav
+   843→  
+   844→2. Hero Module: HeroSplit (Interactive shipment tracking box + instant rate calculator)
+   845→  
+   846→3. Value & Mechanism: ServiceCatalogue (Air, Ocean, Intermodal) $\rightarrow$ CapacityCalculator
+   847→  
+   848→4. Proof & Trust: ISO Certification Wall $\rightarrow$ ResultsStatStrip (99.4% On-Time Delivery Metric)
+   849→  
+   850→5. Primary Conversion: RFQForm with Multi-Stop inputs & Customs declaration checklist
+   851→  
+   852→6. Footer: StatusPageEmbed, SecurityPage, SiteFooter
+   853→  
+   854→Design 10: Terra Vanguard Conservation
+   855→* Industry Sector: Non-Profit, Public Sector & Global Initiatives
+   856→  
+   857→* Primary Conversion: Tiered Monthly Giving & Transparent Direct Donation
+   858→  
+   859→* Style System: Earth Editorial (#052E16 deep forest, #FEF3C7 warm sand, #16A34A vitality leaf green)
+   860→  
+   861→Modular Blueprint & Architecture
+   862→1. Global Core: Emergency Banner ("Arctic Expedition Crisis Fund"), SiteHeader, LanguageSwitcher
+   863→  
+   864→2. Hero Module: MissionHero + DonationTiers persistent side-bar
+   865→  
+   866→3. Value & Mechanism: ImpactMetrics $\rightarrow$ ProcessTimeline $\rightarrow$ FieldReports (BlogIndex)
+   867→  
+   868→4. Proof & Trust: TransparencyReport (91% of funds directly to field programs) $\rightarrow$ Audited Financial Statements
+   869→  
+   870→5. Primary Conversion: DonationFlow (Recurring/One-Time toggle with direct payment SDKs)
+   871→  
+   872→6. Footer: VolunteerSignup, DocumentLibrary (IRS 501(c)(3) verification), SiteFooter
+   873→  
+   874→Production Verification & Quality Assurance Gate
+   875→To ensure zero immediate replication, each design implements our non-negotiable HQ Engineering Checklist:
+   876→
+   877→
+   878→```
+   879→                  ┌──────────────────────────────────────────────┐
+   880→                  │          QUALITY GATE VERIFICATION           │
+   881→                  └──────────────────────┬───────────────────────┘
+   882→                                         │
+   883→         ┌───────────────────────────────┼───────────────────────────────┐
+   884→         ▼                               ▼                               ▼
+   885→┌─────────────────┐             ┌─────────────────┐             ┌─────────────────┐
+   886→│  ACCESSIBILITY  │             │   PERFORMANCE   │             │ DATA INTEGRITY  │
+   887→├─────────────────┤             ├─────────────────┤             ├─────────────────┤
+   888→│ • WCAG 2.1 AA   │             │ • LCP < 1.2s    │             │ • Server state  │
+   889→│ • Visible focus │             │ • Zero CLS      │             │   validation    │
+   890→│ • Full keyboard │             │ • CSS animation │             │ • JSON-LD Schema│
+   891→│   navigation    │             │   with fallbacks│             │   injection     │
+   892→└─────────────────┘             └─────────────────┘             └─────────────────┘
+   893→
+   894→```
+   895→1. Accessibility Validation:
+   896→  
+   897→
+   898→  * Every input element is mapped with visible <label> tags and connected aria-describedby error regions.
+   899→    
+   900→  * All interactive components (drawers, command palettes, accordions) handle Escape keys and trap focus cleanly.
+   901→    
+   902→2. Zero Layout-Shift Performance:
+   903→  
+   904→
+   905→  * Aspect ratios are explicitly enforced on media blocks (aspect-[16/9], aspect-[4/3]) to preserve vertical space before media hydrates.
+   906→    
+   907→3. Structural SEO & Schema:
+   908→  
+   909→
+   910→  * Automatic generation of clean JSON-LD structured data (LocalBusiness, Organization, Service, Product) driven directly by component content props.
+   911→
+   912→
+   913→
+   914→
+   915→
+   916→
+   917→
+   918→////
+   919→
+   920→
+   921→----------------ALL 340 modules -----
+   922→# The Module Playbook
+   923→
+   924→> A build standard for business-grade websites: every module gets real content, a conversion purpose, a mobile layout, keyboard support, reduced-motion behaviour, and an empty/error state before any visual layer is added.
+   925→
+   926→**20 sections · 344 modules · Starter 50 · Growth 127 · Business 136 · Flagship 31 · 23 tracked events · every module with code**
+   927→
+   928→---
+   929→
+   930→## How to read an entry
+   931→
+   932→| Field | Meaning |
+   933→| --- | --- |
+   934→| **Type** | The lowest pricing tier the module belongs to: Starter, Growth, Business or Flagship. |
+   935→| **File** | The path the module occupies in the app. |
+   936→| **Core features** | The verbatim capability list from the source taxonomy. |
+   937→| **Purpose** | What the module is, and when it is the right choice. |
+   938→| **Rule** | The implementation pitfall that actually bites in production. |
+   939→| **Accessibility** | The non-negotiable obligation, where one is specific to the module. |
+   940→| **Code** | The reference implementation for that module, as a complete component file. |
+   941→
+   942→Three kinds of code block appear below, and each entry names which it is:
+   943→
+   944→- **reference implementation** — the clean teaching version, running in the component kit.
+   945→- **live in this app** — the actual file serving the page you are reading.
+   946→- **generated scaffold** — the structure, props, states and keyboard handling the module needs, with the entry's rule and feature list applied as comments; fill in the business copy and data.
+   947→
+   948→---
+   949→
+   950→## Contents
+   951→
+   952→1. [01 · Global system modules](#01-global-system-modules) — 18 modules, 0 flagship
+   953→2. [02 · Hero and attention modules](#02-hero-and-attention-modules) — 12 modules, 3 flagship
+   954→3. [03 · Value and explanation modules](#03-value-and-explanation-modules) — 20 modules, 0 flagship
+   955→4. [04 · Proof and trust modules](#04-proof-and-trust-modules) — 20 modules, 1 flagship
+   956→5. [05 · Conversion modules](#05-conversion-modules) — 30 modules, 0 flagship
+   957→6. [06 · Commerce modules](#06-commerce-modules) — 20 modules, 0 flagship
+   958→7. [07 · Booking, scheduling, and operations](#07-booking-scheduling-and-operations) — 20 modules, 0 flagship
+   959→8. [08 · Location and local SEO modules](#08-location-and-local-seo-modules) — 12 modules, 0 flagship
+   960→9. [09 · Content and SEO modules](#09-content-and-seo-modules) — 22 modules, 1 flagship
+   961→10. [10 · People, team, and culture](#10-people-team-and-culture) — 10 modules, 0 flagship
+   962→11. [11 · Hospitality and food modules](#11-hospitality-and-food-modules) — 16 modules, 0 flagship
+   963→12. [12 · Real estate and property modules](#12-real-estate-and-property-modules) — 15 modules, 0 flagship
+   964→13. [13 · Automotive modules](#13-automotive-modules) — 12 modules, 0 flagship
+   965→14. [14 · Education and learning modules](#14-education-and-learning-modules) — 14 modules, 1 flagship
+   966→15. [15 · Events, venues, and entertainment](#15-events-venues-and-entertainment) — 12 modules, 1 flagship
+   967→16. [16 · B2B, SaaS, and enterprise modules](#16-b2b-saas-and-enterprise-modules) — 20 modules, 3 flagship
+   968→17. [17 · Finance, legal, and regulated modules](#17-finance-legal-and-regulated-modules) — 15 modules, 3 flagship
+   969→18. [18 · Nonprofit and public-sector modules](#18-nonprofit-and-public-sector-modules) — 14 modules, 1 flagship
+   970→19. [19 · Motion, interaction, and premium layers](#19-motion-interaction-and-premium-layers) — 27 modules, 17 flagship
+   971→20. [20 · Forms, validation, and feedback](#20-forms-validation-and-feedback) — 15 modules, 0 flagship
+   972→21. [Flagship tier index](#flagship-tier-index)
+   973→22. [Tracked events](#tracked-events)
+   974→23. [Tier matrix](#tier-matrix)
+   975→24. [Build order](#build-order)
+   976→25. [Quality gates](#quality-gates)
+   977→
+   978→---
+   979→
+   980→## Section coverage
+   981→
+   982→| # | Section | Modules | Starter | Growth | Business | Flagship |
+   983→| --- | --- | --- | --- | --- | --- | --- |
+   984→| 01 | Global system modules | 18 | 9 | 5 | 4 | 0 |
+   985→| 02 | Hero and attention modules | 12 | 2 | 5 | 2 | 3 |
+   986→| 03 | Value and explanation modules | 20 | 5 | 9 | 6 | 0 |
+   987→| 04 | Proof and trust modules | 20 | 3 | 8 | 8 | 1 |
+   988→| 05 | Conversion modules | 30 | 4 | 14 | 12 | 0 |
+   989→| 06 | Commerce modules | 20 | 5 | 9 | 6 | 0 |
+   990→| 07 | Booking, scheduling, and operations | 20 | 2 | 5 | 13 | 0 |
+   991→| 08 | Location and local SEO modules | 12 | 5 | 4 | 3 | 0 |
+   992→| 09 | Content and SEO modules | 22 | 2 | 12 | 7 | 1 |
+   993→| 10 | People, team, and culture | 10 | 1 | 5 | 4 | 0 |
+   994→| 11 | Hospitality and food modules | 16 | 3 | 8 | 5 | 0 |
+   995→| 12 | Real estate and property modules | 15 | 0 | 6 | 9 | 0 |
+   996→| 13 | Automotive modules | 12 | 0 | 3 | 9 | 0 |
+   997→| 14 | Education and learning modules | 14 | 0 | 5 | 8 | 1 |
+   998→| 15 | Events, venues, and entertainment | 12 | 0 | 3 | 8 | 1 |
+   999→| 16 | B2B, SaaS, and enterprise modules | 20 | 0 | 3 | 14 | 3 |
+  1000→| 17 | Finance, legal, and regulated modules | 15 | 0 | 2 | 10 | 3 |
+  1001→| 18 | Nonprofit and public-sector modules | 14 | 1 | 6 | 6 | 1 |
+  1002→| 19 | Motion, interaction, and premium layers | 27 | 0 | 9 | 1 | 17 |
+  1003→| 20 | Forms, validation, and feedback | 15 | 8 | 6 | 1 | 0 |
+  1004→| | **Total** | **344** | **50** | **127** | **136** | **31** |
+  1005→
+  1006→---
+  1007→
+  1008→## 01 · Global system modules
+  1009→
+  1010→These appear across nearly every site.
+  1011→
+  1012→**Architecture**
+  1013→
+  1014→- Mount these once in the root layout. A header rendered per page breaks focus order and doubles every fetch.
+  1015→- Header, footer and consent are singletons: one navigation config, one CTA definition, one legal list — desktop and mobile read the same source so they never drift.
+  1016→- Keep interaction state local (open/closed) and lift only what must persist: theme, consent, locale, dismissed announcements.
+  1017→
+  1018→**Accessibility**
+  1019→
+  1020→- The skip link is the first focusable element on the page; the header comes after it.
+  1021→- Dropdowns and drawers open on focus, close on Escape and outside click, and return focus to the trigger.
+  1022→- Every icon-only control needs an aria-label and a focus ring that reaches 3:1 against its surface.
+  1023→
+  1024→**Performance**
+  1025→
+  1026→- The header is layout-critical: inline its styles, keep the logo SVG under a few kilobytes, and load the search index only when the overlay opens.
+  1027→- Consent, analytics and chat scripts load after interaction — never in the critical path.
+  1028→
+  1029→**Quality gate**
+  1030→
+  1031→- Traverse the whole header and footer with a keyboard only, at 200% zoom.
+  1032→- Check the sticky bar at 320px width with iOS safe-area insets applied.
+  1033→
+  1034→### Global system modules — Starter tier (9)
+  1035→
+  1036→#### SiteHeader
+  1037→
+  1038→- **Type:** Starter
+  1039→- **File:** `components/layout/SiteHeader.jsx`
+  1040→- **Core features:** Logo · primary nav · dropdown/mega menu · search · phone · login · language · theme · primary CTA
+  1041→- **Purpose:** The persistent wayfinding shell: identity, routes, utilities and the single primary action.
+  1042→- **Rule:** One row, one job per cluster. Below the nav breakpoint collapse into MobileNav instead of letting items wrap.
+  1043→- **Accessibility:** A <header> landmark containing one <nav aria-label="Primary">.
+  1044→- **Code:** reference implementation (runs in the component kit) — “SiteHeader — one row, three clusters”
+  1045→- **Note:** Skip link first, then a landmark header. Nav state is local; the CTA is the only filled control.
+  1046→
+  1047→```jsx
+  1048→export function SiteHeader({ nav, onSearch }) {
+  1049→  const [open, setOpen] = useState(null);
+  1050→  return (
+  1051→    <>
+  1052→      <a
+  1053→        href="#main"
+  1054→        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4
+  1055→                   focus:z-50 focus:rounded-sm focus:bg-primary focus:px-4
+  1056→                   focus:py-2 focus:text-primary-foreground"
+  1057→      >
+  1058→        Skip to content
+  1059→      </a>
+  1060→
+  1061→      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
+  1062→        <div className="mx-auto flex h-16 max-w-[140rem] items-center gap-8 px-5 lg:px-10">
+  1063→          <a href="/" className="font-heading text-lg tracking-tight">Studio</a>
+  1064→
+  1065→          <nav aria-label="Primary" className="hidden lg:block">
+  1066→            <ul className="flex items-center gap-7">
+  1067→              {nav.map((item) => (
+  1068→                <li key={item.label}>
+  1069→                  <button
+  1070→                    aria-expanded={open === item.label}
+  1071→                    aria-haspopup={item.children ? "true" : undefined}
+  1072→                    onClick={() => setOpen(open === item.label ? null : item.label)}
+  1073→                    onKeyDown={(e) => e.key === "Escape" && setOpen(null)}
+  1074→                    className="py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+  1075→                  >
+  1076→                    {item.label}
+  1077→                  </button>
+  1078→                </li>
+  1079→              ))}
+  1080→            </ul>
+  1081→          </nav>
+  1082→
+  1083→          <div className="ml-auto flex items-center gap-2">
+  1084→            <button onClick={onSearch} aria-label="Search" className="rounded-sm p-2 hover:bg-secondary">
+  1085→              <SearchIcon className="h-4 w-4" aria-hidden="true" />
+  1086→            </button>
+  1087→            <a
+  1088→              href="/book"
+  1089→              className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground"
+  1090→            >
+  1091→              Book a call
+  1092→            </a>
+  1093→          </div>
+  1094→        </div>
+  1095→      </header>
+  1096→    </>
+  1097→  );
+  1098→}
+  1099→```
+  1100→
+  1101→#### MobileNav
+  1102→
+  1103→- **Type:** Starter
+  1104→- **File:** `components/layout/MobileNav.jsx`
+  1105→- **Core features:** Full-screen or drawer menu · accordion groups · sticky CTA · contact shortcuts
+  1106→- **Purpose:** The only navigation most visitors will ever see, and the one most often neglected.
+  1107→- **Rule:** Trap focus, lock body scroll, and keep the primary CTA pinned above the safe-area inset.
+  1108→- **Code:** reference implementation (runs in the component kit) — “MobileNav — drawer with a trapped focus”
+  1109→- **Note:** The drawer is the primary navigation on phones: accordion groups, pinned CTA, safe-area padding.
+  1110→
+  1111→```jsx
+  1112→export function MobileNav({ nav, phone }) {
+  1113→  return (
+  1114→    <Sheet>
+  1115→      <SheetTrigger asChild>
+  1116→        <button aria-label="Open menu" className="lg:hidden">
+  1117→          <MenuIcon className="h-5 w-5" aria-hidden="true" />
+  1118→        </button>
+  1119→      </SheetTrigger>
+  1120→
+  1121→      <SheetContent
+  1122→        side="right"
+  1123→        className="flex w-full max-w-sm flex-col p-0 sm:w-96"
+  1124→      >
+  1125→        <SheetHeader className="border-b border-border px-5 py-4 text-left">
+  1126→          <SheetTitle className="font-heading text-lg">Menu</SheetTitle>
+  1127→        </SheetHeader>
+  1128→
+  1129→        <nav aria-label="Mobile" className="flex-1 overflow-y-auto px-5 py-6">
+  1130→          <ul className="divide-y divide-border">
+  1131→            {nav.map((item) => (
+  1132→              <li key={item.label} className="py-1">
+  1133→                <details>
+  1134→                  <summary className="cursor-pointer list-none py-3 text-base">
+  1135→                    {item.label}
+  1136→                  </summary>
+  1137→                  <ul className="pb-3 pl-3">
+  1138→                    {item.children?.map((child) => (
+  1139→                      <li key={child.href}>
+  1140→                        <a href={child.href} className="block py-2 text-sm text-muted-foreground">
+  1141→                          {child.label}
+  1142→                        </a>
+  1143→                      </li>
+  1144→                    ))}
+  1145→                  </ul>
+  1146→                </details>
+  1147→              </li>
+  1148→            ))}
+  1149→          </ul>
+  1150→        </nav>
+  1151→
+  1152→        <div
+  1153→          className="border-t border-border p-5"
+  1154→          style={{ paddingBottom: "calc(1.25rem + env(safe-area-inset-bottom))" }}
+  1155→        >
+  1156→          <a href="/book" className="block rounded-full bg-primary py-3 text-center text-sm font-medium text-primary-foreground">
+  1157→            Book a call
+  1158→          </a>
+  1159→          <a href={"tel:" + phone} className="mt-3 block text-center font-mono text-xs text-muted-foreground">
+  1160→            {phone}
+  1161→          </a>
+  1162→        </div>
+  1163→      </SheetContent>
+  1164→    </Sheet>
+  1165→  );
+  1166→}
+  1167→```
+  1168→
+  1169→#### SiteFooter
+  1170→
+  1171→- **Type:** Starter
+  1172→- **File:** `components/layout/SiteFooter.jsx`
+  1173→- **Core features:** NAP · sitemap · social · legal · newsletter · certifications · locations · app links
+  1174→- **Purpose:** The catch-all: identity, contact, legal and a compact second sitemap for crawlers and humans.
+  1175→- **Rule:** Repeat the primary CTA here, but link groups rather than every child route — a footer is not a sitemap dump.
+  1176→- **Code:** live in this app
+  1177→
+  1178→```jsx
+  1179→import { Link } from "@tanstack/react-router";
+  1180→import { primaryNav } from "@/lib/nav";
+  1181→import { categories, moduleCount } from "@/lib/playbook";
+  1182→
+  1183→export default function SiteFooter() {
+  1184→  return (
+  1185→    <footer className="border-t border-border bg-card/40">
+  1186→      <div className="mx-auto max-w-[140rem] px-5 py-16 lg:px-10">
+  1187→        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+  1188→          <div>
+  1189→            <div className="flex items-center gap-2.5">
+  1190→              <span className="h-2 w-2 bg-primary" aria-hidden="true" />
+  1191→              <span className="font-heading text-[0.95rem] font-semibold tracking-tight">Module Playbook</span>
+  1192→            </div>
+  1193→            <p className="measure mt-4 text-sm leading-relaxed text-muted-foreground">
+  1194→              A build standard for business-grade websites: {categories.length} sections, {moduleCount} modules,
+  1195→              each with its purpose, build rules and an implementation note.
+  1196→            </p>
+  1197→          </div>
+  1198→
+  1199→          <nav aria-label="Playbook">
+  1200→            <p className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Library</p>
+  1201→            <ul className="mt-4 space-y-2 text-sm">
+  1202→              {primaryNav.slice(0, 3).map((item) => (
+  1203→                <li key={item.to}>
+  1204→                  <Link to={item.to} className="text-foreground/80 hover:text-primary">
+  1205→                    {item.label}
+  1206→                  </Link>
+  1207→                </li>
+  1208→              ))}
+  1209→            </ul>
+  1210→          </nav>
+  1211→
+  1212→          <nav aria-label="Reference">
+  1213→            <p className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Reference</p>
+  1214→            <ul className="mt-4 space-y-2 text-sm">
+  1215→              {primaryNav[3].children.map((item) => (
+  1216→                <li key={item.to}>
+  1217→                  <Link to={item.to} className="text-foreground/80 hover:text-primary">
+  1218→                    {item.label}
+  1219→                  </Link>
+  1220→                </li>
+  1221→              ))}
+  1222→            </ul>
+  1223→          </nav>
+  1224→
+  1225→          <div>
+  1226→            <p className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Sections</p>
+  1227→            <ul className="mt-4 space-y-2 text-sm">
+  1228→              {categories.slice(0, 5).map((category) => (
+  1229→                <li key={category.slug}>
+  1230→                  <Link
+  1231→                    to="/categories/$categorySlug"
+  1232→                    params={{ categorySlug: category.slug }}
+  1233→                    className="text-foreground/80 hover:text-primary"
+  1234→                  >
+  1235→                    {category.title}
+  1236→                  </Link>
+  1237→                </li>
+  1238→              ))}
+  1239→            </ul>
+  1240→          </div>
+  1241→        </div>
+  1242→
+  1243→        <div className="mt-14 flex flex-col gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+  1244→          <p>Motion supports hierarchy. Content survives without it.</p>
+  1245→          <p className="font-mono uppercase tracking-[0.16em]">Version 1.0 · {moduleCount} modules</p>
+  1246→        </div>
+  1247→      </div>
+  1248→    </footer>
+  1249→  );
+  1250→}
+  1251→```
+  1252→
+  1253→#### AnnouncementBar
+  1254→
+  1255→- **Type:** Starter
+  1256→- **File:** `components/global-system/AnnouncementBar.jsx`
+  1257→- **Core features:** Offer · emergency notice · holiday hours · policy update · event banner
+  1258→- **Purpose:** One line of time-sensitive context above everything else on the page.
+  1259→- **Rule:** Dismissible and remembered per message id; never stack two announcements at once.
+  1260→- **Code:** generated scaffold — structure, props, states and keyboard behaviour; add the real copy
+  1261→
+  1262→```jsx
+  1263→// AnnouncementBar — global system
+  1264→// One line of time-sensitive context above everything else on the page.
+  1265→// Rule: Dismissible and remembered per message id; never stack two announcements at once.
+  1266→// A11y: keyboard reachable, visible focus, no colour-only meaning.
+  1267→// Features: Offer · emergency notice · holiday hours · policy update · event banner
+  1268→export default function AnnouncementBar({ nav = [], logo = "Brand", ctaLabel, onCta }) {
+  1269→  return (
+  1270→    <header className="border-b border-border bg-background">
+  1271→      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5 lg:px-10">
+  1272→        <a href="/" className="font-heading text-sm font-semibold">{logo}</a>
+  1273→        <nav aria-label="Primary" className="ml-auto hidden lg:block">
+  1274→          <ul className="flex items-center gap-1">
+  1275→            {nav.map((item) => (
+  1276→              <li key={item.href}>
+  1277→                <a href={item.href} aria-current={item.current ? "page" : undefined} className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
+  1278→                  {item.label}
+  1279→                </a>
+  1280→              </li>
+  1281→            ))}
+  1282→          </ul>
+  1283→        </nav>
+  1284→        {ctaLabel ? (
+  1285→          <button type="button" onClick={onCta} className="ml-auto bg-primary px-4 py-2 text-sm font-medium text-primary-foreground lg:ml-0">
+  1286→            {ctaLabel}
+  1287→          </button>
+  1288→        ) : null}
+  1289→      </div>
+  1290→    </header>
+  1291→  );
+  1292→}
+  1293→```
+  1294→
+  1295→#### Breadcrumb
+  1296→
+  1297→- **Type:** Starter
+  1298→- **File:** `components/global-system/Breadcrumb.jsx`
+  1299→- **Core features:** Current location · parent links · structured-data support
+  1300→- **Purpose:** Shows depth inside a hierarchy and gives a one-click step back up.
+  1301→- **Rule:** Derive it from the real URL hierarchy and pair it with BreadcrumbList structured data.
+  1302→- **Code:** generated scaffold — structure, props, states and keyboard behaviour; add the real copy
+  1303→
+  1304→```jsx
+  1305→// Breadcrumb — global system
+  1306→// Shows depth inside a hierarchy and gives a one-click step back up.
+  1307→// Rule: Derive it from the real URL hierarchy and pair it with BreadcrumbList structured data.
+  1308→// A11y: keyboard reachable, visible focus, no colour-only meaning.
+  1309→// Features: Current location · parent links · structured-data support
+  1310→export default function Breadcrumb({ nav = [], logo = "Brand", ctaLabel, onCta }) {
+  1311→  return (
+  1312→    <header className="border-b border-border bg-background">
+  1313→      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5 lg:px-10">
+  1314→        <a href="/" className="font-heading text-sm font-semibold">{logo}</a>
+  1315→        <nav aria-label="Primary" className="ml-auto hidden lg:block">
+  1316→          <ul className="flex items-center gap-1">
+  1317→            {nav.map((item) => (
+  1318→              <li key={item.href}>
+  1319→                <a href={item.href} aria-current={item.current ? "page" : undefined} className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
+  1320→                  {item.label}
+  1321→                </a>
+  1322→              </li>
+  1323→            ))}
+  1324→          </ul>
+  1325→        </nav>
+  1326→        {ctaLabel ? (
+  1327→          <button type="button" onClick={onCta} className="ml-auto bg-primary px-4 py-2 text-sm font-medium text-primary-foreground lg:ml-0">
+  1328→            {ctaLabel}
+  1329→          </button>
+  1330→        ) : null}
+  1331→      </div>
+  1332→    </header>
+  1333→  );
+  1334→}
+  1335→```
+  1336→
+  1337→#### SkipToContent
+  1338→
+  1339→- **Type:** Starter
+  1340→- **File:** `components/global-system/SkipToContent.jsx`
+  1341→- **Core features:** Keyboard accessibility
+  1342→- **Purpose:** The first tab stop, jumping straight past the header into main content.
+  1343→- **Rule:** Visible on focus, targeting the id on <main>, and working with a sticky header offset.
+  1344→- **Code:** generated scaffold — structure, props, states and keyboard behaviour; add the real copy
+  1345→
+  1346→```jsx
+  1347→// SkipToContent — global system
+  1348→// The first tab stop, jumping straight past the header into main content.
+  1349→// Rule: Visible on focus, targeting the id on <main>, and working with a sticky header offset.
+  1350→// A11y: keyboard reachable, visible focus, no colour-only meaning.
+  1351→// Features: Keyboard accessibility
+  1352→export default function SkipToContent({ eyebrow, heading, intro, items = [], action }) {
+  1353→  return (
+  1354→    <section className="border-b border-border">
+  1355→      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 lg:grid-cols-[0.9fr_1.1fr] lg:px-10">
+  1356→        <div>
+  1357→          {eyebrow ? <p className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-primary">{eyebrow}</p> : null}
+  1358→          <h2 className="mt-4 font-heading text-[clamp(1.6rem,3vw,2.4rem)] leading-tight tracking-[-0.02em]">{heading}</h2>
+  1359→          <p className="measure mt-4 text-sm leading-relaxed text-muted-foreground">{intro}</p>
+  1360→          {action ? <a href={action.href} className="mt-6 inline-flex border border-border px-5 py-2.5 text-sm">{action.label}</a> : null}
+  1361→        </div>
+  1362→        <ul className="grid gap-px border border-border bg-border sm:grid-cols-2">
+  1363→          {items.map((item) => (
+  1364→            <li key={item.id} className="bg-background p-5">
+  1365→              <p className="font-heading text-sm">{item.title}</p>
+  1366→              <p className="mt-1 text-sm text-muted-foreground">{item.detail}</p>
+  1367→            </li>
+  1368→          ))}
+  1369→        </ul>
+  1370→      </div>
+  1371→    </section>
+  1372→  );
+  1373→}
+  1374→```
+  1375→
+  1376→#### CookieConsent
+  1377→
+  1378→- **Type:** Starter
+  1379→- **File:** `components/system/CookieConsent.jsx`
+  1380→- **Core features:** Accept/reject/manage · category toggles · policy links
+  1381→- **Purpose:** Consent capture that actually gates the scripts it claims to gate.
+  1382→- **Rule:** Reject must be as easy as accept; store the decision with a version and timestamp.
+  1383→- **Code:** reference implementation (runs in the component kit) — “CookieConsent — reject is as easy as accept”
+  1384→- **Note:** Store the decision with a version. Gate scripts on the category, not on the banner being closed.
+  1385→
+  1386→```jsx
+  1387→const KEY = "consent:v1";
+  1388→
+  1389→function CookieConsent({ onDecide }) {
+  1390→  const [choice, setChoice] = useState(undefined);
+  1391→
+  1392→  useEffect(() => {
+  1393→    try {
+  1394→      setChoice(JSON.parse(localStorage.getItem(KEY) || "null"));
+  1395→    } catch {
+  1396→      setChoice(null);
+  1397→    }
+  1398→  }, []);
+  1399→
+  1400→  const save = (value) => {
+  1401→    const record = { ...value, version: 1, at: new Date().toISOString() };
+  1402→    localStorage.setItem(KEY, JSON.stringify(record));
+  1403→    setChoice(record);
+  1404→    onDecide?.(record);
+  1405→  };
+  1406→
+  1407→  if (choice) return null;
+  1408→
+  1409→  return (
+  1410→    <div role="dialog" aria-label="Cookie preferences"
+  1411→         className="fixed inset-x-4 bottom-4 z-50 border border-border bg-card p-5 shadow-2xl md:inset-x-auto md:right-6 md:max-w-md">
+  1412→      <p className="text-sm text-foreground">
+  1413→        We use cookies for analytics and to improve the site. Essential cookies are always on.
+  1414→      </p>
+  1415→      <div className="mt-4 flex flex-wrap gap-2">
+  1416→        <button onClick={() => save({ analytics: true })} className="rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+  1417→          Accept all
+  1418→        </button>
+  1419→        <button onClick={() => save({ analytics: false })} className="rounded-sm border border-border px-4 py-2 text-sm">
+  1420→          Reject optional
+  1421→        </button>
+  1422→      </div>
+  1423→    </div>
+  1424→  );
+  1425→}
+  1426→```
+  1427→
+  1428→#### ErrorBoundary
+  1429→
+  1430→- **Type:** Starter
+  1431→- **File:** `components/DefaultCatchBoundary.jsx`
+  1432→- **Core features:** Friendly failure state and recovery action
+  1433→- **Purpose:** Keeps one broken component from blanking an otherwise working page.
+  1434→- **Rule:** Offer retry and a route home; log the error without rendering a stack trace to the visitor.
+  1435→- **Code:** live in this app
+  1436→
+  1437→```jsx
+  1438→import { ErrorComponent, Link, rootRouteId, useMatch, useRouter } from "@tanstack/react-router";
+  1439→import { Button } from "@/components/ui/button";
+  1440→
+  1441→export function DefaultCatchBoundary({ error }) {
+  1442→  const router = useRouter();
+  1443→  const isRoot = useMatch({ strict: false, select: (state) => state.id === rootRouteId });
+  1444→
+  1445→  return (
+  1446→    <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 py-24">
+  1447→      <ErrorComponent error={error} />
+  1448→      <div className="flex gap-2">
+  1449→        <Button variant="outline" onClick={() => router.invalidate()}>
+  1450→          Try again
+  1451→        </Button>
+  1452→        <Button asChild>{isRoot ? <Link to="/">Home</Link> : <Link to="/" onClick={(e) => { e.preventDefault(); window.history.back(); }}>Go back</Link>}</Button>
+  1453→      </div>
+  1454→    </div>
+  1455→  );
+  1456→}
+  1457→```
+  1458→
+  1459→#### NotFound
+  1460→
+  1461→- **Type:** Starter
+  1462→- **File:** `components/NotFound.jsx`
+  1463→- **Core features:** Helpful 404 with search, popular links, CTA
+  1464→- **Purpose:** Recovers a dead-end visit into a useful next step.
+  1465→- **Rule:** Return a real 404 status server-side — a styled page sent with 200 is a soft 404.
+  1466→- **Code:** live in this app
+  1467→
+  1468→```jsx
+  1469→import { Link } from "@tanstack/react-router";
+  1470→import { Button } from "@/components/ui/button";
+  1471→
+  1472→export function NotFound({ children }) {
+  1473→  return (
+  1474→    <div className="mx-auto flex max-w-lg flex-col items-center gap-4 py-24 text-center">
+  1475→      <p className="text-6xl font-semibold tracking-tight">404</p>
+  1476→      <p className="text-muted-foreground">{children ?? "The page you are looking for does not exist."}</p>
+  1477→      <div className="flex gap-2">
+  1478→        <Button variant="outline" onClick={() => window.history.back()}>
+  1479→          Go back
+  1480→        </Button>
+  1481→        <Button asChild>
+  1482→          <Link to="/">Start over</Link>
+  1483→        </Button>
+  1484→      </div>
+  1485→    </div>
+  1486→  );
+  1487→}
+  1488→```
+  1489→
+  1490→### Global system modules — Growth tier (5)
+  1491→
+  1492→#### MegaMenu
+  1493→
+  1494→- **Type:** Growth
+  1495→- **File:** `components/layout/MegaMenu.jsx`
+  1496→- **Core features:** Columned links · featured page · image · CTA · industry/service shortcuts
+  1497→- **Purpose:** Exposes a deep route tree — services, industries, documentation — without costing a second click.
+  1498→- **Rule:** Cap it at four columns and close on route change, restoring focus to the trigger.
+  1499→- **Code:** reference implementation (runs in the component kit) — “MegaMenu — panel on focus, not on hover only”
+  1500→- **Note:** Opens on hover and on focus-within, closes on Escape and on route change, and keeps four columns maximum.
+  1501→
+  1502→```jsx
+  1503→export function MegaMenu({ group, onNavigate }) {
+  1504→  const [open, setOpen] = useState(false);
+  1505→  const ref = useRef(null);
+  1506→
+  1507→  useEffect(() => {
+  1508→    const onKey = (e) => e.key === "Escape" && setOpen(false);
+  1509→    document.addEventListener("keydown", onKey);
+  1510→    return () => document.removeEventListener("keydown", onKey);
+  1511→  }, []);
+  1512→
+  1513→  return (
+  1514→    <div
+  1515→      ref={ref}
+  1516→      className="relative"
+  1517→      onMouseEnter={() => setOpen(true)}
+  1518→      onMouseLeave={() => setOpen(false)}
+  1519→      onBlur={(e) => !ref.current.contains(e.relatedTarget) && setOpen(false)}
+  1520→    >
+  1521→      <button aria-expanded={open} aria-haspopup="true" onClick={() => setOpen(!open)}>
+  1522→        {group.label}
+  1523→      </button>
+  1524→
+  1525→      {open && (
+  1526→        <div
+  1527→          role="group"
+  1528→          aria-label={group.label}
+  1529→          className="absolute left-0 top-full grid w-[62rem] grid-cols-4 gap-8 border border-border
+  1530→                     bg-popover p-8 shadow-2xl"
+  1531→        >
+  1532→          {group.columns.map((column) => (
+  1533→            <div key={column.title}>
+  1534→              <p className="mb-3 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground">
+  1535→                {column.title}
+  1536→              </p>
+  1537→              <ul className="space-y-2">
+  1538→                {column.links.map((link) => (
+  1539→                  <li key={link.href}>
+  1540→                    <a href={link.href} onClick={onNavigate} className="text-sm hover:text-primary">
+  1541→                      {link.label}
+  1542→                    </a>
+  1543→                  </li>
+  1544→                ))}
+  1545→              </ul>
+  1546→            </div>
+  1547→          ))}
+  1548→        </div>
+  1549→      )}
+  1550→    </div>
+  1551→  );
+  1552→}
+  1553→```
+  1554→
+  1555→#### StickyActionBar
+  1556→
+  1557→- **Type:** Growth
+  1558→- **File:** `components/layout/StickyActionBar.jsx`
+  1559→- **Core features:** Call · book · quote · order · directions · WhatsApp · chat
+  1560→- **Purpose:** Keeps the dominant conversion action within thumb reach on small screens.
+  1561→- **Rule:** Two actions maximum, padded for safe-area, hidden while a modal or drawer is open, and never covering a focused field.
+  1562→- **Accessibility:** Give <main> a scroll-margin-bottom equal to the bar height.
+  1563→- **Code:** reference implementation (runs in the component kit) — “StickyActionBar — two actions, safe-area aware”
+  1564→- **Note:** Phone-only, hidden while a dialog is open, and main content gets a matching scroll-margin.
+  1565→
+  1566→```jsx
+  1567→export function StickyActionBar({ phone, bookingHref }) {
+  1568→  return (
+  1569→    <div
+  1570→      className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95
+  1571→                 backdrop-blur-xl md:hidden"
+  1572→      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+  1573→    >
+  1574→      <div className="grid grid-cols-2 gap-2 p-3">
+  1575→        <a
+  1576→          href={"tel:" + phone}
+  1577→          className="flex items-center justify-center gap-2 rounded-sm border border-border py-3 text-sm"
+  1578→        >
+  1579→          <PhoneIcon className="h-4 w-4" aria-hidden="true" /> Call
+  1580→        </a>
+  1581→        <a
+  1582→          href={bookingHref}
+  1583→          className="flex items-center justify-center rounded-sm bg-primary py-3 text-sm font-medium text-primary-foreground"
+  1584→        >
+  1585→          Book now
+  1586→        </a>
+  1587→      </div>
+  1588→    </div>
+  1589→  );
+  1590→}
+  1591→
+  1592→// In the layout stylesheet, so the bar never covers a focused field:
+  1593→// main { scroll-margin-bottom: 5rem; }
+  1594→```
+  1595→
+  1596→#### BackToTop
+  1597→
+  1598→- **Type:** Growth
+  1599→- **File:** `components/layout/BackToTop.jsx`
+  1600→- **Core features:** Long-page navigation
+  1601→- **Purpose:** A way out of long documents that doesn't require hunting for the header.
+  1602→- **Rule:** Appear only after real scroll distance, and honour reduced motion when jumping.
+  1603→- **Code:** live in this app
+  1604→
+  1605→```jsx
+  1606→import { useEffect, useState } from "react";
+  1607→import { ArrowUp } from "lucide-react";
+  1608→
+  1609→export default function BackToTop() {
+  1610→  const [visible, setVisible] = useState(false);
+  1611→
+  1612→  useEffect(() => {
+  1613→    const onScroll = () => setVisible(window.scrollY > 800);
+  1614→    window.addEventListener("scroll", onScroll, { passive: true });
+  1615→    return () => window.removeEventListener("scroll", onScroll);
+  1616→  }, []);
+  1617→
+  1618→  return (
+  1619→    <button
+  1620→      type="button"
+  1621→      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+  1622→      aria-label="Back to top"
+  1623→      className={
+  1624→        "fixed bottom-6 right-5 z-30 border border-border bg-card p-3 text-muted-foreground transition-all duration-500 ease-elite hover:border-primary hover:text-primary " +
+  1625→        (visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0")
+  1626→      }
+  1627→    >
+  1628→      <ArrowUp className="h-4 w-4" aria-hidden="true" />
+  1629→    </button>
+  1630→  );
+  1631→}
+  1632→```
+  1633→
+  1634→#### ThemeToggle
+  1635→
+  1636→- **Type:** Growth
+  1637→- **File:** `components/system/ThemeToggle.jsx`
+  1638→- **Core features:** Light/dark/high-contrast mode
+  1639→- **Purpose:** Lets a visitor choose a reading environment that suits the light they are in.
+  1640→- **Rule:** Apply the stored theme before first paint to avoid a flash, and never signal mode by colour alone.
+  1641→- **Code:** reference implementation (runs in the component kit) — “ThemeToggle — applied before first paint”
+  1642→- **Note:** A tiny inline script sets the class in the document head so the stored theme never flashes.
+  1643→
+  1644→```jsx
+  1645→// Inline in the document head, before any stylesheet:
+  1646→// (function () {
+  1647→//   var stored = localStorage.getItem("theme");
+  1648→//   var light = stored === "light";
+  1649→//   document.documentElement.classList.toggle("light", light);
+  1650→// })();
+  1651→
+  1652→function ThemeToggle() {
+  1653→  const [light, setLight] = useState(false);
+  1654→
+  1655→  useEffect(() => {
+  1656→    setLight(document.documentElement.classList.contains("light"));
+  1657→  }, []);
+  1658→
+  1659→  const toggle = () => {
+  1660→    const next = !light;
+  1661→    setLight(next);
+  1662→    document.documentElement.classList.toggle("light", next);
+  1663→    localStorage.setItem("theme", next ? "light" : "dark");
+  1664→  };
+  1665→
+  1666→  return (
+  1667→    <button
+  1668→      onClick={toggle}
+  1669→      aria-pressed={light}
+  1670→      aria-label={"Switch to " + (light ? "dark" : "light") + " theme"}
+  1671→      className="rounded-sm p-2 text-muted-foreground transition-colors hover:text-foreground"
+  1672→    >
+  1673→      {light ? <MoonIcon className="h-4 w-4" aria-hidden="true" /> : <SunIcon className="h-4 w-4" aria-hidden="true" />}
+  1674→    </button>
+  1675→  );
+  1676→}
+  1677→```
+  1678→
+  1679→#### SearchOverlay
+  1680→
+  1681→- **Type:** Growth
+  1682→- **File:** `components/layout/SearchOverlay.jsx`
+  1683→- **Core features:** Site search · recent searches · suggested pages · filters
+  1684→- **Purpose:** Search that covers the page instead of a field squeezed into the header.
+  1685→- **Rule:** Debounce input, hand-write empty and no-result states, and keep recent queries local only.
+  1686→- **Code:** live in this app
+  1687→
+  1688→```jsx
+  1689→import { useEffect, useRef, useState } from "react";
+  1690→import { useNavigate, useRouterState } from "@tanstack/react-router";
+  1691→import { Search, CornerDownLeft } from "lucide-react";
+  1692→import { searchModules, categories } from "@/lib/playbook";
+  1693→
+  1694→export default function SearchOverlay({ open, onClose }) {
+  1695→  const [query, setQuery] = useState("");
+  1696→  const navigate = useNavigate();
+  1697→  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  1698→  const firstRun = useRef(true);
+  1699→
+  1700→  useEffect(() => {
+  1701→    if (open) setQuery("");
+  1702→  }, [open]);
+  1703→
+  1704→  useEffect(() => {
+  1705→    if (firstRun.current) {
+  1706→      firstRun.current = false;
+  1707→      return;
+  1708→    }
+  1709→    onClose();
+  1710→  }, [pathname, onClose]);
+  1711→
+  1712→  useEffect(() => {
+  1713→    if (!open) return;
+  1714→    const previous = document.body.style.overflow;
+  1715→    document.body.style.overflow = "hidden";
+  1716→    const onKey = (event) => {
+  1717→      if (event.key === "Escape") onClose();
+  1718→    };
+  1719→    window.addEventListener("keydown", onKey);
+  1720→    return () => {
+  1721→      document.body.style.overflow = previous;
+  1722→      window.removeEventListener("keydown", onKey);
+  1723→    };
+  1724→  }, [open, onClose]);
+  1725→
+  1726→  if (!open) return null;
+  1727→
+  1728→  const results = query.trim() ? searchModules(query).slice(0, 8) : [];
+  1729→
+  1730→  const go = (slug) => {
+  1731→    onClose();
+  1732→    navigate({ to: "/modules/$moduleSlug", params: { moduleSlug: slug } });
+  1733→  };
+  1734→
+  1735→  return (
+  1736→    <div className="fixed inset-0 z-50 flex items-start justify-center bg-background/85 px-4 pt-24 backdrop-blur-md">
+  1737→      <button className="absolute inset-0 cursor-default" aria-label="Close search" onClick={onClose} />
+  1738→      <div
+  1739→        role="dialog"
+  1740→        aria-modal="true"
+  1741→        aria-label="Search the playbook"
+  1742→        className="relative w-full max-w-2xl border border-border bg-card shadow-2xl"
+  1743→      >
+  1744→        <div className="flex items-center gap-3 border-b border-border px-4">
+  1745→          <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+  1746→          <input
+  1747→            autoFocus
+  1748→            value={query}
+  1749→            onChange={(event) => setQuery(event.target.value)}
+  1750→            onKeyDown={(event) => {
+  1751→              if (event.key === "Enter" && results[0]) go(results[0].slug);
+  1752→            }}
+  1753→            placeholder="Search 344 modules — try “booking”, “proof”, “menu”"
+  1754→            aria-label="Search modules"
+  1755→            className="w-full bg-transparent py-4 text-base outline-none placeholder:text-muted-foreground"
+  1756→          />
+  1757→          <kbd className="hidden shrink-0 border border-border px-1.5 py-0.5 font-mono text-[0.6rem] text-muted-foreground sm:block">
+  1758→            ESC
+  1759→          </kbd>
+  1760→        </div>
+  1761→
+  1762→        {query.trim() === "" ? (
+  1763→          <div className="p-4">
+  1764→            <p className="mb-3 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">
+  1765→              Jump to a section
+  1766→            </p>
+  1767→            <div className="flex flex-wrap gap-2">
+  1768→              {categories.slice(0, 10).map((category) => (
+  1769→                <button
+  1770→                  key={category.slug}
+  1771→                  onClick={() => {
+  1772→                    onClose();
+  1773→                    navigate({ to: "/categories/$categorySlug", params: { categorySlug: category.slug } });
+  1774→                  }}
+  1775→                  className="border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+  1776→                >
+  1777→                  {category.title}
+  1778→                </button>
+  1779→              ))}
+  1780→            </div>
+  1781→          </div>
+  1782→        ) : (
+  1783→          <ul className="max-h-[60vh] overflow-y-auto py-2">
+  1784→            {results.map((module) => (
+  1785→              <li key={module.slug}>
+  1786→                <button
+  1787→                  onClick={() => go(module.slug)}
+  1788→                  className="flex w-full items-center gap-4 px-4 py-3 text-left transition-colors hover:bg-secondary"
+  1789→                >
+  1790→                  <span className="flex-1">
+  1791→                    <span className="block text-sm text-foreground">{module.name}</span>
+  1792→                    <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+  1793→                      {module.purpose}
+  1794→                    </span>
+  1795→                  </span>
+  1796→                  <span className="hidden shrink-0 font-mono text-[0.55rem] uppercase tracking-[0.16em] text-muted-foreground sm:block">
+  1797→                    {module.categoryTitle}
+  1798→                  </span>
+  1799→                  <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+  1800→                </button>
+  1801→              </li>
+  1802→            ))}
+  1803→            {results.length === 0 && (
+  1804→              <li className="px-4 py-10 text-center text-sm text-muted-foreground">
+  1805→                No module matches “{query}”. Try a broader term such as “form” or “hero”.
+  1806→              </li>
+  1807→            )}
+  1808→          </ul>
+  1809→        )}
+  1810→      </div>
+  1811→    </div>
+  1812→  );
+  1813→}
+  1814→```
+  1815→
+  1816→### Global system modules — Business tier (4)
+  1817→
+  1818→#### LanguageSwitcher
+  1819→
+  1820→- **Type:** Business
+  1821→- **File:** `components/global-system/LanguageSwitcher.jsx`
+  1822→- **Core features:** Locale selection · translated routes · hreflang
+  1823→- **Purpose:** Moves a visitor to the same page in another language, not to the homepage.
+  1824→- **Rule:** Switch to the equivalent route, emit hreflang pairs plus x-default, and persist the choice.
+  1825→- **Code:** generated scaffold — structure, props, states and keyboard behaviour; add the real copy
+  1826→
+  1827→```jsx
+  1828→// LanguageSwitcher — global system
+  1829→// Moves a visitor to the same page in another language, not to the homepage.
+  1830→// Rule: Switch to the equivalent route, emit hreflang pairs plus x-default, and persist the choice.
+  1831→// A11y: keyboard reachable, visible focus, no colour-only meaning.
+  1832→// Features: Locale selection · translated routes · hreflang
+  1833→export default function LanguageSwitcher({ nav = [], logo = "Brand", ctaLabel, onCta }) {
+  1834→  return (
+  1835→    <header className="border-b border-border bg-background">
+  1836→      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5 lg:px-10">
+  1837→        <a href="/" className="font-heading text-sm font-semibold">{logo}</a>
+  1838→        <nav aria-label="Primary" className="ml-auto hidden lg:block">
+  1839→          <ul className="flex items-center gap-1">
+  1840→            {nav.map((item) => (
+  1841→              <li key={item.href}>
+  1842→                <a href={item.href} aria-current={item.current ? "page" : undefined} className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
+  1843→                  {item.label}
+  1844→                </a>
+  1845→              </li>
+  1846→            ))}
+  1847→          </ul>
+  1848→        </nav>
+  1849→        {ctaLabel ? (
+  1850→          <button type="button" onClick={onCta} className="ml-auto bg-primary px-4 py-2 text-sm font-medium text-primary-foreground lg:ml-0">
+  1851→            {ctaLabel}
+  1852→          </button>
+  1853→        ) : null}
+  1854→      </div>
+  1855→    </header>
+  1856→  );
+  1857→}
+  1858→```
+  1859→
+  1860→#### CommandPalette
+  1861→
+  1862→- **Type:** Business
+  1863→- **File:** `components/system/CommandPalette.jsx`
+  1864→- **Core features:** Keyboard-first navigation for large sites
+  1865→- **Purpose:** Fast navigation for documentation, dashboards and route trees too large for a menu.
+  1866→- **Rule:** ?K / Ctrl+K to open, arrows to move, Enter to go. Index titles and sections, not page bodies.
+  1867→- **Code:** reference implementation (runs in the component kit) — “CommandPalette — ?K over a static index”
+  1868→- **Note:** Index titles and sections only. Arrow keys move, Enter navigates, Escape closes.
+  1869→
+  1870→```jsx
+  1871→export function CommandPalette({ items }) {
+  1872→  const [open, setOpen] = useState(false);
+  1873→  const [query, setQuery] = useState("");
+  1874→  const navigate = useNavigate();
+  1875→
+  1876→  useEffect(() => {
+  1877→    const onKey = (e) => {
+  1878→      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+  1879→        e.preventDefault();
+  1880→        setOpen((value) => !value);
+  1881→      }
+  1882→      if (e.key === "Escape") setOpen(false);
+  1883→    };
+  1884→    window.addEventListener("keydown", onKey);
+  1885→    return () => window.removeEventListener("keydown", onKey);
+  1886→  }, []);
+  1887→
+  1888→  const results = items
+  1889→    .filter((item) => item.label.toLowerCase().includes(query.toLowerCase()))
+  1890→    .slice(0, 8);
+  1891→
+  1892→  if (!open) return null;
+  1893→
+  1894→  return (
+  1895→    <div role="dialog" aria-modal="true" aria-label="Command palette"
+  1896→         className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
+  1897→      <div className="mx-auto mt-24 w-[min(36rem,calc(100vw-2rem))] border border-border bg-card shadow-2xl">
+  1898→        <input
+  1899→          autoFocus
+  1900→          value={query}
+  1901→          onChange={(e) => setQuery(e.target.value)}
+  1902→          placeholder="Jump to a module or page"
+  1903→          className="w-full border-b border-border bg-transparent px-4 py-4 text-base outline-none"
+  1904→        />
+  1905→        <ul className="max-h-80 overflow-y-auto py-2">
+  1906→          {results.map((item) => (
+  1907→            <li key={item.href}>
+  1908→              <button
+  1909→                onClick={() => { navigate(item.href); setOpen(false); }}
+  1910→                className="flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-secondary"
+  1911→              >
+  1912→                <span>{item.label}</span>
+  1913→                <span className="font-mono text-[0.6rem] uppercase tracking-widest text-muted-foreground">
+  1914→                  {item.group}
+  1915→                </span>
+  1916→              </button>
+  1917→            </li>
+  1918→          ))}
+  1919→          {results.length === 0 && (
+  1920→            <li className="px-4 py-6 text-sm text-muted-foreground">Nothing matches “{query}”.</li>
+  1921→          )}
+  1922→        </ul>
+  1923→      </div>
+  1924→    </div>
+  1925→  );
+  1926→}
+  1927→```
+  1928→
+  1929→#### OfflineBanner
+  1930→
+  1931→- **Type:** Business
+  1932→- **File:** `components/global-system/OfflineBanner.jsx`
+  1933→- **Core features:** Connectivity notice and cached-content fallback
+  1934→- **Purpose:** Tells a visitor the network dropped and what still works meanwhile.
+  1935→- **Rule:** Drive it from navigator.onLine plus a genuinely failed fetch — not one event in isolation.
+  1936→- **Code:** generated scaffold — structure, props, states and keyboard behaviour; add the real copy
+  1937→
+  1938→```jsx
+  1939→// OfflineBanner — global system
+  1940→// Tells a visitor the network dropped and what still works meanwhile.
+  1941→// Rule: Drive it from navigator.onLine plus a genuinely failed fetch — not one event in isolation.
+  1942→// A11y: keyboard reachable, visible focus, no colour-only meaning.
+  1943→// Features: Connectivity notice and cached-content fallback
+  1944→export default function OfflineBanner({ nav = [], logo = "Brand", ctaLabel, onCta }) {
+  1945→  return (
+  1946→    <header className="border-b border-border bg-background">
+  1947→      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5 lg:px-10">
+  1948→        <a href="/" className="font-heading text-sm font-semibold">{logo}</a>
+  1949→        <nav aria-label="Primary" className="ml-auto hidden lg:block">
+  1950→          <ul className="flex items-center gap-1">
+  1951→            {nav.map((item) => (
+  1952→              <li key={item.href}>
+  1953→                <a href={item.href} aria-current={item.current ? "page" : undefined} className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
+  1954→                  {item.label}
+  1955→                </a>
+  1956→              </li>
+  1957→            ))}
+  1958→          </ul>
+  1959→        </nav>
+  1960→        {ctaLabel ? (
+  1961→          <button type="button" onClick={onCta} className="ml-auto bg-primary px-4 py-2 text-sm font-medium text-primary-foreground lg:ml-0">
+  1962→            {ctaLabel}
+  1963→          </button>
+  1964→        ) : null}
+  1965→      </div>
+  1966→    </header>
+  1967→  );
+  1968→}
+  1969→```
+  1970→
+  1971→#### ConsentGate
+  1972→
+  1973→- **Type:** Business
+  1974→- **File:** `components/global-system/ConsentGate.jsx`
+  1975→- **Core features:** Blocks third-party scripts until consent
+  1976→- **Purpose:** Conditional loader for analytics, embeds and marketing pixels.
+  1977→- **Rule:** Gate the script, not the layout; unmount it when consent is withdrawn, not just on load.
+  1978→- **Code:** generated scaffold — structure, props, states and keyboard behaviour; add the real copy
+  1979→
+  1980→```jsx
+  1981→// ConsentGate — global system
+  1982→// Conditional loader for analytics, embeds and marketing pixels.
+  1983→// Rule: Gate the script, not the layout; unmount it when consent is withdrawn, not just on load.
+  1984→// A11y: keyboard reachable, visible focus, no colour-only meaning.
+  1985→// Features: Blocks third-party scripts until consent
+  1986→export default function ConsentGate({ label, options = [], onSelect }) {
+  1987→  const [open, setOpen] = useState(false);
+  1988→  const trigger = useRef(null);
+  1989→
+  1990→  useEffect(() => {
+  1991→    if (!open) return;
+  1992→    const onKey = (event) => {
+  1993→      if (event.key === "Escape") {
+  1994→        setOpen(false);
+  1995→        trigger.current?.focus();
+  1996→      }
+  1997→    };
+  1998→    window.addEventListener("keydown", onKey);
+  1999→    return () => window.removeEventListener("keydown", onKey);
+  2000→  }, [open]);
+
+[showing lines 1-2000 of 17349; use offset=2001 with limit to continue reading]

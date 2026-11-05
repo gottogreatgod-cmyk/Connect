@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1) Yes — a live \"Fuoco & Figli\" restaurant preview is shown in a browser-style frame (fuocoefigli.com with \"Open full screen\").\n2) No — no action buttons are visible below the preview; it's cut off at the bottom of the screenshot.\n3) No — no \"Your generated assets\" section is visible.\n4) No — no \"Take this build to any AI\" section is visible (it's likely below the fold).\n5) No obvious visual defects; the page appears cleanly rendered, though content is cut off at the viewport bottom.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1793790120,
+  "id": "20261104190156fe35e849d0cc4a51",
+  "model": "glm-5.3-flash",
+  "object": "chat.completion",
+  "request_id": "20261104190156fe35e849d0cc4a51",
+  "usage": {
+    "completion_tokens": 121,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2027,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2148
+  }
+}

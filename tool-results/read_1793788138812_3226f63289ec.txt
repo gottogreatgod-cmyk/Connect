@@ -1,0 +1,553 @@
+     1→"use client"
+     2→
+     3→/**
+     4→ * SiteView — one template, whole-width, finished, addressed by the
+     5→ * system path: #/site/<slug>/<page>?published=1
+     6→ *
+     7→ *   1. sticky bar — exit pill, template id, page tabs (page = the path)
+     8→ *   2. the whole-width LIVE site — the genome applies in real time
+     9→ *   3. the consoles row (finish-gated): genome · manifest · blueprint
+    10→ *
+    11→ * "Published" (?published=1) hides every console and shows the plate
+    12→ * alone — the client-presentation mode.
+    13→ */
+    14→import { useMemo, useState } from "react"
+    15→import { Activity, ArrowLeft, BookOpen, Check, ClipboardCheck, ExternalLink, Lock, Maximize2, RotateCcw, Sliders, X } from "lucide-react"
+    16→import { NATIVE, SWITCHES, type Genome, type SwitchId } from "@/engine/genome"
+    17→import { TEMPLATES, findTemplate, industryOf, pagesAt, type TemplateDef } from "@/engine/registry"
+    18→import { resolve } from "@/engine/resolve"
+    19→import { countOverrides } from "@/engine/finish"
+    20→import { blueprintOf } from "@/engine/blueprint"
+    21→import { go, goKeepingParams, href, setParam } from "@/engine/nav"
+    22→import { track } from "@/engine/analytics"
+    23→import { useFactory } from "@/factory/store"
+    24→import { useFx } from "../fx"
+    25→import { useGos } from "../gos-context"
+    26→import { SiteFrame } from "../site-frame"
+    27→import { TypeTools } from "../type-tools"
+    28→import { RandomizerTools } from "../randomizer"
+    29→
+    30→type ConsoleTab = "genome" | "manifest" | "events" | "blueprint"
+    31→
+    32→export function SiteView({ slug, page, published }: { slug: string | null; page: string | null; published: boolean }) {
+    33→  const tpl = useMemo(() => findTemplate(slug) ?? TEMPLATES[0], [slug])
+    34→  const { caps } = useFx()
+    35→  const gos = useGos()
+    36→  const [console_, setConsole_] = useState<ConsoleTab | null>(caps.consoles > 0 ? "genome" : null)
+    37→  const [notice, setNotice] = useState<string | null>(null)
+    38→  const [pbLinks, setPbLinks] = useState<Record<string, { id: string; section: string; tier: string }> | null>(null)
+    39→  const blueprint = useMemo(() => blueprintOf(tpl.slug), [tpl.slug])
+    40→
+    41→  /* genome comes from the shared provider so the library and this view
+    42→     stay in sync; the override budget is the finish tier's honest cap.
+    43→     siteGenome layers the edition preset UNDER the user's switches. */
+    44→  const genome = gos.siteGenome
+    45→  const userGenome = gos.genome
+    46→  const changed = SWITCHES.filter((s) => userGenome[s.id] !== "native").length
+    47→  const allowed = caps.genomeOverrides
+    48→  const visiblePages = useMemo(() => pagesAt(tpl, gos.tierStep), [tpl, gos.tierStep])
+    49→
+    50→  const pick = (id: SwitchId, value: string) => {
+    51→    const next = { ...userGenome, [id]: value }
+    52→    const over = countOverrides(next)
+    53→    if (over > allowed) {
+    54→      setNotice(`The ${caps.consoles > 1 ? "Spectacle" : "current"} finish allows ${allowed} override${allowed === 1 ? "" : "s"} — you are at ${over}. Move up a finish, or reset one.`)
+    55→      return
+    56→    }
+    57→    setNotice(null)
+    58→    gos.setGenome(next)
+    59→  }
+    60→
+    61→  /* fetch the playbook index once for module links */
+    62→  useMemo(() => {
+    63→    if (pbLinks) return
+    64→    void fetch("/api/playbook")
+    65→      .then((r) => (r.ok ? r.json() : null))
+    66→      .then((data) => {
+    67→        if (!data?.modules) return
+    68→        const map: Record<string, { id: string; section: string; tier: string }> = {}
+    69→        for (const m of data.modules) map[m.name] = { id: m.id, section: m.section, tier: m.tier }
+    70→        setPbLinks(map)
+    71→      })
+    72→      .catch(() => {})
+    73→  }, [])
+    74→
+    75→  const openModule = (id: string) => {
+    76→    go(`/playbook/${id}`)
+    77→  }
+    78→
+    79→  /* the page lives in the path (#/site/<slug>/<page>) — in-site nav and
+    80→     the tab bar both walk the path, so the back button walks pages */
+    81→  const gotoPage = (p: string) => {
+    82→    goKeepingParams(`/site/${tpl.slug}/${p}`)
+    83→  }
+    84→
+    85→  /* the morph step can filter out the current page — fall back to home */
+    86→  const safePage = visiblePages.some((p) => p.id === page) ? page : "home"
+    87→
+    88→  return (
+    89→    <div className="siteview">
+    90→      {/* 1 · sticky bar */}
+    91→      <div className="sv-bar">
+    92→        <button
+    93→          type="button"
+    94→          className="sv-exit"
+    95→          onClick={() => {
+    96→            gos.select(tpl.slug)
+    97→            go(`/library/${tpl.slug}`)
+    98→          }}
+    99→        >
+   100→          <ArrowLeft size={14} aria-hidden /> Exit to library
+   101→        </button>
+   102→        <div className="sv-pages" role="tablist" aria-label="Pages">
+   103→          {visiblePages.map((p) => (
+   104→            <button key={p.id} role="tab" aria-selected={safePage === p.id} className={safePage === p.id ? "on" : ""} onClick={() => gotoPage(p.id)}>
+   105→              {p.label}
+   106→            </button>
+   107→          ))}
+   108→        </div>
+   109→        <div className="sv-title">
+   110→          <b>{tpl.name}</b>
+   111→          <span>
+   112→            <code className="mr-1.5 rounded bg-muted px-1 py-px font-mono text-[10px] text-primary">#/site/{tpl.slug}{page && page !== "home" ? `/${page}` : ""}</code>
+   113→            {industryOf(tpl.industry).label}
+   114→          </span>
+   115→        </div>
+   116→        {/* type tools — editable text + A−/A+ right here on the plate */}
+   117→        <TypeTools />
+   118→        {/* the genome randomizer — deal / cruise on the plate too */}
+   119→        <RandomizerTools />
+   120→        <button
+   121→          type="button"
+   122→          className="sv-exit"
+   123→          onClick={() => {
+   124→            setParam("published", published ? null : true)
+   125→            track("media_opened", { slug: tpl.slug, published: !published })
+   126→          }}
+   127→          title={published ? "Show the consoles" : "Published view — consoles hidden"}
+   128→        >
+   129→          {published ? <Sliders size={14} aria-hidden /> : <Maximize2 size={14} aria-hidden />}
+   130→          {published ? "Inspect" : "Published"}
+   131→        </button>
+   132→        <a
+   133→          className="sv-exit"
+   134→          href={href(`/site/${tpl.slug}${page && page !== "home" ? `/${page}` : ""}?published=1`)}
+   135→          title="Published link — #/site/…?published=1"
+   136→        >
+   137→          <ExternalLink size={14} aria-hidden />
+   138→          <span className="sr-only">Published link</span>
+   139→        </a>
+   140→      </div>
+   141→
+   142→      {/* 2 · the whole-width live site — morph step, type tools, edit mode all live */}
+   143→      <div className="sv-site-wrap">
+   144→        <SiteFrame
+   145→          tpl={tpl}
+   146→          genome={genome}
+   147→          page={safePage}
+   148→          onPage={gotoPage}
+   149→          tier={gos.tierStep}
+   150→          fontScale={gos.fontScale}
+   151→          editMode={gos.editMode}
+   152→          remountKey={gos.editResetKey}
+   153→          width="100%"
+   154→          height="auto"
+   155→        />
+   156→      </div>
+   157→
+   158→      {/* 3 · the consoles row — finish-gated honestly */}
+   159→      {!published && (
+   160→        <div className="sv-consoles">
+   161→          {caps.consoles > 0 ? (
+   162→            <>
+   163→              <button type="button" className={`sv-exit ${console_ === "genome" ? "on" : ""}`} onClick={() => setConsole_(console_ === "genome" ? null : "genome")} aria-pressed={console_ === "genome"}>
+   164→                <Sliders size={14} aria-hidden /> Genome console
+   165→              </button>
+   166→              {caps.consoles > 1 ? (
+   167→                <button type="button" className={`sv-exit ${console_ === "manifest" ? "on" : ""}`} onClick={() => setConsole_(console_ === "manifest" ? null : "manifest")} aria-pressed={console_ === "manifest"}>
+   168→                  <BookOpen size={14} aria-hidden /> Manifest
+   169→                </button>
+   170→              ) : (
+   171→                <span className="sv-exit" style={{ opacity: 0.55 }} title="The manifest console arrives with the Spectacle finish">
+   172→                  <Lock size={13} aria-hidden /> Manifest · Spectacle
+   173→                </span>
+   174→              )}
+   175→              {/* merged productions carry a commissioning blueprint */}
+   176→              {blueprint ? (
+   177→                <button type="button" className={`sv-exit ${console_ === "blueprint" ? "on" : ""}`} onClick={() => setConsole_(console_ === "blueprint" ? null : "blueprint")} aria-pressed={console_ === "blueprint"} title="The commissioning blueprint — personas, journeys, SEO, QA, budget">
+   178→                  <ClipboardCheck size={14} aria-hidden /> Blueprint
+   179→                </button>
+   180→              ) : (
+   181→                <span className="sv-exit" style={{ opacity: 0.55 }} title="Blueprints ship with merged productions — Ember &amp; Oak (fb-002) carries the first">
+   182→                  <ClipboardCheck size={13} aria-hidden /> Blueprint · fb-002
+   183→                </span>
+   184→              )}
+   185→              {/* module-built templates carry their own consent-gated event stream */}
+   186→              {tpl.kit && (
+   187→                <button type="button" className={`sv-exit ${console_ === "events" ? "on" : ""}`} onClick={() => setConsole_(console_ === "events" ? null : "events")} aria-pressed={console_ === "events"}>
+   188→                  <Activity size={14} aria-hidden /> Events
+   189→                </button>
+   190→              )}
+   191→              <span className="sv-budget mono">
+   192→                {changed}/{allowed} overrides · {["Studio", "Signature", "Showcase", "Spectacle", "Private"][Math.min(4, caps.consoles === 2 ? 3 : caps.consoles === 1 ? 2 : 0)]} finish
+   193→              </span>
+   194→            </>
+   195→          ) : (
+   196→            <span className="sv-exit" style={{ opacity: 0.55 }}>
+   197→              <Lock size={13} aria-hidden /> Consoles arrive with the Showcase finish — the library inspector is always open
+   198→            </span>
+   199→          )}
+   200→        </div>
+   201→      )}
+   202→
+   203→      {!published && console_ === "genome" && (
+   204→        <section className="mx-auto w-full max-w-5xl px-4 pb-10" aria-label="Genome console">
+   205→          <div className="ed-card of-float-panel p-5">
+   206→            <header className="flex items-center justify-between gap-3">
+   207→              <div>
+   208→                <p className="ed-eyebrow">Floating console 01 · genome</p>
+   209→                <h2 className="ed-display text-xl">Seven switches, live on the plate above.</h2>
+   210→              </div>
+   211→              <button type="button" className="gos-icon-btn sm" onClick={() => setConsole_(null)} aria-label="Close console">
+   212→                <X size={15} />
+   213→              </button>
+   214→            </header>
+   215→            {notice && (
+   216→              <p className="mt-3 rounded-lg border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
+   217→                <Lock size={11} className="mr-1 inline" aria-hidden /> {notice}
+   218→              </p>
+   219→            )}
+   220→            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+   221→              {SWITCHES.map((s) => {
+   222→                const cur = genome[s.id]
+   223→                return (
+   224→                  <fieldset key={s.id} className="rounded-lg border border-border p-3">
+   225→                    <legend className="px-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+   226→                      {s.no} {s.label}
+   227→                    </legend>
+   228→                    <p className="mb-2 text-[11px] leading-snug text-muted-foreground">{s.line}</p>
+   229→                    <div className="flex flex-wrap gap-1">
+   230→                      {s.options.map((o) => {
+   231→                        const locked = o.id !== "native" && countOverrides({ ...genome, [s.id]: o.id }) > allowed
+   232→                        return (
+   233→                          <button
+   234→                            key={o.id}
+   235→                            type="button"
+   236→                            title={locked ? "Over the override budget for this finish" : o.hint}
+   237→                            aria-pressed={cur === o.id}
+   238→                            disabled={locked}
+   239→                            onClick={() => pick(s.id, o.id)}
+   240→                            className={`rounded-full border px-2 py-0.5 text-[11px] transition-colors ${
+   241→                              cur === o.id
+   242→                                ? "border-primary bg-primary text-primary-foreground"
+   243→                                : locked
+   244→                                  ? "border-border text-muted-foreground/50"
+   245→                                  : "border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground"
+   246→                            }`}
+   247→                          >
+   248→                            {o.label}
+   249→                          </button>
+   250→                        )
+   251→                      })}
+   252→                    </div>
+   253→                  </fieldset>
+   254→                )
+   255→              })}
+   256→            </div>
+   257→            <div className="mt-4 flex flex-wrap items-center gap-2">
+   258→              <button
+   259→                type="button"
+   260→                onClick={() => {
+   261→                  gos.setGenome(NATIVE)
+   262→                  setNotice(null)
+   263→                }}
+   264→                className="rounded-md border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted"
+   265→              >
+   266→                Reset to as-drawn DNA
+   267→              </button>
+   268→              <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+   269→                Everything re-renders the plate above live
+   270→              </span>
+   271→            </div>
+   272→          </div>
+   273→        </section>
+   274→      )}
+   275→
+   276→      {!published && console_ === "manifest" && (
+   277→        <section className="mx-auto w-full max-w-5xl px-4 pb-10" aria-label="Manifest explorer">
+   278→          <div className="ed-card of-float-panel p-5">
+   279→            <header className="flex items-center justify-between gap-3">
+   280→              <div>
+   281→                <p className="ed-eyebrow">Floating console 02 · manifest</p>
+   282→                <h2 className="ed-display text-xl">
+   283→                  What&apos;s inside {tpl.name} — {tpl.modules.length} modules, each honest.
+   284→                </h2>
+   285→              </div>
+   286→              <button type="button" className="gos-icon-btn sm" onClick={() => setConsole_(null)} aria-label="Close console">
+   287→                <X size={15} />
+   288→              </button>
+   289→            </header>
+   290→            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{tpl.positioning}</p>
+   291→            <ul className="mt-4 flex flex-wrap gap-1.5">
+   292→              {tpl.modules.map((m) => {
+   293→                const entry = pbLinks?.[m]
+   294→                return (
+   295→                  <li key={m}>
+   296→                    {entry ? (
+   297→                      <button
+   298→                        type="button"
+   299→                        onClick={() => openModule(entry.id)}
+   300→                        className="rounded-md border border-primary/40 px-2 py-1 font-mono text-[11px] text-primary hover:bg-primary/10"
+   301→                        title={`${entry.section} · ${entry.tier} tier — opens in the playbook`}
+   302→                      >
+   303→                        {m} ↗
+   304→                      </button>
+   305→                    ) : (
+   306→                      <span className="rounded-md border border-border bg-muted px-2 py-1 font-mono text-[11px] text-muted-foreground">{m}</span>
+   307→                    )}
+   308→                  </li>
+   309→                )
+   310→              })}
+   311→            </ul>
+   312→            {pbLinks && (
+   313→              <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+   314→                {tpl.modules.filter((m) => pbLinks[m]).length} of {tpl.modules.length} map to the 344-module playbook · depth {caps.manifestDepth} of 5
+   315→              </p>
+   316→            )}
+   317→            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+   318→              <div className="rounded-lg border border-border p-4">
+   319→                <p className="ed-eyebrow mb-2">Pages ({visiblePages.length})</p>
+   320→                <ol className="flex flex-col gap-1.5">
+   321→                  {visiblePages.map((p, i) => (
+   322→                    <li key={p.id}>
+   323→                      <button type="button" onClick={() => gotoPage(p.id)} className="flex w-full items-center gap-3 rounded px-2 py-1 text-left text-sm hover:bg-muted">
+   324→                        <span className="font-mono text-[10px] text-muted-foreground">{String(i + 1).padStart(2, "0")}</span>
+   325→                        {p.label}
+   326→                        {safePage === p.id && <Check size={12} className="text-primary" aria-hidden />}
+   327→                      </button>
+   328→                    </li>
+   329→                  ))}
+   330→                </ol>
+   331→              </div>
+   332→              <div className="rounded-lg border border-border p-4">
+   333→                <p className="ed-eyebrow mb-2">Why it can&apos;t be cloned</p>
+   334→                <ul className="flex flex-col gap-1.5 text-[12.5px] leading-relaxed text-muted-foreground">
+   335→                  {tpl.signature.map((s) => (
+   336→                    <li key={s} className="flex gap-2">
+   337→                      <span aria-hidden className="mt-1.5 inline-block size-1 shrink-0 rotate-45 bg-primary" />
+   338→                      {s}
+   339→                    </li>
+   340→                  ))}
+   341→                </ul>
+   342→              </div>
+   343→            </div>
+   344→          </div>
+   345→        </section>
+   346→      )}
+   347→
+   348→      {/* more consoles — events (kit templates) · blueprint (merged productions) */}
+   349→      {!published && console_ === "events" && tpl.kit && <EventStreamConsole />}
+   350→
+   351→      {!published && console_ === "blueprint" && blueprint && <BlueprintConsole tpl={tpl} blueprint={blueprint} />}
+   352→
+   353→      <p className="sr-only">{tpl.name} — full-bleed preview. Genome changes apply live.</p>
+   354→    </div>
+   355→  )
+   356→}
+   357→
+   358→/* ── the blueprint console — the commissioning definition of a merged
+   359→   production, ported from the Bolt-Ember project's template-definition.
+   360→   The registry says what a template IS; the blueprint says what it was
+   361→   COMMISSIONED to do — and both stay honest side by side. */
+   362→function BlueprintConsole({ tpl, blueprint }: { tpl: TemplateDef; blueprint: NonNullable<ReturnType<typeof blueprintOf>> }) {
+   363→  const bp = blueprint
+   364→  return (
+   365→    <section className="mx-auto w-full max-w-5xl px-4 pb-10" aria-label="Blueprint console">
+   366→      <div className="ed-card of-float-panel p-5">
+   367→        <header className="flex flex-wrap items-start justify-between gap-3">
+   368→          <div>
+   369→            <p className="ed-eyebrow">Floating console 04 · blueprint · {bp.id}</p>
+   370→            <h2 className="ed-display text-xl">
+   371→              The commission behind {tpl.name}.
+   372→            </h2>
+   373→            <p className="mt-1.5 font-mono text-[11px] leading-relaxed text-muted-foreground">{bp.source}</p>
+   374→          </div>
+   375→        </header>
+   376→        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{bp.positioning}</p>
+   377→
+   378→        <div className="mt-4 flex flex-wrap gap-1.5">
+   379→          <span className="rounded-md border border-primary/40 bg-primary/10 px-2 py-1 font-mono text-[11px] text-primary">primary · {bp.primaryConversion}</span>
+   380→          {bp.secondaryConversions.map((c) => (
+   381→            <span key={c} className="rounded-md border border-border bg-muted px-2 py-1 font-mono text-[11px] text-muted-foreground">secondary · {c}</span>
+   382→          ))}
+   383→          <span className="rounded-md border border-border bg-muted px-2 py-1 font-mono text-[11px] text-muted-foreground">{bp.businessType}</span>
+   384→        </div>
+   385→
+   386→        <div className="mt-5 grid gap-3 lg:grid-cols-2">
+   387→          <div className="rounded-lg border border-border p-4">
+   388→            <p className="ed-eyebrow mb-2.5">Buyer personas — who it must win</p>
+   389→            <ul className="flex flex-col gap-2 text-[12.5px] leading-relaxed text-muted-foreground">
+   390→              {bp.personas.map((p) => (
+   391→                <li key={p} className="flex gap-2">
+   392→                  <span aria-hidden className="mt-1.5 inline-block size-1 shrink-0 rotate-45 bg-primary" />
+   393→                  {p}
+   394→                </li>
+   395→              ))}
+   396→            </ul>
+   397→          </div>
+   398→          <div className="rounded-lg border border-border p-4">
+   399→            <p className="ed-eyebrow mb-2.5">Customer journeys — what it must complete</p>
+   400→            <ol className="flex flex-col gap-2 text-[12.5px] leading-relaxed text-muted-foreground">
+   401→              {bp.journeys.map((j, i) => (
+   402→                <li key={j} className="flex gap-2.5">
+   403→                  <span className="font-mono text-[10px] text-primary">{String(i + 1).padStart(2, "0")}</span>
+   404→                  {j}
+   405→                </li>
+   406→              ))}
+   407→            </ol>
+   408→          </div>
+   409→        </div>
+   410→
+   411→        <div className="mt-3 grid gap-3 lg:grid-cols-2">
+   412→          <div className="rounded-lg border border-border p-4">
+   413→            <p className="ed-eyebrow mb-2.5">SEO patterns</p>
+   414→            <p className="rounded bg-muted px-2.5 py-1.5 font-mono text-[11px] leading-relaxed text-foreground">{bp.seo.title}</p>
+   415→            <p className="mt-1.5 rounded bg-muted px-2.5 py-1.5 font-mono text-[11px] leading-relaxed text-muted-foreground">{bp.seo.description}</p>
+   416→            <ul className="mt-2.5 flex flex-wrap gap-1">
+   417→              {bp.seo.structuredData.map((d) => (
+   418→                <li key={d} className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">{d}</li>
+   419→              ))}
+   420→            </ul>
+   421→          </div>
+   422→          <div className="rounded-lg border border-border p-4">
+   423→            <p className="ed-eyebrow mb-2.5">Performance budget — mobile, honest</p>
+   424→            <dl className="grid grid-cols-3 gap-2 text-center">
+   425→              <div className="rounded bg-muted/60 px-2 py-2.5">
+   426→                <dt className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">LCP</dt>
+   427→                <dd className="mt-1 font-mono text-base font-semibold text-primary">{bp.performanceBudget.lcp}s</dd>
+   428→              </div>
+   429→              <div className="rounded bg-muted/60 px-2 py-2.5">
+   430→                <dt className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">CLS</dt>
+   431→                <dd className="mt-1 font-mono text-base font-semibold text-primary">{bp.performanceBudget.cls}</dd>
+   432→              </div>
+   433→              <div className="rounded bg-muted/60 px-2 py-2.5">
+   434→                <dt className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">INP</dt>
+   435→                <dd className="mt-1 font-mono text-base font-semibold text-primary">{bp.performanceBudget.inp}ms</dd>
+   436→              </div>
+   437→            </dl>
+   438→            <p className="ed-eyebrow mb-2 mt-4">Integrations</p>
+   439→            <ul className="flex flex-wrap gap-1">
+   440→              {bp.integrations.map((it) => (
+   441→                <li key={it} className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">{it}</li>
+   442→              ))}
+   443→            </ul>
+   444→            <p className="ed-eyebrow mb-2 mt-4">Content fields ({bp.contentFields.length})</p>
+   445→            <p className="font-mono text-[10.5px] leading-relaxed text-muted-foreground">{bp.contentFields.join(" · ")}</p>
+   446→          </div>
+   447→        </div>
+   448→
+   449→        <div className="mt-3 grid gap-3 lg:grid-cols-2">
+   450→          <div className="rounded-lg border border-border p-4">
+   451→            <p className="ed-eyebrow mb-2.5">Accessibility contract</p>
+   452→            <ul className="flex flex-col gap-1.5 text-[12.5px] leading-relaxed text-muted-foreground">
+   453→              {bp.accessibility.map((a) => (
+   454→                <li key={a} className="flex gap-2">
+   455→                  <Check size={12} className="mt-1 shrink-0 text-primary" aria-hidden />
+   456→                  {a}
+   457→                </li>
+   458→              ))}
+   459→            </ul>
+   460→          </div>
+   461→          <div className="rounded-lg border border-border p-4">
+   462→            <p className="ed-eyebrow mb-2.5">QA checklist — {bp.qaChecklist.length} gates</p>
+   463→            <ul className="flex max-h-56 flex-col gap-1.5 overflow-y-auto pr-1 text-[12.5px] leading-relaxed text-muted-foreground">
+   464→              {bp.qaChecklist.map((q) => (
+   465→                <li key={q} className="flex gap-2">
+   466→                  <Check size={12} className="mt-1 shrink-0 text-primary" aria-hidden />
+   467→                  {q}
+   468→                </li>
+   469→              ))}
+   470→            </ul>
+   471→          </div>
+   472→        </div>
+   473→      </div>
+   474→    </section>
+   475→  )
+   476→}
+   477→
+   478→/* ── the event stream console — the factory kit's ConsentGate, live. ──
+   479→   Ported from the Template Factory toolbar: analytics-class events stay
+   480→   blocked (and are visibly rewritten to consent_blocked) until the
+   481→   visitor grants consent in the site's own cookie banner. Unblocked
+   482→   events also flow into the OS pulse (/api/track). */
+   483→function EventStreamConsole() {
+   484→  const { events, consent, consentDecided, setConsent } = useFactory()
+   485→
+   486→  const reset = () => {
+   487→    try {
+   488→      window.localStorage.removeItem("gos:factory-consent")
+   489→    } catch {
+   490→      /* ignore */
+   491→    }
+   492→    setConsent({ analytics: false, marketing: false }, false)
+   493→    track("cta_clicked", { factory: "consent-reset" })
+   494→  }
+   495→
+   496→  return (
+   497→    <section className="mx-auto w-full max-w-5xl px-4 pb-10" aria-label="Event stream console">
+   498→      <div className="ed-card of-float-panel p-5">
+   499→        <header className="flex flex-wrap items-center justify-between gap-3">
+   500→          <div>
+   501→            <p className="ed-eyebrow">Floating console 03 · events</p>
+   502→            <h2 className="ed-display text-xl">
+   503→              Consent-gated analytics — {consent.analytics ? "flowing" : "blocked"}.
+   504→            </h2>
+   505→          </div>
+   506→          <div className="flex items-center gap-2">
+   507→            <span
+   508→              className={`rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] ${
+   509→                consent.analytics ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+   510→              }`}
+   511→            >
+   512→              analytics {consent.analytics ? "granted" : "withheld"}
+   513→            </span>
+   514→            <button type="button" className="gos-btn-ghost" onClick={reset} title="Reset the consent decision — the banner returns">
+   515→              <RotateCcw size={13} aria-hidden /> Reset consent
+   516→            </button>
+   517→          </div>
+   518→        </header>
+   519→        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+   520→          The module-built site fires the playbook&apos;s event vocabulary as you use it — every form start, call
+   521→          click, postcode check. Analytics-class events stay blocked by <b>ConsentGate</b> until the site&apos;s own
+   522→          cookie banner grants consent; unblocked events flow into the OS pulse. Interact with the site above, then
+   523→          watch this stream.
+   524→        </p>
+   525→        <ul className="of-list-scroll mt-4 max-h-72 space-y-1.5 overflow-y-auto pr-1" aria-live="polite">
+   526→          {events.length === 0 && (
+   527→            <li className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+   528→              No events yet — scroll the site, open a form or the concierge, switch the preview locale.
+   529→            </li>
+   530→          )}
+   531→          {events.map((e) => (
+   532→            <li
+   533→              key={e.id}
+   534→              className={`flex flex-wrap items-baseline gap-x-3 gap-y-0.5 rounded-lg border px-3 py-1.5 font-mono text-[11.5px] ${
+   535→                e.name === "consent_blocked" ? "border-destructive/40 bg-destructive/5 text-destructive" : "border-border text-muted-foreground"
+   536→              }`}
+   537→            >
+   538→              <span className="text-foreground">{e.name}</span>
+   539→              {e.detail && <span className="min-w-0 flex-1 truncate">{e.detail}</span>}
+   540→              <time className="ml-auto shrink-0 opacity-60">{new Date(e.at).toLocaleTimeString()}</time>
+   541→            </li>
+   542→          ))}
+   543→        </ul>
+   544→        {!consentDecided && (
+   545→          <p className="mt-3 rounded-lg border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
+   546→            The consent banner is waiting in the site above — accept or decline it there, then compare this stream.
+   547→          </p>
+   548→        )}
+   549→      </div>
+   550→    </section>
+   551→  )
+   552→}
+   553→

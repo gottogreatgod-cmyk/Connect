@@ -1,0 +1,695 @@
+     1→"use client"
+     2→
+     3→import { useCallback, useEffect, useRef, useState } from "react"
+     4→import {
+     5→  AudioLines,
+     6→  Check,
+     7→  Clapperboard,
+     8→  Copy,
+     9→  Download,
+    10→  ImageIcon,
+    11→  Loader2,
+    12→  Mic,
+    13→  Sparkles,
+    14→  Square,
+    15→  Upload,
+    16→  Volume2,
+    17→  Wand2,
+    18→} from "lucide-react"
+    19→import { Button } from "@/components/ui/button"
+    20→import { Textarea } from "@/components/ui/textarea"
+    21→import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+    22→import { useToast } from "@/hooks/use-toast"
+    23→import { blobToWavBase64, fileToBase64 } from "@/lib/media/client"
+    24→import { MediaBlock } from "@/components/gos/media-block"
+    25→import type { MediaRef } from "@/lib/gos/types"
+    26→import { cn } from "@/lib/utils"
+    27→
+    28→export type StudioTab = "asr" | "tts" | "image" | "video"
+    29→
+    30→const TABS: { id: StudioTab; label: string; icon: React.ReactNode; blurb: string }[] = [
+    31→  { id: "asr", label: "Voice → Text", icon: <AudioLines className="h-4 w-4" />, blurb: "speak or upload audio — get the exact words back" },
+    32→  { id: "tts", label: "Text → Voice", icon: <Volume2 className="h-4 w-4" />, blurb: "seven voices, any pace — natural speech synthesis" },
+    33→  { id: "image", label: "Photos", icon: <ImageIcon className="h-4 w-4" />, blurb: "prompt to artwork, seven aspect ratios" },
+    34→  { id: "video", label: "Video", icon: <Clapperboard className="h-4 w-4" />, blurb: "scene to clip — async render with live progress" },
+    35→]
+    36→
+    37→const VOICES = [
+    38→  { id: "tongtong", label: "Warm & friendly" },
+    39→  { id: "chuichui", label: "Lively & playful" },
+    40→  { id: "xiaochen", label: "Calm & professional" },
+    41→  { id: "jam", label: "British gentleman" },
+    42→  { id: "kazi", label: "Clear & standard" },
+    43→  { id: "douji", label: "Natural & fluent" },
+    44→  { id: "luodo", label: "Expressive" },
+    45→]
+    46→
+    47→const SIZES = [
+    48→  { id: "1024x1024", label: "Square · 1024×1024" },
+    49→  { id: "1344x768", label: "Landscape · 1344×768" },
+    50→  { id: "1440x720", label: "Wide · 1440×720" },
+    51→  { id: "1152x864", label: "Classic · 1152×864" },
+    52→  { id: "768x1344", label: "Portrait · 768×1344" },
+    53→  { id: "864x1152", label: "Tall · 864×1152" },
+    54→  { id: "720x1440", label: "Story · 720×1440" },
+    55→]
+    56→
+    57→interface StudioViewProps {
+    58→  initialTab?: StudioTab
+    59→  onSendToChat?: (text: string) => void
+    60→}
+    61→
+    62→export function StudioView({ initialTab = "asr", onSendToChat }: StudioViewProps) {
+    63→  const [tab, setTab] = useState<StudioTab>(initialTab)
+    64→  const [lastInitial, setLastInitial] = useState(initialTab)
+    65→  if (lastInitial !== initialTab) {
+    66→    // deep-link from the Engine view — adjust during render, not in an effect
+    67→    setLastInitial(initialTab)
+    68→    setTab(initialTab)
+    69→  }
+    70→
+    71→  return (
+    72→    <div className="gos-scroll h-full overflow-y-auto">
+    73→      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 lg:py-8">
+    74→        {/* header */}
+    75→        <div className="gos-rise flex items-center gap-2.5">
+    76→          <span className="gos-glow flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15">
+    77→            <Wand2 className="h-4.5 w-4.5 text-primary" />
+    78→          </span>
+    79→          <div>
+    80→            <h2 className="font-display text-2xl font-semibold tracking-tight">AI Media Studio</h2>
+    81→            <p className="mt-0.5 text-sm text-muted-foreground">
+    82→              Four generators, one tool layer — every asset is stored, versioned and usable anywhere in the system.
+    83→            </p>
+    84→          </div>
+    85→        </div>
+    86→
+    87→        {/* tab bar */}
+    88→        <div
+    89→          role="tablist"
+    90→          aria-label="Media studio tools"
+    91→          className="gos-rise mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4"
+    92→        >
+    93→          {TABS.map((t) => (
+    94→            <button
+    95→              key={t.id}
+    96→              role="tab"
+    97→              aria-selected={tab === t.id}
+    98→              onClick={() => setTab(t.id)}
+    99→              className={cn(
+   100→                "flex flex-col gap-1.5 rounded-xl border p-3 text-left transition-all",
+   101→                tab === t.id
+   102→                  ? "gos-glow border-primary/50 bg-accent/60 shadow-md"
+   103→                  : "border-border/70 bg-card/40 hover:border-primary/30 hover:bg-accent/30",
+   104→              )}
+   105→            >
+   106→              <span className={cn("flex items-center gap-1.5", tab === t.id ? "text-primary" : "text-muted-foreground")}>
+   107→                {t.icon}
+   108→                <span className="font-display text-[13px] font-semibold text-foreground">{t.label}</span>
+   109→              </span>
+   110→              <span className="font-mono text-[10px] leading-snug text-muted-foreground">{t.blurb}</span>
+   111→            </button>
+   112→          ))}
+   113→        </div>
+   114→
+   115→        {/* active tool */}
+   116→        <div className="gos-rise mt-5">
+   117→          {tab === "asr" && <AsrTool onSendToChat={onSendToChat} />}
+   118→          {tab === "tts" && <TtsTool />}
+   119→          {tab === "image" && <ImageTool />}
+   120→          {tab === "video" && <VideoTool />}
+   121→        </div>
+   122→      </div>
+   123→    </div>
+   124→  )
+   125→}
+   126→
+   127→// ─── shared pieces ─────────────────────────────────────────────────────────
+   128→
+   129→function ToolHeader({ icon, title, note }: { icon: React.ReactNode; title: string; note: string }) {
+   130→  return (
+   131→    <div className="mb-3 flex items-center gap-2">
+   132→      <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-primary">
+   133→        {icon}
+   134→      </span>
+   135→      <div>
+   136→        <h3 className="font-display text-sm font-semibold">{title}</h3>
+   137→        <p className="font-mono text-[10px] text-muted-foreground">{note}</p>
+   138→      </div>
+   139→    </div>
+   140→  )
+   141→}
+   142→
+   143→interface MediaItem {
+   144→  id: string
+   145→  kind: string
+   146→  prompt: string
+   147→  url: string | null
+   148→  status: string
+   149→  pending: boolean
+   150→  createdAt: string
+   151→}
+   152→
+   153→function useMediaList(kind: "image" | "audio" | "video") {
+   154→  const [items, setItems] = useState<MediaItem[]>([])
+   155→  const load = useCallback(async () => {
+   156→    try {
+   157→      const res = await fetch(`/api/media?kind=${kind}&take=6`)
+   158→      if (res.ok) setItems((await res.json()).media)
+   159→    } catch {
+   160→      /* non-fatal */
+   161→    }
+   162→  }, [kind])
+   163→  useEffect(() => {
+   164→    const t = setTimeout(load, 0)
+   165→    return () => clearTimeout(t)
+   166→  }, [load])
+   167→  return { items, reload: load }
+   168→}
+   169→
+   170→function RecentStrip({ label, items }: { label: string; items: MediaItem[] }) {
+   171→  if (items.length === 0) return null
+   172→  return (
+   173→    <section aria-label={label} className="mt-5">
+   174→      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/80">{label}</p>
+   175→      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+   176→        {items.slice(0, 4).map((m) => (
+   177→          <MediaBlock key={m.id} media={{ id: m.id, kind: m.kind as MediaRef["kind"], prompt: m.prompt, url: m.url, pending: m.pending }} compact />
+   178→        ))}
+   179→      </div>
+   180→    </section>
+   181→  )
+   182→}
+   183→
+   184→// ─── Voice → Text (ASR) ────────────────────────────────────────────────────
+   185→
+   186→function AsrTool({ onSendToChat }: { onSendToChat?: (text: string) => void }) {
+   187→  const { toast } = useToast()
+   188→  const [recording, setRecording] = useState(false)
+   189→  const [seconds, setSeconds] = useState(0)
+   190→  const [busy, setBusy] = useState(false)
+   191→  const [transcript, setTranscript] = useState("")
+   192→  const [copied, setCopied] = useState(false)
+   193→  const recorderRef = useRef<MediaRecorder | null>(null)
+   194→  const chunksRef = useRef<Blob[]>([])
+   195→  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+   196→  const fileRef = useRef<HTMLInputElement>(null)
+   197→
+   198→  const transcribe = useCallback(
+   199→    async (base64: string) => {
+   200→      setBusy(true)
+   201→      try {
+   202→        const res = await fetch("/api/media/asr", {
+   203→          method: "POST",
+   204→          headers: { "content-type": "application/json" },
+   205→          body: JSON.stringify({ audioBase64: base64 }),
+   206→        })
+   207→        const data = await res.json()
+   208→        if (!res.ok) throw new Error(data.error ?? "Transcription failed")
+   209→        setTranscript(data.text)
+   210→      } catch (err) {
+   211→        toast({ title: "Transcription failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" })
+   212→      } finally {
+   213→        setBusy(false)
+   214→      }
+   215→    },
+   216→    [toast],
+   217→  )
+   218→
+   219→  const stopAndTranscribe = useCallback(async () => {
+   220→    const recorder = recorderRef.current
+   221→    if (!recorder) return
+   222→    recorder.stop()
+   223→    recorder.stream.getTracks().forEach((t) => t.stop())
+   224→    if (timerRef.current) clearInterval(timerRef.current)
+   225→    setRecording(false)
+   226→    const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" })
+   227→    try {
+   228→      const base64 = await blobToWavBase64(blob)
+   229→      await transcribe(base64)
+   230→    } catch (err) {
+   231→      toast({ title: "Could not process the recording", description: err instanceof Error ? err.message : String(err), variant: "destructive" })
+   232→      setBusy(false)
+   233→    }
+   234→  }, [transcribe, toast])
+   235→
+   236→  const startRecording = useCallback(async () => {
+   237→    try {
+   238→      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+   239→      const recorder = new MediaRecorder(stream)
+   240→      chunksRef.current = []
+   241→      recorder.ondataavailable = (e) => {
+   242→        if (e.data.size > 0) chunksRef.current.push(e.data)
+   243→      }
+   244→      recorder.start()
+   245→      recorderRef.current = recorder
+   246→      setRecording(true)
+   247→      setSeconds(0)
+   248→      setTranscript("")
+   249→      timerRef.current = setInterval(() => setSeconds((s) => s + 1), 1000)
+   250→    } catch {
+   251→      toast({ title: "Microphone unavailable", description: "Grant mic permission, or upload an audio file instead.", variant: "destructive" })
+   252→    }
+   253→  }, [toast])
+   254→
+   255→  useEffect(
+   256→    () => () => {
+   257→      if (timerRef.current) clearInterval(timerRef.current)
+   258→      recorderRef.current?.stream.getTracks().forEach((t) => t.stop())
+   259→    },
+   260→    [],
+   261→  )
+   262→
+   263→  const onFile = async (file: File) => {
+   264→    const ext = file.name.split(".").pop()?.toLowerCase() ?? ""
+   265→    setBusy(true)
+   266→    setTranscript("")
+   267→    try {
+   268→      const base64 = /^(wav|mp3|m4a|flac|ogg)$/.test(ext)
+   269→        ? await fileToBase64(file)
+   270→        : await blobToWavBase64(file)
+   271→      await transcribe(base64)
+   272→    } catch (err) {
+   273→      toast({ title: "Could not read that file", description: err instanceof Error ? err.message : String(err), variant: "destructive" })
+   274→      setBusy(false)
+   275→    }
+   276→  }
+   277→
+   278→  return (
+   279→    <div className="rounded-xl border border-border/70 bg-card/40 p-4">
+   280→      <ToolHeader icon={<AudioLines className="h-4 w-4" />} title="Voice → Text" note="16 kHz mono capture · exact transcription" />
+   281→
+   282→      <div className="flex flex-col items-center gap-4 py-4">
+   283→        <button
+   284→          onClick={recording ? stopAndTranscribe : startRecording}
+   285→          disabled={busy}
+   286→          aria-label={recording ? "Stop recording" : "Start recording"}
+   287→          className={cn(
+   288→            "relative flex h-20 w-20 items-center justify-center rounded-full border transition-all",
+   289→            recording
+   290→              ? "border-primary/60 bg-primary/20 gos-glow"
+   291→              : "border-primary/30 bg-primary/10 hover:bg-primary/20",
+   292→            busy && "opacity-60",
+   293→          )}
+   294→        >
+   295→          {busy ? (
+   296→            <Loader2 className="h-7 w-7 animate-spin text-primary" />
+   297→          ) : recording ? (
+   298→            <Square className="h-6 w-6 text-primary" />
+   299→          ) : (
+   300→            <Mic className="h-7 w-7 text-primary" />
+   301→          )}
+   302→          {recording && <span className="gos-pulse-dot absolute inset-0 rounded-full border-2 border-primary/50" />}
+   303→        </button>
+   304→        <div className="text-center">
+   305→          <p className="font-mono text-sm tabular-nums text-primary">
+   306→            {recording
+   307→              ? `recording · ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
+   308→              : busy
+   309→                ? "transcribing…"
+   310→                : "tap to speak"}
+   311→          </p>
+   312→          <p className="mt-1 font-mono text-[10px] text-muted-foreground">
+   313→            or upload a file — wav · mp3 · m4a · flac · ogg
+   314→          </p>
+   315→        </div>
+   316→        <input
+   317→          ref={fileRef}
+   318→          type="file"
+   319→          accept="audio/*"
+   320→          className="hidden"
+   321→          onChange={(e) => {
+   322→            const f = e.target.files?.[0]
+   323→            if (f) onFile(f)
+   324→            e.target.value = ""
+   325→          }}
+   326→        />
+   327→        <Button variant="outline" size="sm" className="gap-2" onClick={() => fileRef.current?.click()} disabled={recording || busy}>
+   328→          <Upload className="h-3.5 w-3.5" />
+   329→          Upload audio
+   330→        </Button>
+   331→      </div>
+   332→
+   333→      {transcript && (
+   334→        <div className="gos-rise rounded-xl border border-primary/25 bg-accent/30 p-4">
+   335→          <p className="whitespace-pre-wrap text-[15px] leading-relaxed">{transcript}</p>
+   336→          <div className="mt-3 flex flex-wrap gap-2">
+   337→            <Button
+   338→              variant="outline"
+   339→              size="sm"
+   340→              className="gap-1.5"
+   341→              onClick={() => {
+   342→                void navigator.clipboard.writeText(transcript)
+   343→                setCopied(true)
+   344→                setTimeout(() => setCopied(false), 1500)
+   345→              }}
+   346→            >
+   347→              {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
+   348→              {copied ? "Copied" : "Copy"}
+   349→            </Button>
+   350→            {onSendToChat && (
+   351→              <Button size="sm" className="gap-1.5" onClick={() => onSendToChat(transcript)}>
+   352→                <Sparkles className="h-3.5 w-3.5" />
+   353→                Run through the agent loop
+   354→              </Button>
+   355→            )}
+   356→            <span className="ml-auto self-center font-mono text-[10px] text-muted-foreground">
+   357→              {transcript.split(/\s+/).filter(Boolean).length} words
+   358→            </span>
+   359→          </div>
+   360→        </div>
+   361→      )}
+   362→    </div>
+   363→  )
+   364→}
+   365→
+   366→// ─── Text → Voice (TTS) ────────────────────────────────────────────────────
+   367→
+   368→function TtsTool() {
+   369→  const { toast } = useToast()
+   370→  const [text, setText] = useState("")
+   371→  const [voice, setVoice] = useState("tongtong")
+   372→  const [speed, setSpeed] = useState(1)
+   373→  const [busy, setBusy] = useState(false)
+   374→  const [audioUrl, setAudioUrl] = useState<string | null>(null)
+   375→  const [audioId, setAudioId] = useState<string | null>(null)
+   376→  const { items, reload } = useMediaList("audio")
+   377→  const over = text.length > 1024
+   378→
+   379→  const generate = async () => {
+   380→    if (!text.trim() || over || busy) return
+   381→    setBusy(true)
+   382→    try {
+   383→      const res = await fetch("/api/media/tts", {
+   384→        method: "POST",
+   385→        headers: { "content-type": "application/json" },
+   386→        body: JSON.stringify({ text, voice, speed }),
+   387→      })
+   388→      if (!res.ok) {
+   389→        const data = await res.json().catch(() => ({ error: "Synthesis failed" }))
+   390→        throw new Error(data.error ?? "Synthesis failed")
+   391→      }
+   392→      const blob = await res.blob()
+   393→      setAudioUrl(URL.createObjectURL(blob))
+   394→      setAudioId(res.headers.get("X-Media-Id"))
+   395→      reload()
+   396→    } catch (err) {
+   397→      toast({ title: "Voice synthesis failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" })
+   398→    } finally {
+   399→      setBusy(false)
+   400→    }
+   401→  }
+   402→
+   403→  return (
+   404→    <div className="rounded-xl border border-border/70 bg-card/40 p-4">
+   405→      <ToolHeader icon={<Volume2 className="h-4 w-4" />} title="Text → Voice" note="1024 characters per track · 7 voices" />
+   406→
+   407→      <Textarea
+   408→        value={text}
+   409→        onChange={(e) => setText(e.target.value)}
+   410→        placeholder="Type anything — a greeting, a narration, a line for your site's hero…"
+   411→        rows={4}
+   412→        className="resize-none text-[14px] leading-relaxed"
+   413→      />
+   414→      <div className={cn("mt-1 text-right font-mono text-[10px]", over ? "text-destructive" : "text-muted-foreground")}>
+   415→        {text.length}/1024
+   416→      </div>
+   417→
+   418→      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+   419→        <div>
+   420→          <label htmlFor="tts-voice" className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+   421→            voice
+   422→          </label>
+   423→          <Select value={voice} onValueChange={setVoice}>
+   424→            <SelectTrigger id="tts-voice" className="w-full">
+   425→              <SelectValue />
+   426→            </SelectTrigger>
+   427→            <SelectContent>
+   428→              {VOICES.map((v) => (
+   429→                <SelectItem key={v.id} value={v.id}>
+   430→                  {v.label} <span className="font-mono text-[10px] text-muted-foreground">· {v.id}</span>
+   431→                </SelectItem>
+   432→              ))}
+   433→            </SelectContent>
+   434→          </Select>
+   435→        </div>
+   436→        <div>
+   437→          <label htmlFor="tts-speed" className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+   438→            pace · {speed.toFixed(1)}×
+   439→          </label>
+   440→          <input
+   441→            id="tts-speed"
+   442→            type="range"
+   443→            min={0.5}
+   444→            max={2}
+   445→            step={0.1}
+   446→            value={speed}
+   447→            onChange={(e) => setSpeed(Number(e.target.value))}
+   448→            className="mt-2.5 w-full accent-primary"
+   449→          />
+   450→        </div>
+   451→      </div>
+   452→
+   453→      <Button onClick={generate} disabled={!text.trim() || over || busy} className="mt-4 w-full gap-2">
+   454→        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
+   455→        {busy ? "Synthesizing…" : "Generate voice"}
+   456→      </Button>
+   457→
+   458→      {audioUrl && (
+   459→        <div className="gos-rise mt-4 rounded-xl border border-primary/25 bg-accent/30 p-3.5">
+   460→          <div className="mb-2 flex items-center gap-1.5">
+   461→            <Volume2 className="h-3.5 w-3.5 text-primary" />
+   462→            <span className="truncate font-mono text-[10px] text-muted-foreground">
+   463→              {VOICES.find((v) => v.id === voice)?.label} · {speed.toFixed(1)}×
+   464→            </span>
+   465→            <a
+   466→              href={audioUrl}
+   467→              download={`growth-os-voice-${audioId ?? "track"}.wav`}
+   468→              className="ml-auto flex items-center gap-1 rounded-md border border-border/70 px-2 py-1 font-mono text-[10px] text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+   469→            >
+   470→              <Download className="h-3 w-3" />
+   471→              wav
+   472→            </a>
+   473→          </div>
+   474→          <audio src={audioUrl} controls autoPlay className="w-full" />
+   475→        </div>
+   476→      )}
+   477→
+   478→      <RecentStrip label="recent voice tracks" items={items} />
+   479→    </div>
+   480→  )
+   481→}
+   482→
+   483→// ─── Photos (image generation) ─────────────────────────────────────────────
+   484→
+   485→function ImageTool() {
+   486→  const { toast } = useToast()
+   487→  const [prompt, setPrompt] = useState("")
+   488→  const [size, setSize] = useState("1024x1024")
+   489→  const [busy, setBusy] = useState(false)
+   490→  const [result, setResult] = useState<MediaRef | null>(null)
+   491→  const { items, reload } = useMediaList("image")
+   492→
+   493→  const generate = async () => {
+   494→    if (!prompt.trim() || busy) return
+   495→    setBusy(true)
+   496→    setResult(null)
+   497→    try {
+   498→      const res = await fetch("/api/media/image", {
+   499→        method: "POST",
+   500→        headers: { "content-type": "application/json" },
+   501→        body: JSON.stringify({ prompt, size }),
+   502→      })
+   503→      const data = await res.json()
+   504→      if (!res.ok) throw new Error(data.error ?? "Generation failed")
+   505→      setResult({ id: data.id, kind: "image", prompt })
+   506→      reload()
+   507→    } catch (err) {
+   508→      toast({ title: "Image generation failed", description: err instanceof Error ? err.message : String(err), variant: "destructive" })
+   509→    } finally {
+   510→      setBusy(false)
+   511→    }
+   512→  }
+   513→
+   514→  return (
+   515→    <div className="rounded-xl border border-border/70 bg-card/40 p-4">
+   516→      <ToolHeader icon={<ImageIcon className="h-4 w-4" />} title="Photos" note="prompt → artwork · stored in the media library" />
+   517→
+   518→      <Textarea
+   519→        value={prompt}
+   520→        onChange={(e) => setPrompt(e.target.value)}
+   521→        placeholder="A misty pine forest at dawn, soft light, editorial photography style, high quality"
+   522→        rows={3}
+   523→        className="resize-none text-[14px] leading-relaxed"
+   524→      />
+   525→
+   526→      <div className="mt-3">
+   527→        <label htmlFor="img-size" className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+   528→          aspect ratio
+   529→        </label>
+   530→        <Select value={size} onValueChange={setSize}>
+   531→          <SelectTrigger id="img-size" className="w-full sm:w-72">
+   532→            <SelectValue />
+   533→          </SelectTrigger>
+   534→          <SelectContent>
+   535→            {SIZES.map((s) => (
+   536→              <SelectItem key={s.id} value={s.id}>
+   537→                {s.label}
+   538→              </SelectItem>
+   539→            ))}
+   540→          </SelectContent>
+   541→        </Select>
+   542→      </div>
+   543→
+   544→      <Button onClick={generate} disabled={!prompt.trim() || busy} className="mt-4 w-full gap-2">
+   545→        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+   546→        {busy ? "Rendering…" : "Generate image"}
+   547→      </Button>
+   548→
+   549→      {busy && (
+   550→        <div className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-dashed border-primary/30 bg-accent/20 py-12">
+   551→          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+   552→          <span className="font-mono text-xs text-muted-foreground">composing pixels…</span>
+   553→        </div>
+   554→      )}
+   555→
+   556→      {result && (
+   557→        <div className="gos-rise mt-4">
+   558→          <MediaBlock media={result} />
+   559→        </div>
+   560→      )}
+   561→
+   562→      <RecentStrip label="recent images" items={items} />
+   563→    </div>
+   564→  )
+   565→}
+   566→
+   567→// ─── Video generation ──────────────────────────────────────────────────────
+   568→
+   569→function VideoTool() {
+   570→  const { toast } = useToast()
+   571→  const [prompt, setPrompt] = useState("")
+   572→  const [quality, setQuality] = useState("speed")
+   573→  const [busy, setBusy] = useState(false)
+   574→  const [rendering, setRendering] = useState<{ taskId: string; mediaId: string; prompt: string } | null>(null)
+   575→  const [elapsed, setElapsed] = useState(0)
+   576→  const [result, setResult] = useState<MediaRef | null>(null)
+   577→  const { items, reload } = useMediaList("video")
+   578→  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+   579→  const tickRef = useRef<ReturnType<typeof setInterval> | null>(null)
+   580→  const startRef = useRef(0)
+   581→
+   582→  const stopTimers = () => {
+   583→    if (pollRef.current) clearInterval(pollRef.current)
+   584→    if (tickRef.current) clearInterval(tickRef.current)
+   585→    pollRef.current = null
+   586→    tickRef.current = null
+   587→  }
+   588→
+   589→  useEffect(() => stopTimers, [])
+   590→
+   591→  const start = async () => {
+   592→    if (!prompt.trim() || busy || rendering) return
+   593→    setBusy(true)
+   594→    setResult(null)
+   595→    try {
+   596→      const res = await fetch("/api/media/video", {
+   597→        method: "POST",
+   598→        headers: { "content-type": "application/json" },
+   599→        body: JSON.stringify({ prompt, quality }),
+   600→      })
+   601→      const data = await res.json()
+   602→      if (!res.ok) throw new Error(data.error ?? "Could not start the render")
+   603→      setBusy(false)
+   604→      setRendering({ taskId: data.taskId, mediaId: data.mediaId, prompt })
+   605→      startRef.current = Date.now()
+   606→      setElapsed(0)
+   607→      tickRef.current = setInterval(() => setElapsed(Math.floor((Date.now() - startRef.current) / 1000)), 1000)
+   608→      pollRef.current = setInterval(
+   609→        async () => {
+   610→          try {
+   611→            const sres = await fetch(`/api/media/video/status?taskId=${data.taskId}`)
+   612→            if (!sres.ok) return
+   613→            const sdata = await sres.json()
+   614→            if (sdata.status === "SUCCESS" && sdata.url) {
+   615→              stopTimers()
+   616→              setRendering(null)
+   617→              setResult({ id: data.mediaId, kind: "video", prompt, url: sdata.url })
+   618→              reload()
+   619→            } else if (sdata.status === "FAIL") {
+   620→              stopTimers()
+   621→              setRendering(null)
+   622→              toast({ title: "Render failed", description: "The render farm reported a failure — try a simpler scene.", variant: "destructive" })
+   623→            }
+   624→          } catch {
+   625→            /* keep polling */
+   626→          }
+   627→        },
+   628→        5000,
+   629→      )
+   630→    } catch (err) {
+   631→      toast({ title: "Could not start the render", description: err instanceof Error ? err.message : String(err), variant: "destructive" })
+   632→      setBusy(false)
+   633→    }
+   634→  }
+   635→
+   636→  return (
+   637→    <div className="rounded-xl border border-border/70 bg-card/40 p-4">
+   638→      <ToolHeader icon={<Clapperboard className="h-4 w-4" />} title="Video" note="async render farm · live progress · mp4 with audio" />
+   639→
+   640→      <Textarea
+   641→        value={prompt}
+   642→        onChange={(e) => setPrompt(e.target.value)}
+   643→        placeholder="A slow dolly shot through a sunlit ceramic studio, dust in the air, warm tones"
+   644→        rows={3}
+   645→        className="resize-none text-[14px] leading-relaxed"
+   646→      />
+   647→
+   648→      <div className="mt-3">
+   649→        <label htmlFor="vid-quality" className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+   650→          render mode
+   651→        </label>
+   652→        <Select value={quality} onValueChange={setQuality}>
+   653→          <SelectTrigger id="vid-quality" className="w-full sm:w-72">
+   654→            <SelectValue />
+   655→          </SelectTrigger>
+   656→          <SelectContent>
+   657→            <SelectItem value="speed">Speed — faster draft</SelectItem>
+   658→            <SelectItem value="quality">Quality — slower, finer detail</SelectItem>
+   659→          </SelectContent>
+   660→        </Select>
+   661→      </div>
+   662→
+   663→      <Button onClick={start} disabled={!prompt.trim() || busy || !!rendering} className="mt-4 w-full gap-2">
+   664→        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Clapperboard className="h-4 w-4" />}
+   665→        {busy ? "Submitting…" : rendering ? "Rendering…" : "Start render"}
+   666→      </Button>
+   667→
+   668→      {rendering && (
+   669→        <div className="gos-rise mt-4 flex items-center gap-3 rounded-xl border border-primary/25 bg-accent/30 px-4 py-4">
+   670→          <Loader2 className="h-5 w-5 shrink-0 animate-spin text-primary" />
+   671→          <div className="min-w-0 flex-1">
+   672→            <p className="truncate text-sm font-medium">Rendering “{rendering.prompt}”</p>
+   673→            <p className="font-mono text-[10px] text-muted-foreground">
+   674→              {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")} elapsed · clips usually land in 1–3 minutes
+   675→            </p>
+   676→          </div>
+   677→          <div className="flex gap-1">
+   678→            {[0, 1, 2].map((i) => (
+   679→              <span key={i} className="gos-pulse-dot h-1.5 w-1.5 rounded-full bg-primary" />
+   680→            ))}
+   681→          </div>
+   682→        </div>
+   683→      )}
+   684→
+   685→      {result && (
+   686→        <div className="gos-rise mt-4">
+   687→          <MediaBlock media={result} />
+   688→        </div>
+   689→      )}
+   690→
+   691→      <RecentStrip label="recent renders" items={items} />
+   692→    </div>
+   693→  )
+   694→}
+   695→

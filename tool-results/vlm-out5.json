@@ -1,0 +1,29 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Here's the verification based on the screenshot:\n\n**1) Four motion personality cards with animated demo boxes — ✅ Yes**\n- **Corporate** — \"Slow ease-out fade, no overshoot. Restraint reads as trust. Fits: B2B, finance, legal, insurance.\"\n- **Organic** — \"Dense keyframes at 60fps are what make it feel alive, not choppy. Fits: audio, music, speech AI, nature.\"\n- **Bold** — \"Fast and dynamic — the entrance IS the brand voice. Fits: startups, social, marketing.\"\n- **Cinematic** — \"Time is the luxury signal. Slow means expensive. Fits: luxury, film, premium agencies.\"\n- Each has a light-green demo box with a green animated element (pills/dots of varying shapes and sizes, suggesting different motion demos).\n\n**2) One selected/applied — ❌ No**\n- All four cards display \"Tap to apply,\" and none shows a selected/highlighted/applied state. No motion personality is currently applied.\n\n**3) 'What gets applied' section — ✅ Yes**\n- \"What gets applied — from the motion registry\" panel lists four items with icons: **The Feel System** (curves, durations, springs), **Stagger Sweeps**, **Timeline Choreography**, and **Scroll-Driven Timelines**.\n\n**4) Motion Lab link — ✅ Yes**\n- \"Feel all 19 skills in the Motion Lab ↗\" appears at the bottom of the panel with an external-link icon.\n\n**5) Errors — ⚠️ Yes**\n- A red **\"1 Issue\"** badge (with close ×) is visible in the bottom-left corner, indicating a reported problem in the builder. Otherwise, the page renders cleanly — no visible broken layouts or missing content.",
+        "reasoning_content": "Check each: 4 cards present. Selection: all say \"Tap to apply\" — none marked applied. What gets applied section present. Motion Lab link present. Error: \"1 Issue\" badge bottom left.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1793789046,
+  "id": "202611041843519e9e62f009904801",
+  "model": "glm-5.3-flash",
+  "object": "chat.completion",
+  "request_id": "202611041843519e9e62f009904801",
+  "usage": {
+    "completion_tokens": 423,
+    "completion_tokens_details": {
+      "reasoning_tokens": 43
+    },
+    "prompt_tokens": 2009,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2432
+  }
+}

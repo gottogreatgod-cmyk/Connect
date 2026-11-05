@@ -1,0 +1,65 @@
+.kt { --pad: calc(var(--d) * 88px); --hi: #FFD23F; font-size: 17px; line-height: 1.55; }
+.kt h1, .kt h2, .kt h3 { font-family: var(--display); font-weight: 400; line-height: 0.98; letter-spacing: -0.01em; text-transform: uppercase; }
+.kt-bar { display: flex; justify-content: space-between; gap: 16px; padding: 9px 32px; background: var(--ink); color: var(--bg); font-size: 14px; font-weight: 600; }
+.kt-bar span:first-child { display: flex; align-items: center; gap: 8px; }
+.kt-bar i { width: 9px; height: 9px; border-radius: 50%; background: #888; }
+.kt-bar .on i { background: #3DDC84; }
+.kt-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; border-bottom: 4px solid var(--line); }
+.kt-logo { display: flex; align-items: center; gap: 14px; text-decoration: none; font-family: var(--display); font-size: 26px; line-height: 1; }
+.kt-logo small { display: block; font-family: var(--body); font-size: 13px; font-weight: 600; letter-spacing: 0.04em; margin-top: 4px; text-transform: none; color: var(--muted); }
+.kt-badge { display: grid; place-items: center; width: 58px; height: 58px; background: var(--hi); color: #111; font-family: var(--display); font-size: 15px; border: 3px solid #111; border-radius: var(--r); transform: rotate(-4deg); }
+.kt-headcall { font-family: var(--display); font-size: 26px; text-decoration: none; padding: 10px 18px; border: 3px solid var(--ink); border-radius: var(--r); }
+.kt-headcall:hover { background: var(--hi); color: #111; border-color: #111; }
+
+.kt-hero { padding: var(--pad) 32px; max-width: 1200px; }
+.kt-tag { display: inline-block; background: var(--hi); color: #111; font-weight: 800; font-size: 15px; padding: 6px 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+.kt-hero h1 { font-size: clamp(46px, 6.4cqi, 92px); margin: 22px 0 34px; max-width: 13em; }
+.kt-mega { display: inline-flex; flex-direction: column; text-decoration: none; background: var(--primary); color: var(--on-primary); padding: 22px 34px 26px; font-family: var(--display); font-size: clamp(44px, 7cqi, 96px); line-height: 1; border-radius: var(--r); box-shadow: 10px 10px 0 var(--hi); transition: transform 120ms, box-shadow 120ms; }
+.kt-mega span { font-family: var(--body); font-size: 15px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; color: var(--hi); }
+.kt-mega:hover { transform: translate(4px, 4px); box-shadow: 6px 6px 0 var(--hi); }
+.kt-mega.small { font-size: clamp(36px, 5cqi, 64px); padding: 18px 28px; }
+.kt-promises { display: flex; flex-wrap: wrap; gap: 14px 40px; margin-top: 44px; font-size: 16px; font-weight: 600; }
+.kt-promises b { font-family: var(--display); font-weight: 400; font-size: 32px; display: block; line-height: 1; }
+
+.kt-jobs { padding: var(--pad) 32px; border-top: 4px solid var(--line); }
+.kt-jobs h2, .kt-reviews h2, .kt-areas h2 { font-size: clamp(40px, 5cqi, 68px); margin-bottom: 32px; }
+.kt-jobs ol { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 3px solid var(--line); border-left: 3px solid var(--line); }
+.kt-jobs li { padding: 26px; border-right: 3px solid var(--line); border-bottom: 3px solid var(--line); }
+.kt-jobs li span { font-family: var(--display); font-size: 18px; background: var(--hi); color: #111; padding: 2px 8px; }
+.kt-jobs h3 { font-size: 26px; margin: 16px 0 10px; }
+.kt-jobs p { color: var(--muted); font-size: 16px; }
+
+.kt-sheet { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; padding: var(--pad) 32px; background: var(--hi); color: #111; align-items: start; }
+.kt-sheet-card { background: #fff; border: 3px solid #111; padding: 30px; transform: rotate(-1deg); box-shadow: 8px 8px 0 #111; border-radius: var(--r); }
+.kt-sheet-head { display: flex; justify-content: space-between; font: 600 12px/1 var(--mono); letter-spacing: 0.1em; border-bottom: 2px dashed #111; padding-bottom: 10px; margin-bottom: 18px; }
+.kt-sheet-card h2 { font-size: 44px; margin-bottom: 16px; }
+.kt-sheet table { width: 100%; border-collapse: collapse; font-size: 17px; }
+.kt-sheet th, .kt-sheet td { text-align: left; font-weight: 600; padding: 12px 0; border-bottom: 1.5px solid #111; }
+.kt-sheet td { text-align: right; font-family: var(--display); font-weight: 400; font-size: 24px; }
+.kt-fine { font-size: 14px; margin-top: 16px; }
+.kt-areas p { font-size: 18px; margin-bottom: 22px; font-weight: 500; }
+.kt-areas ul { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kt-areas li { padding: 12px 14px; background: #111; color: var(--hi); font-weight: 700; font-size: 15px; border-radius: var(--r); }
+
+.kt-reviews { padding: var(--pad) 32px; }
+.kt-reviews > div { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.kt-reviews figure { margin: 0; padding: 24px; border: 3px solid var(--line); border-radius: var(--r); display: flex; flex-direction: column; justify-content: space-between; gap: 16px; }
+.kt-reviews blockquote { margin: 0; font-size: 18px; font-weight: 600; line-height: 1.45; }
+.kt-reviews figcaption { font-size: 14px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.kt-reviews figcaption span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; border: 1px solid currentColor; padding: 1px 5px; }
+
+.kt-last { margin: 0 32px var(--pad); padding: 48px; background: var(--ink); color: var(--bg); border-radius: var(--r); }
+.kt-last h2 { font-size: clamp(38px, 4.6cqi, 62px); color: var(--hi); }
+.kt-last p { font-size: 19px; margin: 16px 0 28px; max-width: 34em; }
+.kt-last .kt-mega { background: var(--hi); color: #111; box-shadow: 8px 8px 0 color-mix(in srgb, var(--bg) 35%, transparent); }
+.kt-foot { display: flex; flex-wrap: wrap; gap: 8px 28px; padding: 24px 32px 90px; border-top: 4px solid var(--line); font-size: 14px; color: var(--muted); }
+.kt-float { position: fixed; left: 12px; right: 12px; bottom: 12px; display: none; justify-content: center; padding: 18px; background: var(--primary); color: var(--on-primary); font-family: var(--display); font-size: 22px; text-decoration: none; border-radius: var(--r); box-shadow: 0 0 0 3px var(--hi); z-index: 20; }
+
+@container (max-width: 900px) {
+  .kt-bar span:last-child { display: none; }
+  .kt-head, .kt-hero, .kt-jobs, .kt-sheet, .kt-reviews, .kt-foot { padding-left: 18px; padding-right: 18px; }
+  .kt-headcall { display: none; }
+  .kt-jobs ol, .kt-sheet, .kt-reviews > div { grid-template-columns: 1fr; }
+  .kt-last { margin: 0 18px 48px; padding: 28px; }
+  .kt-float { display: flex; }
+}

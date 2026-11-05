@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "**Image 1 (plumbing site):** No. There are no technical/debug labels like 'SiteHeader', 'MegaMenu', 'Section:', or component IDs (e.g., 'SiteHeader@1') on the edges of the preview. The visible chrome is editor UI (top bar: \"Exit to library\", page tabs Home/Services/Coverage/Reviews/Contact/FAQ/Knowledge base/Booking, zoom controls, \"Edit text\", \"Shuffle\", \"Cruise\", \"Inspect\"), plus in-page marketing content like the \"LIVE DISPATCH STATUS\" panel with a \"⚠ DEMO CONTENT\" tag and a cookie consent notice (\"ConsentGate until you opt in\" — a light product-y term, but not an internal module name).\n\n**Image 2 (Motion Lab):**\n- **Top nav tabs:** No traditional nav tabs; there's a sidebar-style stage list below the hero (\"The Feel System — Emil Kowalski\", \"Enter • Exit — Emil Kowalski\", \"Timeline Scrubber\", partially cut off). The eyebrow label reads \"THE MOTION INTELLIGENCE LAYER · LAYER TWO OF THE MERGED SYSTEM\".\n- **Layout:** Hero heading (\"Motion Lab — five master skills, one grammar.\"), stat chips (5 SOURCES / 19 SKILLS / 11 LIVE STAGES / 3 MANIFEST FORMATS), an \"One URL, every agent\" API card (GET /api/skills?format=tools with Copy URL / Open raw and a JSON preview), a \"five master sources\" card row (Emil Kowalski — animate, GreenSock — GSAP, Remotion, Wiggle, iArt AI, each with \"N skills distilled\"), then a two-column section: left skill/stage list, right live demo panel (\"The Feel System\" with duration options and a \"Race\" control). A \"● Compiling...\" toast sits bottom-left.\n- **Skills with sources:** Yes — skills are explicitly attributed: each source card lists its distilled skill count, and each stage entry shows its author (e.g., \"Emil Kowalski\"), plus a \"● EMIL KOWALSKI — ANIMATE\" chip on the demo panel.\n\n**Developer jargon:** Image 1 — essentially none (only \"ConsentGate\" and \"DEMO CONTENT\"). Image 2 — plenty: `GET /api/skills?format=tools`, `?format=json / ?format=tools / ?format=md`, \"CORS open, cache never\", JSON tool schema with \"function\", \"parameters\", \"required\", \"Access-Control-Allow-Origin: *\", \"OpenAI tools / agent markdown / plain json\", \"manifest formats\", \"runtime\", \"registry\", and the \"Compiling...\" status.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1793788580,
+  "id": "2026110418360706b6d3b7fad14937",
+  "model": "glm-5.3-flash",
+  "object": "chat.completion",
+  "request_id": "2026110418360706b6d3b7fad14937",
+  "usage": {
+    "completion_tokens": 573,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 3963,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 4536
+  }
+}

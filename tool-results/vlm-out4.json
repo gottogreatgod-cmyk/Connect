@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "# Verification Results\n\n**1) Live preview in browser-chrome frame?** ✅ Yes. The preview sits inside a browser frame with macOS-style traffic lights (red/yellow/green dots) and an address bar reading `fuoco&figli.com — live preview`. It shows a real rendered restaurant website: a masthead (\"VOL. XVII · FITZROY, MELBOURNE\", \"WEDNESDAY 4 NOVEMBER 2026\", \"THREE ROOMS ON GERTRUDE & KERR\"), the \"Fuoco & Figli\" brand name, a nav bar (Venues & menus, Private events, Careers, Book a table button), a hero with \"THE FAMILY · SINCE 2009\" and the headline \"Three rooms,\" alongside a real photo of a rustic tavern table with food and a kvass mug. This matches the copy: \"Fuoco & Figli is live below... The preview is the real site, not a mockup.\"\n\n**2) Skin options / edition names visible?** ⚠️ Not in this screenshot. The section says \"re-skin it with one click,\" so skin/edition options presumably exist, but none are visible in the captured viewport — likely they appear below the fold or the screenshot is cropped mid-preview.\n\n**3) Desktop/Mobile toggle and 'Shuffle the look'?** ✅ Yes to both. Above the preview frame: \"🖥 Desktop | 📱 Mobile\" toggle on the left and \"🔀 Shuffle the look\" button on the right.\n\n**4) Errors or rendering problems?** ✅ None visible. Everything renders cleanly — no broken images, overflow, missing assets, or error states. The only note: the preview is cut off at the bottom of the screenshot (partial hero image), which appears to be viewport cropping, not a rendering fault.\n\n**Summary:** All structural requirements of the Design step are present (browser-framed live preview, real restaurant render, device toggle, shuffle button). The only gap is skin/edition options not being visible within this crop.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1793788982,
+  "id": "20261104184251b2711709f7b841eb",
+  "model": "glm-5.3-flash",
+  "object": "chat.completion",
+  "request_id": "20261104184251b2711709f7b841eb",
+  "usage": {
+    "completion_tokens": 429,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2004,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2433
+  }
+}

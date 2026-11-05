@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "# Screenshot 1 — Template Library (Maison Ember)\n\n## 1) Nav tabs (top bar)\n- **Main toolbar:** AI Studio (8+2), Motion (19), Library (23, active), Catalogue, Playbook (344), Forge, Concierge\n- **Right side:** Edit text, Shuffle, Cruise, Evening, EM Emerald OS (dropdown)\n- **Right panel tabs:** Genome (active), Tier, Build\n\n## 2) Technical labels / jargon\nYes, several:\n- **Right panel:** \"TEMPLATE DNA\", \"SEVEN SWITCHES\", \"0/3 used\", \"Reset\", \"PRESETS\" — informative UI labels, not really dev jargon\n- **Switch list:** \"01 Colour atmosphere — As drawn\", \"02 Typographic voice\", \"03 Light\", \"04 Material\", \"05 Density\", \"06 Motion\", \"07 Contrast\" — each tagged \"As drawn\"\n- **Template metadata:** \"Nocturne\", \"LIGHT: Cormorant Garamond / Inter\", \"MOTION: Art-directed\", \"CORNERS: 2px\"\n- **Left sidebar:** \"TEMPLATES\", category headers (Food & Beverage, Healthcare & Wellness, Legal, Home Services, Property & Real Estate), counts (5, 4, 4, 6, 4), and a small **teal chip \"KIT\"** next to \"Nightflow 24/7 Plumbing\"\n- No module names like SiteHeader appear in this screenshot.\n\n---\n\n# Screenshot 2 — Module Forge\n\n## 1) Nav tabs (top bar)\n- **Top-right:** Library, Catalogue, Playbook\n- (Top-left is a breadcrumb-style header, not tabs: \"Library / Module Forge — 344 modules · any module · any template · rendered live\")\n\n## 2) Technical labels / jargon\nYes, this screenshot is full of them:\n- **Left module list** — internal module names with tier chips:\n  - STARTER: **SiteHeader**, **MobileNav**, **SiteFooter**, **AnnouncementBar**, **Breadcrumb**, **SkipToContent**, **CookieConsent**, **ErrorBoundary**, **NotFound**\n  - GROWTH: **MegaMenu**, **StickyActionBar**, **BackToTop**, **ThemeToggle**, **SearchOverlay**\n  - BUSINESS: **LanguageSwitcher**, (partially visible \"...ndPalette\" — likely BrandPalette), **OfflineBanner**\n  - Each with caption \"01 · Global system modules\"\n- **Tier filter chips:** \"All\" (dark chip), Starter, Growth, Business, **Flagship**\n- **Count label:** \"344 OF 344 SHOWN\"\n- **Dropdowns:** \"TEMPLATE: Food & Beverage — Maison Ember (Flagship)\" and \"SLOT: Mid page — Mounted in the body rhythm, after the primary action\"\n- **Status toast:** \"Compiling…\" (dark pill, bottom-left)\n- **Overlay copy:** \"Pick a module — any of the 344. It mounts on Maison Ember in that template's own skin...\"\n- Header subtitle: \"344 modules · any module · any template · rendered live\"",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1793788278,
+  "id": "202611041831059dce9d9d1a434357",
+  "model": "glm-5.3-flash",
+  "object": "chat.completion",
+  "request_id": "202611041831059dce9d9d1a434357",
+  "usage": {
+    "completion_tokens": 659,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 3920,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 4579
+  }
+}

@@ -1,0 +1,1262 @@
+     1→"use client"
+     2→
+     3→/**
+     4→ * HomeView — the forge: the Growth OS's own landing page.
+     5→ *
+     6→ * Ports the OMNIFORGE hero / layer-proof / editions-gallery / offer
+     7→ * sections onto the merged system: six edition-driven hero layouts, the
+     8→ * method (token contract → genome → tiers × finishes), the editions
+     9→ * gallery that re-forges this very page live, a showcase of real rendered
+    10→ * templates, the playbook teaser, both price ladders and the closing
+    11→ * lead form.
+    12→ *
+    13→ * Everything paints through the edition CSS variables applied to <html>
+    14→ * by the EditionProvider — no hardcoded colours in this file (plain
+    15→ * black/white scrims aside, which are allowed theatre).
+    16→ */
+    17→import {
+    18→  useCallback,
+    19→  useRef,
+    20→  useState,
+    21→  type ChangeEvent,
+    22→  type CSSProperties,
+    23→  type FormEvent,
+    24→  type ReactNode,
+    25→} from "react"
+    26→import { ArrowRight, ArrowUpRight, BookOpen, Dices, Dna, ExternalLink, Layers, Orbit, Search, SlidersHorizontal } from "lucide-react"
+    27→import { EDITION_ORDER, EDITIONS, LAYER_ORDER, type Edition, type EditionId } from "@/engine/editions"
+    28→import { CAP_LABELS, FINISHES, type FinishCaps } from "@/engine/finish"
+    29→import { SWITCHES } from "@/engine/genome"
+    30→import { INDUSTRIES, TEMPLATES, findTemplate, industryOf, type TemplateDef } from "@/engine/registry"
+    31→import { PLAYBOOK_BY_TIER, TIERS, tierOf } from "@/engine/tiers"
+    32→import { SYSTEM_MAP, go, href } from "@/engine/nav"
+    33→import { track } from "@/engine/analytics"
+    34→import { useEdition } from "../edition-provider"
+    35→import { SpinBlock, SpinField, useCursorLabel, useFx } from "../fx"
+    36→import { useGos } from "../gos-context"
+    37→import { SiteFrame } from "../site-frame"
+    38→import { OPEN_PALETTE_EVENT } from "../command-palette"
+    39→
+    40→/* ── constants ─────────────────────────────────────────────────────── */
+    41→
+    42→const MODULE_TOTAL = Object.values(PLAYBOOK_BY_TIER).reduce((a, b) => a + b, 0)
+    43→const pad = (n: number) => String(n).padStart(2, "0")
+    44→
+    45→/** The blueprint hero's mono stats rail. */
+    46→const STATS = [
+    47→  { value: String(TEMPLATES.length), label: "finished templates" },
+    48→  { value: String(MODULE_TOTAL), label: "playbook modules" },
+    49→  { value: String(SWITCHES.length), label: "genome switches" },
+    50→  { value: String(EDITION_ORDER.length), label: "editions" },
+    51→  { value: String(FINISHES.length), label: "finish tiers" },
+    52→]
+    53→
+    54→/** The 12-variable token contract every template draws through. */
+    55→const TOKENS = [
+    56→  "--bg", "--surface", "--ink", "--muted", "--line", "--primary",
+    57→  "--on-primary", "--accent", "--on-accent", "--radius", "--font-display", "--font-body",
+    58→]
+    59→
+    60→const MARQUEE_TEXT =
+    61→  `${TEMPLATES.length} finished templates · ${MODULE_TOTAL} playbook modules · ` +
+    62→  `${SWITCHES.length} genome switches · ${EDITION_ORDER.length} editions · ` +
+    63→  `${FINISHES.length} finish tiers · ${TIERS.length} tiers per industry — `
+    64→
+    65→const SHOWCASE = [
+    66→  "molo-bakehouse", "ember-oak", "kalm-physio",
+    67→  "nightflow", "rowan-vale", "northbank-residences",
+    68→]
+    69→  .map((s) => findTemplate(s))
+    70→  .filter((t): t is TemplateDef => !!t)
+    71→
+    72→const EXAMPLE_MODULES = ["SiteHeader", "ReservationFlow", "ListingGrid", "MortgageCalculator", "PatientPortal"]
+    73→const BUDGETS = ["Under £500", "£500 – 2k", "£2k – 10k", "£10k +"]
+    74→const NAV_LINKS: { label: string; path: string }[] = [
+    75→  { label: "AI Studio", path: "/ai" },
+    76→  { label: "Library", path: "/library" },
+    77→  { label: "Catalogue", path: "/catalogue" },
+    78→  { label: "Forge", path: "/forge" },
+    79→  { label: "Playbook", path: "/playbook" },
+    80→]
+    81→
+    82→const capLine = (caps: FinishCaps) =>
+    83→  (Object.keys(CAP_LABELS) as (keyof typeof CAP_LABELS)[])
+    84→    .filter((k) => caps[k] === true)
+    85→    .map((k) => CAP_LABELS[k])
+    86→    .join(" · ")
+    87→
+    88→/*
+    89→ * The shell resets element styles inside `.gos` with unlayered CSS
+    90→ * (buttons, headings, lists). The forge opts back out so plain Tailwind
+    91→ * utilities apply unchanged: each declaration rolls the property back to
+    92→ * the layered value (Tailwind's utilities/base layers) that the shell's
+    93→ * reset would otherwise have overridden.
+    94→ */
+    95→const OPT_OUT = `.gos .forge :is(h1,h2,h3,h4,p,ul,ol,dl,dd){margin:revert-layer;padding:revert-layer}
+    96→.gos .forge button{font:revert-layer;color:revert-layer;background:revert-layer;border:revert-layer;padding:revert-layer}
+    97→.gos .forge a{color:revert-layer}`
+    98→
+    99→/* ── shared bits ──────────────────────────────────────────────────── */
+   100→
+   101→function HeroHeadline({ e, motion, className = "" }: { e: Edition; motion: boolean; className?: string }) {
+   102→  const [pre, emph, post] = e.copy.headline
+   103→  return (
+   104→    <h1 className={`ed-display text-balance ${className}`}>
+   105→      {pre}{" "}
+   106→      <span className={`ed-emph${motion ? " ed-foil-move" : ""}`}>{emph}</span>{" "}
+   107→      {post}
+   108→    </h1>
+   109→  )
+   110→}
+   111→
+   112→function HeroCtas({
+   113→  e, invert = false, className = "", onSecondary,
+   114→}: { e: Edition; invert?: boolean; className?: string; onSecondary: () => void }) {
+   115→  /* the AI-first merge: the primary CTA opens the AI Intelligence
+   116→     layer (#/ai) when the edition names it; otherwise the catalogue */
+   117→  const primaryIsAi = /ai studio/i.test(e.copy.cta)
+   118→  return (
+   119→    <div className={`flex flex-wrap items-center gap-3 ${className}`}>
+   120→      <button
+   121→        type="button"
+   122→        onClick={() => {
+   123→          track("cta_clicked", { source: "forge", target: primaryIsAi ? "ai-studio" : "catalogue" })
+   124→          go(primaryIsAi ? "/ai" : "/catalogue")
+   125→        }}
+   126→        className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+   127→      >
+   128→        {e.copy.cta} <ArrowRight className="size-4" aria-hidden />
+   129→      </button>
+   130→      <button
+   131→        type="button"
+   132→        onClick={() => {
+   133→          track("cta_clicked", { source: "forge", target: "catalogue" })
+   134→          go("/catalogue")
+   135→        }}
+   136→        className={
+   137→          invert
+   138→            ? "inline-flex h-11 items-center rounded-md border border-white/30 bg-transparent px-5 text-sm font-medium text-white transition-colors hover:bg-white/10"
+   139→            : "inline-flex h-11 items-center rounded-md border border-border bg-transparent px-5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+   140→        }
+   141→      >
+   142→        Browse the library
+   143→      </button>
+   144→    </div>
+   145→  )
+   146→}
+   147→
+   148→function Marquee() {
+   149→  const { caps } = useFx()
+   150→  if (!caps.marquee) return null
+   151→  return (
+   152→    <div className="overflow-hidden border-y border-border bg-muted/30">
+   153→      <p className="sr-only">
+   154→        {TEMPLATES.length} finished templates, {MODULE_TOTAL} playbook modules, {SWITCHES.length} genome
+   155→        switches, {EDITION_ORDER.length} editions, {FINISHES.length} finish tiers, {TIERS.length} tiers per industry.
+   156→      </p>
+   157→      <div className="ed-marquee flex w-max" aria-hidden="true">
+   158→        {[0, 1].map((k) => (
+   159→          <span
+   160→            key={k}
+   161→            className="whitespace-nowrap py-2.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
+   162→          >
+   163→            {MARQUEE_TEXT.repeat(3)}
+   164→          </span>
+   165→        ))}
+   166→      </div>
+   167→    </div>
+   168→  )
+   169→}
+   170→
+   171→function Section({
+   172→  id, n, eyebrow, title, desc, children,
+   173→}: {
+   174→  id: string
+   175→  n: string
+   176→  eyebrow: string
+   177→  title: ReactNode
+   178→  desc?: ReactNode
+   179→  children: ReactNode
+   180→}) {
+   181→  return (
+   182→    <section id={id} aria-labelledby={`${id}-heading`} className="mx-auto w-full max-w-6xl scroll-mt-24 px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+   183→      <header className="mb-10 max-w-3xl">
+   184→        <p className="ed-eyebrow">
+   185→          <span className="text-primary">{n}</span> — {eyebrow}
+   186→        </p>
+   187→        <h2 id={`${id}-heading`} className="ed-display mt-3 text-3xl leading-tight sm:text-4xl">
+   188→          {title}
+   189→        </h2>
+   190→        {desc ? <p className="mt-4 text-base leading-relaxed text-muted-foreground">{desc}</p> : null}
+   191→      </header>
+   192→      {children}
+   193→    </section>
+   194→  )
+   195→}
+   196→
+   197→/* ── the header ───────────────────────────────────────────────────── */
+   198→
+   199→function PageHeader() {
+   200→  return (
+   201→    <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-md">
+   202→      <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+   203→        <button
+   204→          type="button"
+   205→          onClick={() => go("/library")}
+   206→          className="flex shrink-0 items-center gap-2.5 text-foreground"
+   207→          aria-label="Growth OS — open the template library"
+   208→        >
+   209→          <span aria-hidden className="grid size-7 place-items-center rounded-[7px] bg-primary text-sm font-semibold text-primary-foreground">
+   210→            G
+   211→          </span>
+   212→          <span className="ed-display whitespace-nowrap text-base sm:text-lg">Growth OS</span>
+   213→        </button>
+   214→        <nav aria-label="Views" className="mx-auto hidden items-center gap-1 sm:flex">
+   215→          {NAV_LINKS.map((l) => (
+   216→            <a
+   217→              key={l.path}
+   218→              href={href(l.path)}
+   219→              className="rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+   220→            >
+   221→              {l.label}
+   222→            </a>
+   223→          ))}
+   224→        </nav>
+   225→        <button
+   226→          type="button"
+   227→          onClick={() => window.dispatchEvent(new CustomEvent(OPEN_PALETTE_EVENT))}
+   228→          title="Command palette (⌘K)"
+   229→          className="ml-auto inline-flex items-center gap-2 rounded-md border border-border bg-background px-2.5 py-1.5 font-mono text-[11px] text-muted-foreground transition-colors hover:text-foreground sm:ml-0"
+   230→        >
+   231→          <Search className="size-3" aria-hidden />
+   232→          <span className="hidden sm:inline">Search</span>
+   233→          <span aria-hidden className="rounded border border-border bg-muted/60 px-1 py-px text-[10px]">⌘K</span>
+   234→        </button>
+   235→      </div>
+   236→    </header>
+   237→  )
+   238→}
+   239→
+   240→/* ── the hero — one of six layouts per edition ────────────────────── */
+   241→
+   242→function Hero() {
+   243→  const { id, edition, layers } = useEdition()
+   244→  const { motion } = useFx()
+   245→  const copy = edition.copy
+   246→  const no = pad(EDITION_ORDER.indexOf(id) + 1)
+   247→  const rise = motion ? "ed-rise" : ""
+   248→  const toId = useCallback(
+   249→    (target: string) => {
+   250→      document.getElementById(target)?.scrollIntoView({ behavior: motion ? "smooth" : "auto", block: "start" })
+   251→    },
+   252→    [motion],
+   253→  )
+   254→
+   255→  let hero: ReactNode = null
+   256→
+   257→  if (edition.hero === "monument") {
+   258→    /* obsidian — a centered ceremonial column with archival numbering */
+   259→    hero = (
+   260→      <section className="relative isolate overflow-hidden">
+   261→        <div key={id} className={`mx-auto max-w-4xl px-4 pb-16 pt-16 text-center sm:pt-24 lg:px-8 ${rise}`}>
+   262→          <p className="ed-eyebrow flex items-center justify-center gap-4">
+   263→            <span aria-hidden className="h-px w-10 bg-border" />
+   264→            {copy.eyebrow}
+   265→            <span aria-hidden className="h-px w-10 bg-border" />
+   266→          </p>
+   267→          <HeroHeadline e={edition} motion={motion} className="mt-6 text-5xl leading-[1.05] sm:text-6xl lg:text-7xl" />
+   268→          <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground">{copy.sub}</p>
+   269→          <HeroCtas e={edition} className="mt-10 justify-center" onSecondary={() => toId("method")} />
+   270→          <p className="mt-12 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+   271→            № {no} / {pad(EDITION_ORDER.length)} · {edition.name}
+   272→          </p>
+   273→        </div>
+   274→      </section>
+   275→    )
+   276→  } else if (edition.hero === "editorial") {
+   277→    /* nocturne — huge italic display, generous margins, hairline rules */
+   278→    hero = (
+   279→      <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-16 sm:px-6 lg:px-8 lg:pt-24">
+   280→        <div key={id} className={rise}>
+   281→          <p className="ed-eyebrow">{copy.eyebrow}</p>
+   282→          <HeroHeadline e={edition} motion={motion} className="mt-6 max-w-5xl text-6xl leading-[0.95] sm:text-7xl lg:text-8xl" />
+   283→        </div>
+   284→        <div className="mt-10 grid gap-10 border-t border-border pt-8 lg:grid-cols-[1fr_1.3fr] lg:items-end">
+   285→          <div>
+   286→            <p className="text-pretty text-lg leading-relaxed text-muted-foreground">{copy.sub}</p>
+   287→            <HeroCtas e={edition} className="mt-8" onSecondary={() => toId("method")} />
+   288→          </div>
+   289→          <ul className="font-mono text-xs text-muted-foreground">
+   290→            {layers.slice(0, 3).map((l, i) => (
+   291→              <li key={l.id} className="flex items-baseline gap-3 border-b border-border/60 py-2.5 last:border-0">
+   292→                <span className="text-primary">{pad(i + 1)}</span>
+   293→                <span className="uppercase tracking-[0.1em]">{l.label}</span>
+   294→                <span className="ml-auto text-foreground">{l.value}</span>
+   295→              </li>
+   296→            ))}
+   297→          </ul>
+   298→        </div>
+   299→      </section>
+   300→    )
+   301→  } else if (edition.hero === "cinema") {
+   302→    /* midhigh — a full-bleed dark plate with a colour-mix scrim, no image */
+   303→    hero = (
+   304→      <section className="relative isolate overflow-hidden">
+   305→        <div
+   306→          aria-hidden
+   307→          className="absolute inset-0"
+   308→          style={{
+   309→            background:
+   310→              "radial-gradient(130% 100% at 50% 0%, color-mix(in srgb, var(--primary) 30%, #000) 0%, #000 52%, color-mix(in srgb, var(--accent) 16%, #000) 100%)",
+   311→          }}
+   312→        />
+   313→        <div key={id} className={`relative mx-auto max-w-4xl px-4 py-28 text-center sm:py-36 lg:px-8 ${rise}`}>
+   314→          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/60">{copy.eyebrow}</p>
+   315→          <HeroHeadline e={edition} motion={motion} className="mt-6 text-5xl leading-[1.05] text-white sm:text-6xl lg:text-7xl" />
+   316→          <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-white/75">{copy.sub}</p>
+   317→          <HeroCtas e={edition} invert className="mt-10 justify-center" onSecondary={() => toId("method")} />
+   318→        </div>
+   319→      </section>
+   320→    )
+   321→  } else if (edition.hero === "blueprint") {
+   322→    /* agencyos — split hero with a mono stats rail and the grid underfoot */
+   323→    hero = (
+   324→      <section className="relative isolate overflow-hidden">
+   325→        <div aria-hidden className="ed-blueprint absolute inset-0 -z-10" />
+   326→        <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 pb-14 pt-16 sm:px-6 lg:grid-cols-[1.4fr_1fr] lg:items-center lg:pt-24 lg:px-8">
+   327→          <div key={id} className={rise}>
+   328→            <p className="ed-eyebrow">{copy.eyebrow}</p>
+   329→            <HeroHeadline e={edition} motion={motion} className="mt-5 text-4xl leading-[1.05] sm:text-5xl lg:text-6xl" />
+   330→            <p className="mt-5 max-w-xl text-pretty text-lg leading-relaxed text-muted-foreground">{copy.sub}</p>
+   331→            <HeroCtas e={edition} className="mt-8" onSecondary={() => toId("method")} />
+   332→          </div>
+   333→          <div className="lg:border-l lg:border-border lg:pl-8">
+   334→            {STATS.map((s) => (
+   335→              <div key={s.label} className="flex items-baseline justify-between gap-6 border-b border-border py-3.5 last:border-0">
+   336→                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{s.label}</span>
+   337→                <span className="ed-display text-3xl text-primary">{s.value}</span>
+   338→              </div>
+   339→            ))}
+   340→          </div>
+   341→        </div>
+   342→      </section>
+   343→    )
+   344→  } else if (edition.hero === "catalog") {
+   345→    /* templateos — headline left, a mosaic of four mini cards right */
+   346→    const minis: { value: string; label: string; go: () => void }[] = [
+   347→      { value: String(TEMPLATES.length), label: "finished templates", go: () => go("/catalogue") },
+   348→      { value: String(MODULE_TOTAL), label: "playbook modules", go: () => go("/playbook") },
+   349→      { value: String(EDITION_ORDER.length), label: "editions — switch live", go: () => toId("editions") },
+   350→      { value: String(FINISHES.length), label: "finish tiers", go: () => toId("pricing") },
+   351→    ]
+   352→    hero = (
+   353→      <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-16 sm:px-6 lg:px-8 lg:pt-24">
+   354→        <div className="grid gap-4 lg:grid-cols-[1.25fr_1fr] lg:items-stretch">
+   355→          <div key={id} className={`ed-card flex flex-col gap-8 p-8 sm:p-12 ${rise}`}>
+   356→            <p className="ed-eyebrow">{copy.eyebrow}</p>
+   357→            <div>
+   358→              <HeroHeadline e={edition} motion={motion} className="text-4xl leading-[1.05] sm:text-5xl lg:text-6xl" />
+   359→              <p className="mt-5 text-pretty text-lg leading-relaxed text-muted-foreground">{copy.sub}</p>
+   360→            </div>
+   361→            <HeroCtas e={edition} onSecondary={() => toId("method")} />
+   362→          </div>
+   363→          <div className="grid grid-cols-2 gap-4">
+   364→            {minis.map((m) => (
+   365→              <button
+   366→                key={m.label}
+   367→                type="button"
+   368→                onClick={m.go}
+   369→                className="ed-card flex flex-col items-start justify-between gap-6 p-5 text-left text-foreground transition-transform hover:-translate-y-0.5"
+   370→              >
+   371→                <span className="ed-display text-4xl text-primary">{m.value}</span>
+   372→                <span className="text-sm leading-snug">{m.label}</span>
+   373→              </button>
+   374→            ))}
+   375→          </div>
+   376→        </div>
+   377→      </section>
+   378→    )
+   379→  } else if (edition.hero === "ledger") {
+   380→    /* studioos — console style: headline left, live 7-layer readout right */
+   381→    hero = (
+   382→      <section className="mx-auto w-full max-w-6xl px-4 pb-14 pt-16 sm:px-6 lg:px-8 lg:pt-24">
+   383→        <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:items-center">
+   384→          <div key={id} className={rise}>
+   385→            <p className="ed-eyebrow flex items-center gap-2">
+   386→              {motion && (
+   387→                <span aria-hidden className="relative flex size-2">
+   388→                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-75" />
+   389→                  <span className="relative inline-flex size-2 rounded-full bg-primary" />
+   390→                </span>
+   391→              )}
+   392→              {copy.eyebrow}
+   393→            </p>
+   394→            <HeroHeadline e={edition} motion={motion} className="mt-5 text-4xl leading-[1.05] sm:text-5xl lg:text-6xl" />
+   395→            <p className="mt-5 max-w-xl text-pretty text-lg leading-relaxed text-muted-foreground">{copy.sub}</p>
+   396→            <HeroCtas e={edition} className="mt-8" onSecondary={() => toId("method")} />
+   397→          </div>
+   398→          <div className="ed-card relative overflow-hidden">
+   399→            {motion && <div aria-hidden className="ed-scanline pointer-events-none absolute inset-x-0 top-0" />}
+   400→            <p className="border-b border-border px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+   401→              Live readout — {LAYER_ORDER.length} layers
+   402→            </p>
+   403→            <dl className="px-5 py-1">
+   404→              {layers.map((l, i) => (
+   405→                <div key={l.id} className="grid grid-cols-[4.5rem_1fr] items-baseline gap-3 border-b border-border/60 py-2.5 last:border-0">
+   406→                  <dt className="font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground">
+   407→                    {pad(i + 1)} · {l.label}
+   408→                  </dt>
+   409→                  <dd>
+   410→                    <span className="block text-sm leading-tight">{l.value}</span>
+   411→                    <span className="block text-[11px] leading-tight text-muted-foreground">{l.note}</span>
+   412→                  </dd>
+   413→                </div>
+   414→              ))}
+   415→            </dl>
+   416→          </div>
+   417→        </div>
+   418→      </section>
+   419→    )
+   420→  }
+   421→
+   422→  return (
+   423→    <>
+   424→      {hero}
+   425→      <Marquee />
+   426→    </>
+   427→  )
+   428→}
+   429→
+   430→/* ── the AI band — the intelligence layer, front of house ─────── */
+   431→
+   432→const AI_BAND_SKILLS = [
+   433→  { name: "AI Chat", note: "librarian · copy forge" },
+   434→  { name: "Image Gen", note: "hero art · logo lab" },
+   435→  { name: "Text → Speech", note: "voiceover · IVR" },
+   436→  { name: "Speech → Text", note: "voice brief · files" },
+   437→  { name: "Vision", note: "critique · alt text" },
+   438→  { name: "Video Gen", note: "reels · teasers" },
+   439→  { name: "Web Search", note: "scan · moodboards" },
+   440→  { name: "Page Reader", note: "extract · audit" },
+   441→]
+   442→
+   443→function AiBand() {
+   444→  const { caps } = useFx()
+   445→  return (
+   446→    <section id="ai-band" className="border-b border-border bg-muted/25">
+   447→      <div className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8">
+   448→        <div className="flex flex-wrap items-end justify-between gap-5">
+   449→          <div className="max-w-2xl">
+   450→            <p className="ed-eyebrow">Layer one · the AI intelligence</p>
+   451→            <h2 className="ed-display mt-3 text-3xl leading-tight sm:text-4xl">
+   452→              Eight skills. <span className="ed-emph">Sixteen ways in.</span>
+   453→            </h2>
+   454→            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+   455→              The AI Studio is the first layer of the merged system — every skill runs live against real models, and every
+   456→              skill ships two integration designs: a conversational librarian beside a copy forge, hero art beside a logo
+   457→              lab, a voice brief beside a file transcriber. Same engines, different products.
+   458→            </p>
+   459→          </div>
+   460→          <button
+   461→            type="button"
+   462→            onClick={() => {
+   463→              track("cta_clicked", { source: "forge", target: "ai-studio" })
+   464→              go("/ai")
+   465→            }}
+   466→            className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+   467→          >
+   468→            Open AI Studio <ArrowRight className="size-4" aria-hidden />
+   469→          </button>
+   470→        </div>
+   471→        <ul className={`mt-8 grid grid-cols-2 gap-2 sm:grid-cols-4 ${caps.rise ? "ed-rise" : ""}`}>
+   472→          {AI_BAND_SKILLS.map((s, i) => (
+   473→            <li key={s.name}>
+   474→              <button
+   475→                type="button"
+   476→                onClick={() => go(`/ai/${["chat", "image", "tts", "asr", "vlm", "video", "search", "reader"][i]}`)}
+   477→                className="group flex w-full flex-col gap-1 rounded-lg border border-border bg-card p-3.5 text-left transition hover:border-primary/50 hover:bg-primary/5"
+   478→              >
+   479→                <span className="text-[13px] font-semibold text-foreground group-hover:text-primary">{s.name}</span>
+   480→                <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{s.note}</span>
+   481→              </button>
+   482→            </li>
+   483→          ))}
+   484→        </ul>
+   485→      </div>
+   486→    </section>
+   487→  )
+   488→}
+   489→
+   490→/* ── the method — how the system works ───────────────────────── */
+   491→
+   492→function MethodCard({ n, icon: Icon, title, children }: { n: string; icon: typeof Layers; title: string; children: ReactNode }) {
+   493→  return (
+   494→    <article className="ed-card flex h-full flex-col gap-4 p-6">
+   495→      <div className="flex items-center gap-3">
+   496→        <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-md border border-border bg-muted/40">
+   497→          <Icon className="size-4 text-primary" />
+   498→        </span>
+   499→        <div>
+   500→          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Step {n}</p>
+   501→          <h3 className="mt-0.5 font-medium leading-tight">{title}</h3>
+   502→        </div>
+   503→      </div>
+   504→      {children}
+   505→    </article>
+   506→  )
+   507→}
+   508→
+   509→/* ── the genome card's live randomizer — works right on the front door ── */
+   510→
+   511→function GenomeRandomizerRow() {
+   512→  const gos = useGos()
+   513→  const locked = gos.genomeBudget <= 0
+   514→  const changed = SWITCHES.filter((s) => gos.genome[s.id] !== "native").length
+   515→  return (
+   516→    <div className="mt-auto pt-2">
+   517→      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
+   518→        <button
+   519→          type="button"
+   520→          onClick={() => gos.shuffleGenome()}
+   521→          disabled={locked}
+   522→          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1.5 text-xs font-medium transition-colors hover:border-foreground/30 disabled:cursor-not-allowed disabled:opacity-40"
+   523→        >
+   524→          <Dices className="size-3.5" aria-hidden /> Deal a genome
+   525→        </button>
+   526→        <button
+   527→          type="button"
+   528→          onClick={() => gos.setAutoSwap(!gos.autoSwap)}
+   529→          aria-pressed={gos.autoSwap}
+   530→          disabled={locked}
+   531→          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+   532→            gos.autoSwap
+   533→              ? "border-primary bg-primary text-primary-foreground"
+   534→              : "border-border bg-muted/40 hover:border-foreground/30"
+   535→          }`}
+   536→        >
+   537→          <Orbit className={`size-3.5 motion-safe:animate-spin motion-safe:[animation-duration:3.4s]`} aria-hidden />
+   538→          {gos.autoSwap ? "Cruising" : "Auto-cruise"}
+   539→        </button>
+   540→        <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+   541→          {locked ? "studio finish — locked" : `${changed}/${gos.genomeBudget} swapped`}
+   542→        </span>
+   543→      </div>
+   544→      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+   545→        {locked
+   546→          ? "The Studio finish keeps every template as drawn — move up a finish to unlock the randomizer."
+   547→          : "Try it here — the showcase below re-forges through the same switches, live."}
+   548→      </p>
+   549→    </div>
+   550→  )
+   551→}
+   552→
+   553→function Method() {
+   554→  return (
+   555→    <Section
+   556→      id="method"
+   557→      n="01"
+   558→      eyebrow="The method"
+   559→      title={<>How the system <span className="ed-emph">works</span>.</>}
+   560→      desc="Three contracts hold the whole thing together. Swap any of them and the work keeps its shape — that is what makes an edition click instant and a genome switch safe."
+   561→    >
+   562→      <div className="grid gap-4 md:grid-cols-2">
+   563→        <MethodCard n="01" icon={Layers} title="The token contract">
+   564→          <p className="text-sm leading-relaxed text-muted-foreground">
+   565→            Every template draws through the same CSS variables. Re-skin one and you re-skin all 23 — nothing
+   566→            is hand-painted. The factory kit renders through the same contract via the token bridge.
+   567→          </p>
+   568→          <ul className="mt-4 flex flex-wrap gap-1.5">
+   569→            {TOKENS.map((t) => (
+   570→              <li key={t} className="rounded-full border border-border bg-muted/40 px-2.5 py-1 font-mono text-[10px] text-muted-foreground">
+   571→                {t}
+   572→              </li>
+   573→            ))}
+   574→          </ul>
+   575→        </MethodCard>
+   576→        <MethodCard n="02" icon={Dna} title="The genome">
+   577→          <p className="text-sm leading-relaxed text-muted-foreground">
+   578→            Seven named switches re-token any template without breaking it — curated choices, never raw controls.
+   579→          </p>
+   580→          <ol className="mt-4 grid gap-1.5 text-sm">
+   581→            {SWITCHES.map((s) => (
+   582→              <li key={s.id} className="flex items-baseline gap-2.5">
+   583→                <span className="font-mono text-[10px] text-primary">{s.no}</span>
+   584→                <span>{s.label}</span>
+   585→                <span className="ml-auto hidden font-mono text-[10px] text-muted-foreground md:inline">{s.options.length} options</span>
+   586→              </li>
+   587→            ))}
+   588→          </ol>
+   589→          <GenomeRandomizerRow />
+   590→        </MethodCard>
+   591→        <MethodCard n="03" icon={SlidersHorizontal} title="Tiers × finishes">
+   592→          <p className="text-sm leading-relaxed text-muted-foreground">
+   593→            Product tiers set depth — Starter → Flagship. Finish tiers set theatre — Studio → Private. Two
+   594→            independent ladders, both shown before you buy.
+   595→          </p>
+   596→          <div className="mt-4 grid grid-cols-2 gap-4">
+   597→            <div>
+   598→              <p className="ed-eyebrow mb-2">Depth</p>
+   599→              <dl className="border-t border-border text-xs">
+   600→                {TIERS.map((t) => (
+   601→                  <div key={t.id} className="flex items-baseline justify-between gap-2 border-b border-border py-1.5">
+   602→                    <dt>{t.plan}</dt>
+   603→                    <dd className="font-mono text-[10px] text-primary">{t.price}</dd>
+   604→                  </div>
+   605→                ))}
+   606→              </dl>
+   607→            </div>
+   608→            <div>
+   609→              <p className="ed-eyebrow mb-2">Theatre</p>
+   610→              <dl className="border-t border-border text-xs">
+   611→                {FINISHES.map((f) => (
+   612→                  <div key={f.id} className="flex items-baseline justify-between gap-2 border-b border-border py-1.5">
+   613→                    <dt>{f.name}</dt>
+   614→                    <dd className="font-mono text-[10px] text-primary">{f.price}</dd>
+   615→                  </div>
+   616→                ))}
+   617→              </dl>
+   618→            </div>
+   619→          </div>
+   620→        </MethodCard>
+   621→        <MethodCard n="04" icon={BookOpen} title="The playbook">
+   622→          <p className="text-sm leading-relaxed text-muted-foreground">
+   623→            {MODULE_TOTAL} modules with rules, a11y and code, tiered Starter → Flagship — the build standard
+   624→            every template is audited against.
+   625→          </p>
+   626→          <div className="mt-auto pt-2">
+   627→            <button
+   628→              type="button"
+   629→              onClick={() => go("/playbook")}
+   630→              className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+   631→            >
+   632→              Open the playbook <ArrowRight className="size-3.5" aria-hidden />
+   633→            </button>
+   634→          </div>
+   635→        </MethodCard>
+   636→      </div>
+   637→    </Section>
+   638→  )
+   639→}
+   640→
+   641→/* ── the editions gallery — one click re-forges the page ───────────── */
+   642→
+   643→function EditionCard({ eid, active, onPick }: { eid: EditionId; active: boolean; onPick: () => void }) {
+   644→  const e = EDITIONS[eid]
+   645→  const p = e.palette[e.nativeMode]
+   646→  return (
+   647→    <SpinBlock className="h-full">
+   648→      <button
+   649→        type="button"
+   650→        onClick={onPick}
+   651→        aria-pressed={active}
+   652→        aria-label={`Apply the ${e.name} edition`}
+   653→        className={`ed-card flex h-full w-full flex-col gap-4 p-5 text-left text-foreground transition-all ${
+   654→          active ? "ring-2 ring-primary" : "hover:-translate-y-0.5 hover:border-foreground/30"
+   655→        }`}
+   656→      >
+   657→        <div className="flex items-start justify-between gap-3">
+   658→          <span className="ed-display text-3xl leading-none text-primary">{e.short}</span>
+   659→          <span className="ed-eyebrow">{active ? "Active — live above" : `Layout · ${e.hero}`}</span>
+   660→        </div>
+   661→        <div>
+   662→          <h3 className="ed-display text-xl leading-snug">{e.name}</h3>
+   663→          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{e.tagline}</p>
+   664→        </div>
+   665→        <dl className="mt-auto grid content-start gap-1 border-t border-border pt-3">
+   666→          {LAYER_ORDER.map((l) => (
+   667→            <div key={l.id} className="grid grid-cols-[4.6rem_1fr] items-baseline gap-2">
+   668→              <dt className="truncate font-mono text-[9px] uppercase tracking-[0.1em] text-muted-foreground">{l.label}</dt>
+   669→              <dd className="truncate text-[11px]">{e.layers[l.id].value}</dd>
+   670→            </div>
+   671→          ))}
+   672→        </dl>
+   673→        <div className="flex items-center gap-1.5" aria-hidden="true">
+   674→          {(["bg", "surface", "ink", "primary", "accent"] as const).map((k) => (
+   675→            <span key={k} title={`${k} · ${p[k]}`} className="size-4 rounded-[4px] border border-black/10" style={{ backgroundColor: p[k] }} />
+   676→          ))}
+   677→        </div>
+   678→      </button>
+   679→    </SpinBlock>
+   680→  )
+   681→}
+   682→
+   683→function EditionsGallery() {
+   684→  const { id, setEdition } = useEdition()
+   685→  return (
+   686→    <Section
+   687→      id="editions"
+   688→      n="02"
+   689→      eyebrow="The editions"
+   690→      title={<>One click <span className="ed-emph">re-forges</span> the shell.</>}
+   691→      desc="Six complete identities for one system — press a card and this page, the hero layout, the type, the material and the copy all move together. The template previews keep their own DNA; that is the genome's job."
+   692→    >
+   693→      <SpinField className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+   694→        {EDITION_ORDER.map((eid) => (
+   695→          <EditionCard key={eid} eid={eid} active={eid === id} onPick={() => setEdition(eid)} />
+   696→        ))}
+   697→      </SpinField>
+   698→    </Section>
+   699→  )
+   700→}
+   701→
+   702→/* ── the showcase — real sites, rendered live ─────────────────────── */
+   703→
+   704→function ShowcaseCard({ t }: { t: TemplateDef }) {
+   705→  const gos = useGos()
+   706→  const cursor = useCursorLabel(`OPEN · ${t.name.toUpperCase()}`)
+   707→  const tier = tierOf(t.tier)
+   708→  const openLibrary = () => {
+   709→    gos.select(t.slug)
+   710→    go("/library")
+   711→  }
+   712→  return (
+   713→    <SpinBlock className="h-full">
+   714→      <article className="ed-card relative flex h-full flex-col overflow-hidden">
+   715→        {/* the preview is decorative theatre — inert so tab order and screen readers stay on the overlay button.
+   716→            The overlay is a sibling (never a wrapper) so no interactive element ever nests inside another —
+   717→            nested buttons break hydration and scramble the SSR DOM. */}
+   718→        <div aria-hidden="true" inert className="gos-mini pointer-events-none flex h-[320px] justify-center overflow-hidden border-b border-border">
+   719→          {/* genome={gos.siteGenome} — the showcase re-forges live as the
+   720→              genome (or the randomizer) moves; the front door is proof too */}
+   721→          <SiteFrame tpl={t} genome={gos.siteGenome} page="home" width={360} height={320} style={{ pointerEvents: "none" }} />
+   722→        </div>
+   723→        <button
+   724→          type="button"
+   725→          onClick={openLibrary}
+   726→          {...cursor}
+   727→          className="absolute inset-x-0 top-0 h-[320px] w-full bg-transparent text-left"
+   728→          aria-label={`Open ${t.name} in the library`}
+   729→        />
+   730→        <div className="flex flex-1 flex-col gap-2 p-4">
+   731→          <div className="flex items-baseline justify-between gap-3">
+   732→            <h3 className="font-medium leading-tight">{t.name}</h3>
+   733→            <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">{tier.plan}</span>
+   734→          </div>
+   735→          <p className="font-mono text-[11px] text-muted-foreground">
+   736→            {industryOf(t.industry).label} · {tier.plan} tier
+   737→          </p>
+   738→          <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 pt-2">
+   739→            <button
+   740→              type="button"
+   741→              onClick={openLibrary}
+   742→              className="inline-flex items-center gap-1.5 text-[13px] font-medium text-primary hover:underline"
+   743→            >
+   744→              Open in the library <ArrowRight className="size-3.5" aria-hidden />
+   745→            </button>
+   746→            <button
+   747→              type="button"
+   748→              onClick={() => go(`/site/${t.slug}`)}
+   749→              className="inline-flex items-center gap-1 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+   750→            >
+   751→              Full page <ExternalLink className="size-3" aria-hidden />
+   752→            </button>
+   753→          </div>
+   754→        </div>
+   755→      </article>
+   756→    </SpinBlock>
+   757→  )
+   758→}
+   759→
+   760→function Showcase() {
+   761→  return (
+   762→    <Section
+   763→      id="showcase"
+   764→      n="03"
+   765→      eyebrow="The proof"
+   766→      title={<>Open a <span className="ed-emph">finished</span> site.</>}
+   767→      desc="Six of the twenty-three, rendering live below — the real sites, not screenshots (Nightflow is module-built from the factory kit). Press one to open it in the library, or take the full page with the consoles."
+   768→    >
+   769→      <SpinField className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+   770→        {SHOWCASE.map((t) => (
+   771→          <ShowcaseCard key={t.slug} t={t} />
+   772→        ))}
+   773→      </SpinField>
+   774→    </Section>
+   775→  )
+   776→}
+   777→
+   778→/* ── the playbook teaser ───────────────────────────────────────────── */
+   779→
+   780→const SEGMENT_INKS = ["bg-primary/40", "bg-primary/70", "bg-primary", "bg-accent/70", "bg-accent"]
+   781→
+   782→function PlaybookTeaser() {
+   783→  return (
+   784→    <section id="modules" aria-labelledby="modules-heading" className="mx-auto w-full max-w-6xl scroll-mt-24 px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+   785→      <div className="ed-card grid gap-10 p-6 sm:p-10 lg:grid-cols-[1.15fr_1fr] lg:items-center">
+   786→        <div>
+   787→          <p className="ed-eyebrow">
+   788→            <span className="text-primary">04</span> — The build standard
+   789→          </p>
+   790→          <h2 id="modules-heading" className="ed-display mt-3 text-3xl leading-tight sm:text-4xl">
+   791→            The Module Playbook
+   792→          </h2>
+   793→          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+   794→            {MODULE_TOTAL} modules · 20 sections · every module with real content rules, a11y notes and reference
+   795→            code — tiered Starter → Flagship.
+   796→          </p>
+   797→          <div className="mt-6 flex flex-wrap gap-2">
+   798→            {EXAMPLE_MODULES.map((m) => (
+   799→              <span key={m} className="rounded-full border border-border bg-muted/40 px-3 py-1 font-mono text-[11px]">
+   800→                {m}
+   801→              </span>
+   802→            ))}
+   803→          </div>
+   804→          <button
+   805→            type="button"
+   806→            onClick={() => go("/playbook")}
+   807→            className="mt-8 inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+   808→          >
+   809→            Open the playbook <ArrowRight className="size-4" aria-hidden />
+   810→          </button>
+   811→        </div>
+   812→        <div>
+   813→          <p className="ed-eyebrow mb-3">Modules per tier</p>
+   814→          <div
+   815→            role="img"
+   816→            aria-label={`Module split — Starter ${PLAYBOOK_BY_TIER.low}, Growth ${PLAYBOOK_BY_TIER.mid}, Scale ${PLAYBOOK_BY_TIER.scale}, Business ${PLAYBOOK_BY_TIER.high}, Flagship ${PLAYBOOK_BY_TIER.premium}`}
+   817→            className="flex h-3 overflow-hidden rounded-full"
+   818→          >
+   819→            {TIERS.map((t, i) => (
+   820→              <span
+   821→                key={t.id}
+   822→                className={SEGMENT_INKS[i]}
+   823→                style={{ width: `${(PLAYBOOK_BY_TIER[t.id] / MODULE_TOTAL) * 100}%` }}
+   824→              />
+   825→            ))}
+   826→          </div>
+   827→          <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+   828→            {TIERS.map((t, i) => (
+   829→              <div key={t.id}>
+   830→                <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
+   831→                  <span aria-hidden className={`inline-block size-2 rounded-full ${SEGMENT_INKS[i]}`} />
+   832→                  {t.plan}
+   833→                </dt>
+   834→                <dd className="ed-display mt-0.5 text-2xl">{PLAYBOOK_BY_TIER[t.id]}</dd>
+   835→              </div>
+   836→            ))}
+   837→          </dl>
+   838→        </div>
+   839→      </div>
+   840→    </section>
+   841→  )
+   842→}
+   843→
+   844→/* ── pricing — the two ladders ────────────────────────────────────── */
+   845→
+   846→/* ── the system map — the merged system's clean paths ──────────────── */
+   847→
+   848→function SystemMapSection() {
+   849→  return (
+   850→    <section id="paths" aria-labelledby="paths-heading" className="mx-auto w-full max-w-6xl scroll-mt-24 px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+   851→      <header className="mb-8 max-w-3xl">
+   852→        <p className="ed-eyebrow">The system path — one grammar, every view addressed</p>
+   853→        <h2 id="paths-heading" className="ed-display mt-3 text-3xl leading-tight sm:text-4xl">
+   854→          Every view has an address.
+   855→        </h2>
+   856→        <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+   857→          The library, the catalogue, the playbook, the forge and every finished site live under one clean path
+   858→          system — shareable, bookmarkable, back-button honest. Identity is the path; state rides in the query —
+   859→          and the genome randomizer (the dice in the topbar) follows you into every view.
+   860→        </p>
+   861→      </header>
+   862→      <div className="ed-card overflow-hidden p-0">
+   863→        <ul className="divide-y divide-border">
+   864→          {SYSTEM_MAP.map((row) => {
+   865→            const live = !row.path.includes("<")
+   866→            const inner = (
+   867→              <>
+   868→                <code className="min-w-[12rem] shrink-0 font-mono text-[12.5px] text-primary">#{row.path}</code>
+   869→                <span className="text-sm font-medium">{row.label}</span>
+   870→                <span className="ml-auto hidden min-w-0 truncate pl-4 text-xs text-muted-foreground md:block">{row.note}</span>
+   871→                {live ? (
+   872→                  <ArrowUpRight className="ml-1 size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />
+   873→                ) : (
+   874→                  <span className="ml-1 shrink-0 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground/60">deep link</span>
+   875→                )}
+   876→              </>
+   877→            )
+   878→            return (
+   879→              <li key={row.path}>
+   880→                {live ? (
+   881→                  <a href={href(row.path)} className="group flex flex-wrap items-baseline gap-x-4 gap-y-1 px-4 py-3 transition-colors hover:bg-muted/60 sm:px-5">
+   882→                    {inner}
+   883→                  </a>
+   884→                ) : (
+   885→                  <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-4 py-3 sm:px-5">{inner}</div>
+   886→                )}
+   887→              </li>
+   888→            )
+   889→          })}
+   890→        </ul>
+   891→        <p className="border-t border-border bg-muted/40 px-4 py-2.5 font-mono text-[11px] leading-relaxed text-muted-foreground sm:px-5">
+   892→          state → ?finish=spectacle · ?edition=obsidian · ?published=1 · ?on=&lt;slug&gt; — old ?view= links keep resolving
+   893→        </p>
+   894→      </div>
+   895→    </section>
+   896→  )
+   897→}
+   898→
+   899→function Pricing() {
+   900→  const toId = useCallback((target: string) => {
+   901→    document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" })
+   902→  }, [])
+   903→  return (
+   904→    <Section
+   905→      id="pricing"
+   906→      n="05"
+   907→      eyebrow="Pricing"
+   908→      title={<>Two ladders. One <span className="ed-emph">honest</span> promise.</>}
+   909→      desc="Product tiers set how deep the build goes. Finish tiers set how much theatre the shell itself gets. Both are shown working before you buy either."
+   910→    >
+   911→      <div className="grid gap-8 lg:grid-cols-2">
+   912→        <div>
+   913→          <p className="ed-eyebrow mb-3">Depth — product tiers</p>
+   914→          <ul className="grid gap-3 sm:grid-cols-2">
+   915→            {TIERS.map((t) => (
+   916→              <li key={t.id} className="ed-card flex h-full flex-col gap-2 p-5">
+   917→                <h3 className="font-medium">{t.plan}</h3>
+   918→                <p className="ed-display text-2xl text-primary">{t.price}</p>
+   919→                <p className="mt-auto pt-2 text-xs leading-relaxed text-muted-foreground">{t.promise}</p>
+   920→              </li>
+   921→            ))}
+   922→          </ul>
+   923→        </div>
+   924→        <div>
+   925→          <p className="ed-eyebrow mb-3">Theatre — finish tiers</p>
+   926→          <ol className="flex flex-col gap-2">
+   927→            {FINISHES.map((f) => (
+   928→              <li key={f.id} className="ed-card p-4">
+   929→                <div className="flex items-baseline gap-3">
+   930→                  <span className="font-mono text-[10px] text-primary">{f.no}</span>
+   931→                  <h3 className="font-medium">{f.name}</h3>
+   932→                  <span className="ml-auto font-mono text-xs text-primary">{f.price}</span>
+   933→                </div>
+   934→                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{f.blurb}</p>
+   935→                <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.06em] text-muted-foreground">{capLine(f.caps)}</p>
+   936→              </li>
+   937→            ))}
+   938→          </ol>
+   939→        </div>
+   940→      </div>
+   941→      <div className="mt-8 flex flex-col items-start gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
+   942→        <p className="max-w-xl font-mono text-[11px] leading-relaxed text-muted-foreground">
+   943→          Prices and businesses are demo data. The sites, the flows and the manifests are real.
+   944→        </p>
+   945→        <div className="flex shrink-0 gap-3">
+   946→          <button
+   947→            type="button"
+   948→            onClick={() => {
+   949→              track("cta_clicked", { source: "forge", target: "catalogue" })
+   950→              go("/catalogue")
+   951→            }}
+   952→            className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+   953→          >
+   954→            Browse the catalogue <ArrowRight className="size-4" aria-hidden />
+   955→          </button>
+   956→          <button
+   957→            type="button"
+   958→            onClick={() => toId("closing")}
+   959→            className="inline-flex h-11 items-center rounded-md border border-border bg-transparent px-5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+   960→          >
+   961→            Book a walkthrough
+   962→          </button>
+   963→        </div>
+   964→      </div>
+   965→    </Section>
+   966→  )
+   967→}
+   968→
+   969→/* ── closing + the lead form ──────────────────────────────────────── */
+   970→
+   971→const inputCls =
+   972→  "h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground transition-colors focus-visible:border-primary aria-[invalid]:border-destructive"
+   973→
+   974→type LeadState = { name: string; email: string; business: string; industry: string; budget: string; brief: string }
+   975→
+   976→function Field({
+   977→  id, label, required = false, error, children,
+   978→}: {
+   979→  id: string
+   980→  label: string
+   981→  required?: boolean
+   982→  error?: string
+   983→  children: ReactNode
+   984→}) {
+   985→  return (
+   986→    <div className="flex flex-col gap-1.5">
+   987→      <label htmlFor={id} className="text-sm font-medium">
+   988→        {label}
+   989→        {required && (
+   990→          <span aria-hidden className="text-primary"> *</span>
+   991→        )}
+   992→      </label>
+   993→      {children}
+   994→      {error ? (
+   995→        <p id={`${id}-err`} role="alert" className="text-xs text-destructive">
+   996→          {error}
+   997→        </p>
+   998→      ) : null}
+   999→    </div>
+  1000→  )
+  1001→}
+  1002→
+  1003→function LeadForm() {
+  1004→  const [form, setForm] = useState<LeadState>({ name: "", email: "", business: "", industry: "", budget: "", brief: "" })
+  1005→  const [errors, setErrors] = useState<{ name?: string; email?: string }>({})
+  1006→  const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle")
+  1007→  const [refCode, setRefCode] = useState("")
+  1008→  const started = useRef(false)
+  1009→
+  1010→  const bind = (key: keyof LeadState) => ({
+  1011→    value: form[key],
+  1012→    onChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+  1013→      setForm((f) => ({ ...f, [key]: e.target.value })),
+  1014→  })
+  1015→
+  1016→  const onFirstFocus = () => {
+  1017→    if (!started.current) {
+  1018→      started.current = true
+  1019→      track("form_started", { source: "forge" })
+  1020→    }
+  1021→  }
+  1022→
+  1023→  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  1024→    e.preventDefault()
+  1025→    const errs: typeof errors = {}
+  1026→    if (!form.name.trim()) errs.name = "Your name is required."
+  1027→    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim())) errs.email = "A complete email, so we can reply."
+  1028→    setErrors(errs)
+  1029→    if (errs.name || errs.email) {
+  1030→      document.getElementById(errs.name ? "forge-name" : "forge-email")?.focus()
+  1031→      return
+  1032→    }
+  1033→    setStatus("sending")
+  1034→    try {
+  1035→      const res = await fetch("/api/leads", {
+  1036→        method: "POST",
+  1037→        headers: { "content-type": "application/json" },
+  1038→        body: JSON.stringify({ ...form, name: form.name.trim(), email: form.email.trim(), source: "forge" }),
+  1039→      })
+  1040→      if (!res.ok) throw new Error(`leads api ${res.status}`)
+  1041→      setRefCode(`GOS-${Date.now().toString(36).slice(-5).toUpperCase()}`)
+  1042→      setStatus("done")
+  1043→      track("form_submitted", { source: "forge" })
+  1044→    } catch {
+  1045→      setStatus("error")
+  1046→    }
+  1047→  }
+  1048→
+  1049→  if (status === "done") {
+  1050→    return (
+  1051→      <div className="ed-card p-8" role="status">
+  1052→        <p className="ed-eyebrow">Brief filed</p>
+  1053→        <p className="ed-display mt-3 text-2xl leading-snug">We reply within one working day.</p>
+  1054→        <p className="mt-4 text-sm text-muted-foreground">
+  1055→          Reference <code className="ed-display mx-1 text-lg text-primary">{refCode}</code> — quote it in any
+  1056→          reply.
+  1057→        </p>
+  1058→        <button
+  1059→          type="button"
+  1060→          onClick={() => go("/catalogue")}
+  1061→          className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+  1062→        >
+  1063→          Browse while you wait <ArrowRight className="size-4" aria-hidden />
+  1064→        </button>
+  1065→      </div>
+  1066→    )
+  1067→  }
+  1068→
+  1069→  return (
+  1070→    <form
+  1071→      noValidate
+  1072→      onSubmit={onSubmit}
+  1073→      onFocus={onFirstFocus}
+  1074→      aria-label="Send a brief"
+  1075→      className="ed-card grid gap-4 p-6 sm:grid-cols-2 sm:p-8"
+  1076→    >
+  1077→      <Field id="forge-name" label="Name" required error={errors.name}>
+  1078→        <input
+  1079→          id="forge-name"
+  1080→          type="text"
+  1081→          autoComplete="name"
+  1082→          placeholder="Ada Marsh"
+  1083→          required
+  1084→          aria-invalid={!!errors.name}
+  1085→          aria-describedby={errors.name ? "forge-name-err" : undefined}
+  1086→          className={inputCls}
+  1087→          {...bind("name")}
+  1088→        />
+  1089→      </Field>
+  1090→      <Field id="forge-email" label="Email" required error={errors.email}>
+  1091→        <input
+  1092→          id="forge-email"
+  1093→          type="email"
+  1094→          autoComplete="email"
+  1095→          placeholder="ada@business.co.uk"
+  1096→          required
+  1097→          aria-invalid={!!errors.email}
+  1098→          aria-describedby={errors.email ? "forge-email-err" : undefined}
+  1099→          className={inputCls}
+  1100→          {...bind("email")}
+  1101→        />
+  1102→      </Field>
+  1103→      <Field id="forge-business" label="Business" >
+  1104→        <input id="forge-business" type="text" autoComplete="organization" placeholder="The Marsh Rooms" className={inputCls} {...bind("business")} />
+  1105→      </Field>
+  1106→      <Field id="forge-industry" label="Industry">
+  1107→        <select id="forge-industry" className={inputCls} {...bind("industry")}>
+  1108→          <option value="">Choose…</option>
+  1109→          {INDUSTRIES.map((i) => (
+  1110→            <option key={i.id} value={i.label}>
+  1111→              {i.label}
+  1112→            </option>
+  1113→          ))}
+  1114→          <option value="Something else">Something else</option>
+  1115→        </select>
+  1116→      </Field>
+  1117→      <Field id="forge-budget" label="Budget">
+  1118→        <select id="forge-budget" className={inputCls} {...bind("budget")}>
+  1119→          <option value="">Choose…</option>
+  1120→          {BUDGETS.map((b) => (
+  1121→            <option key={b} value={b}>
+  1122→              {b}
+  1123→            </option>
+  1124→          ))}
+  1125→        </select>
+  1126→      </Field>
+  1127→      <div className="col-span-full flex items-center justify-end sm:col-span-1">
+  1128→        <button
+  1129→          type="submit"
+  1130→          disabled={status === "sending"}
+  1131→          className="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+  1132→        >
+  1133→          {status === "sending" ? "Filing your brief…" : "File the brief"}
+  1134→          {status !== "sending" && <ArrowRight className="size-4" aria-hidden />}
+  1135→        </button>
+  1136→      </div>
+  1137→      <div className="col-span-full">
+  1138→        <Field id="forge-brief" label="The brief">
+  1139→          <textarea
+  1140→            id="forge-brief"
+  1141→            rows={4}
+  1142→            placeholder="What are you building, and what must the site actually do?"
+  1143→            className="w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground transition-colors focus-visible:border-primary"
+  1144→            {...bind("brief")}
+  1145→          />
+  1146→        </Field>
+  1147→      </div>
+  1148→      {status === "error" && (
+  1149→        <div role="alert" className="col-span-full flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+  1150→          <p>The brief did not file — the wire or the server. Nothing was lost.</p>
+  1151→          <button type="button" onClick={() => setStatus("idle")} className="font-medium underline">
+  1152→            Try again
+  1153→          </button>
+  1154→        </div>
+  1155→      )}
+  1156→    </form>
+  1157→  )
+  1158→}
+  1159→
+  1160→function Closing() {
+  1161→  const { id, edition } = useEdition()
+  1162→  const { motion } = useFx()
+  1163→  return (
+  1164→    <section id="closing" aria-labelledby="closing-heading" className="mx-auto w-full max-w-6xl scroll-mt-24 px-4 pb-20 pt-14 sm:px-6 sm:pt-20 lg:px-8">
+  1165→      <div className="grid gap-10 lg:grid-cols-[1fr_1.15fr] lg:items-start">
+  1166→        <div>
+  1167→          <p className="ed-eyebrow">
+  1168→            <span className="text-primary">06</span> — {edition.copy.signature}
+  1169→          </p>
+  1170→          <h2
+  1171→            key={id}
+  1172→            className={`ed-display mt-4 text-4xl leading-tight sm:text-5xl ${motion ? "ed-rise" : ""}`}
+  1173→            id="closing-heading"
+  1174→          >
+  1175→            {edition.copy.closing}
+  1176→          </h2>
+  1177→          <p className="mt-5 max-w-md text-lg leading-relaxed text-muted-foreground">
+  1178→            Tell us what you are building. A working brief gets a working reply — one working day, no sequences,
+  1179→            no drip.
+  1180→          </p>
+  1181→        </div>
+  1182→        <LeadForm />
+  1183→      </div>
+  1184→    </section>
+  1185→  )
+  1186→}
+  1187→
+  1188→/* ── the footer ────────────────────────────────────────────────────── */
+  1189→
+  1190→function PageFooter() {
+  1191→  const { edition } = useEdition()
+  1192→  return (
+  1193→    <footer className="mt-auto border-t border-border">
+  1194→      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:flex-row lg:items-end lg:justify-between lg:px-8">
+  1195→        <div className="max-w-sm">
+  1196→          <div className="flex items-center gap-2.5">
+  1197→            <span aria-hidden className="grid size-7 place-items-center rounded-[7px] bg-primary text-sm font-semibold text-primary-foreground">
+  1198→              G
+  1199→            </span>
+  1200→            <span className="ed-display text-lg">Growth OS</span>
+  1201→          </div>
+  1202→          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+  1203→            {TEMPLATES.length} finished business templates. Every one honest, every one live.
+  1204→          </p>
+  1205→          <p className="mt-2 font-mono text-[11px] leading-relaxed text-muted-foreground/80">
+  1206→            Prices and businesses are demo data. The sites, the flows and the manifests are real.
+  1207→          </p>
+  1208→        </div>
+  1209→        <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+  1210→          {NAV_LINKS.map((l) => (
+  1211→            <a key={l.path} href={href(l.path)} className="text-muted-foreground transition-colors hover:text-foreground">
+  1212→              {l.label}
+  1213→            </a>
+  1214→          ))}
+  1215→        </nav>
+  1216→        <div className="lg:text-right">
+  1217→          <p className="ed-eyebrow">Forged as</p>
+  1218→          <p className="ed-display mt-1 text-3xl text-primary">{edition.copy.signature}</p>
+  1219→        </div>
+  1220→      </div>
+  1221→    </footer>
+  1222→  )
+  1223→}
+  1224→
+  1225→/* ── the view ──────────────────────────────────────────────────────── */
+  1226→
+  1227→export function HomeView() {
+  1228→  const { edition } = useEdition()
+  1229→  /*
+  1230→   * The provider applies the edition vars on <html>, but the --gf-* font
+  1231→   * faces are declared on <body> (next/font) — so `var(--gf-*)` inside
+  1232→   * --ed-font-display cannot resolve up there and every ed-display would
+  1233→   * silently fall back to the body font. Re-declaring the two font vars
+  1234→   * on this view's root brings them back into scope and restores each
+  1235→   * edition's true display voice, and it re-applies live on every switch.
+  1236→   */
+  1237→  const fontVars = {
+  1238→    "--ed-font-display": edition.fonts.display,
+  1239→    "--ed-font-body": edition.fonts.body,
+  1240→  } as CSSProperties
+  1241→  return (
+  1242→    <div className="forge h-full min-h-0 overflow-y-auto overscroll-contain" style={fontVars}>
+  1243→      <style>{OPT_OUT}</style>
+  1244→      <div className="flex min-h-full flex-col">
+  1245→        <PageHeader />
+  1246→        <main className="flex-1">
+  1247→          <Hero />
+  1248→          <AiBand />
+  1249→          <Method />
+  1250→          <EditionsGallery />
+  1251→          <Showcase />
+  1252→          <PlaybookTeaser />
+  1253→          <SystemMapSection />
+  1254→          <Pricing />
+  1255→          <Closing />
+  1256→        </main>
+  1257→        <PageFooter />
+  1258→      </div>
+  1259→    </div>
+  1260→  )
+  1261→}
+  1262→

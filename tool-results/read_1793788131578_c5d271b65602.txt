@@ -1,0 +1,830 @@
+     1→"use client"
+     2→
+     3→/**
+     4→ * The module library — the live rendering layer for the 344-module
+     5→ * playbook. Any module, from any section, inferred to an ARCHETYPE and
+     6→ * rendered with the token contract ONLY (--bg, --ink, --primary, --r…),
+     7→ * never a template's own classes — so a module mounts native on ANY of
+     8→ * the 23 templates, in ANY genome or edition skin.
+     9→ *
+    10→ * Archetype inference is keyword-driven over the module's name,
+    11→ * features and section — the same vocabulary the playbook uses.
+    12→ * Utility modules with no visual form fall back to the spec card.
+    13→ */
+    14→import type { PlaybookModule } from "@/engine/playbook"
+    15→import type { TemplateDef, IndustryId } from "@/engine/registry"
+    16→import { hasKitModule, renderKitModule } from "./registry"
+    17→
+    18→export type SlotId = "hero" | "mid" | "foot"
+    19→
+    20→/* ── archetype ids ────────────────────────────────────────────────── */
+    21→
+    22→export type ArchetypeId =
+    23→  | "hero" | "features" | "menu" | "pricing" | "reviews" | "faq"
+    24→  | "gallery" | "stats" | "booking" | "logos" | "timeline" | "team"
+    25→  | "contact" | "cta" | "portal" | "spec"
+    26→
+    27→export interface ArchetypeMeta {
+    28→  id: ArchetypeId
+    29→  label: string
+    30→  kind: "band" | "grid" | "flow" | "card"
+    31→}
+    32→
+    33→export const ARCHETYPES: Record<ArchetypeId, ArchetypeMeta> = {
+    34→  hero: { id: "hero", label: "Hero band", kind: "band" },
+    35→  features: { id: "features", label: "Feature grid", kind: "grid" },
+    36→  menu: { id: "menu", label: "Priced list", kind: "grid" },
+    37→  pricing: { id: "pricing", label: "Pricing tiers", kind: "grid" },
+    38→  reviews: { id: "reviews", label: "Reviews", kind: "grid" },
+    39→  faq: { id: "faq", label: "FAQ", kind: "flow" },
+    40→  gallery: { id: "gallery", label: "Gallery", kind: "grid" },
+    41→  stats: { id: "stats", label: "Stats band", kind: "band" },
+    42→  booking: { id: "booking", label: "Booking flow", kind: "flow" },
+    43→  logos: { id: "logos", label: "Trust bar", kind: "band" },
+    44→  timeline: { id: "timeline", label: "Process timeline", kind: "flow" },
+    45→  team: { id: "team", label: "Team grid", kind: "grid" },
+    46→  contact: { id: "contact", label: "Contact card", kind: "card" },
+    47→  cta: { id: "cta", label: "Call to action", kind: "band" },
+    48→  portal: { id: "portal", label: "Portal entry", kind: "card" },
+    49→  spec: { id: "spec", label: "Spec card", kind: "card" },
+    50→}
+    51→
+    52→/* ── keyword inference ────────────────────────────────────────────── */
+    53→
+    54→const RULES: [ArchetypeId, RegExp][] = [
+    55→  ["booking", /book|reserv|appointment|schedul|calendar|availab|seat|sitting|waitlist/i],
+    56→  ["portal", /portal|login|sign.?in|account|member|dashboard|patient area|client area/i],
+    57→  ["pricing", /pricing|plan|package|subscription|quote builder/i],
+    58→  ["reviews", /review|testimonial|praise|rating|star/i],
+    59→  ["faq", /faq|question|answer/i],
+    60→  ["gallery", /gallery|photo|image|carousel|slider|lightbox|masonry/i],
+    61→  ["stats", /stat|metric|number|counter|score|kpi/i],
+    62→  ["logos", /logo|trust|partner|client|press|accredit|badge/i],
+    63→  ["timeline", /timeline|process|step|how it works|journey|stage/i],
+    64→  ["team", /team|staff|profile|people|bio|about/i],
+    65→  ["menu", /menu|dish|course|price list|service list|treatment|offering/i],
+    66→  ["contact", /contact|location|map|address|hour|direction|footer/i],
+    67→  ["cta", /cta|call.?to.?action|closing|announcement|conversion|sticky/i],
+    68→  ["hero", /hero|banner|spotlight|headline|landing|masthead/i],
+    69→  ["features", /feature|benefit|value|differentiator|explainer|why|included|capabilit/i],
+    70→]
+    71→
+    72→export function inferArchetype(m: Pick<PlaybookModule, "name" | "features" | "section" | "purpose">): ArchetypeId {
+    73→  const hay = `${m.name} ${m.section} ${m.features.join(" ")} ${m.purpose}`
+    74→  for (const [id, re] of RULES) if (re.test(hay)) return id
+    75→  return "spec"
+    76→}
+    77→
+    78→/* ── per-industry content packs ───────────────────────────────────── */
+    79→
+    80→interface ContentPack {
+    81→  menuTitle: string
+    82→  menu: { name: string; note: string; price: string }[]
+    83→  featuresTitle: string
+    84→  features: { title: string; note: string }[]
+    85→  reviews: { quote: string; by: string }[]
+    86→  stats: { n: string; label: string }[]
+    87→  faq: { q: string; a: string }[]
+    88→  team: { name: string; role: string }[]
+    89→  timeline: { step: string; note: string }[]
+    90→  bookingCta: string
+    91→  ctaLine: string
+    92→}
+    93→
+    94→const PACKS: Record<IndustryId, ContentPack> = {
+    95→  food: {
+    96→    menuTitle: "From the counter, this week",
+    97→    menu: [
+    98→      { name: "Sourdough, 36-hour ferment", note: "Wholegrain, stone-milled flour", price: "7" },
+    99→      { name: "Cured trout, ember cream", note: "Pickled rhubarb, dill oil", price: "18" },
+   100→      { name: "Ash-baked celeriac", note: "Aged comté, hazelnut", price: "21" },
+   101→      { name: "Burnt honey tart", note: "Thyme, raw cream", price: "11" },
+   102→    ],
+   103→    featuresTitle: "Why the regulars stay",
+   104→    features: [
+   105→      { title: "Everything baked today", note: "First proof at 4am; the counter tells the truth." },
+   106→      { title: "One room, one fire", note: "The kitchen is the dining room — you watch it all happen." },
+   107→      { title: "The menu fits the season", note: "Four changes a year, written the day before." },
+   108→    ],
+   109→    reviews: [
+   110→      { quote: "The trout alone is worth crossing the city for.", by: "City Paper" },
+   111→      { quote: "We booked the room for twelve and nobody left before midnight.", by: "Marta V., regular since 2021" },
+   112→      { quote: "Bread I would queue for — and I hate queues.", by: "Tom H." },
+   113→    ],
+   114→    stats: [
+   115→      { n: "12", label: "seats, one sitting" },
+   116→      { n: "4", label: "menu turns a year" },
+   117→      { n: "6y", label: "in the neighbourhood" },
+   118→    ],
+   119→    faq: [
+   120→      { q: "Can you hold a loaf for me?", a: "Yes — reserve by 3pm and it is yours until closing." },
+   121→      { q: "Do you take walk-ins?", a: "Always, but Friday and Saturday fill by 6pm." },
+   122→      { q: "Allergies?", a: "Tell us when you reserve; the kitchen plans around it." },
+   123→    ],
+   124→    team: [
+   125→      { name: "Ida Frost", role: "Head baker" },
+   126→      { name: "Emil Voss", role: "Chef de cuisine" },
+   127→      { name: "Noor Haddad", role: "Front of house" },
+   128→    ],
+   129→    timeline: [
+   130→      { step: "Reserve", note: "Pick a sitting and hold your seats" },
+   131→      { step: "Arrive", note: "Bread and butter while you read the board" },
+   132→      { step: "Eat", note: "Courses land as the fire allows" },
+   133→    ],
+   134→    bookingCta: "Reserve a seat",
+   135→    ctaLine: "Twelve seats, one fire. Reserve before the board is wiped.",
+   136→  },
+   137→  health: {
+   138→    menuTitle: "Treatments and consultations",
+   139→    menu: [
+   140→      { name: "First consultation", note: "40 minutes, full history", price: "€70" },
+   141→      { name: "Follow-up session", note: "25 minutes, progress review", price: "€45" },
+   142→      { name: "Therapy block, ×6", note: "One session a fortnight", price: "€240" },
+   143→      { name: "Urgent same-day", note: "Held twice daily", price: "€90" },
+   144→    ],
+   145→    featuresTitle: "Care that explains itself",
+   146→    features: [
+   147→      { title: "Same-week appointments", note: "Urgent slots held open every single day." },
+   148→      { title: "One clinician, start to finish", note: "You are never handed off mid-treatment." },
+   149→      { title: "Plain-language plans", note: "You leave knowing exactly what happens next." },
+   150→    ],
+   151→    reviews: [
+   152→      { quote: "First clinic that fixed the cause, not the symptom.", by: "Anne R." },
+   153→      { quote: "They explained the whole plan before touching anything.", by: "J. Okonkwo" },
+   154→      { quote: "Seen the same day I called. Unheard of.", by: "Priya S." },
+   155→    ],
+   156→    stats: [
+   157→      { n: "94%", label: "return for full plan" },
+   158→      { n: "2", label: "urgent slots daily" },
+   159→      { n: "11y", label: "in practice" },
+   160→    ],
+   161→    faq: [
+   162→      { q: "Do I need a referral?", a: "No — book directly; we liaise with your GP when needed." },
+   163→      { q: "Is parking nearby?", a: "Two minutes on foot, and the tram stops at the door." },
+   164→      { q: "What should I bring?", a: "Any prior scans or letters, and comfortable clothing." },
+   165→    ],
+   166→    team: [
+   167→      { name: "Dr. Lena Marlowe", role: "Lead clinician" },
+   168→      { name: "Sam Whitfield", role: "Physiotherapist" },
+   169→      { name: "Ana Duarte", role: "Practice nurse" },
+   170→    ],
+   171→    timeline: [
+   172→      { step: "Book", note: "Online, or call the practice" },
+   173→      { step: "Assess", note: "Full history and honest examination" },
+   174→      { step: "Plan", note: "Written plan, fixed price, no surprises" },
+   175→    ],
+   176→    bookingCta: "Book a consultation",
+   177→    ctaLine: "Pain has a plan. Book the assessment that finds it.",
+   178→  },
+   179→  legal: {
+   180→    menuTitle: "Services and fixed fees",
+   181→    menu: [
+   182→      { name: "Consultation, 60 min", note: "Case read, options, fixed quote", price: "£180" },
+   183→      { name: "Contract review", note: "Plain-English report in 3 days", price: "£450" },
+   184→      { name: "Case representation", note: "From instruction to resolution", price: "from £2,400" },
+   185→      { name: "Urgent same-day call", note: "For time-critical matters", price: "£240" },
+   186→    ],
+   187→    featuresTitle: "Fixed fees, no ambush",
+   188→    features: [
+   189→      { title: "You talk to a solicitor", note: "Not a call centre, not a chatbot — from minute one." },
+   190→      { title: "Fixed quotes before work starts", note: "The number you are given is the number you pay." },
+   191→      { title: "Answers in plain English", note: "Every letter we write, you can read out loud." },
+   192→    ],
+   193→    reviews: [
+   194→      { quote: "Quoted, done, invoiced at the quote. Refreshing.", by: "Harrington Ltd" },
+   195→      { quote: "They took a nightmarish dispute and made it boring.", by: "Client, employment matter" },
+   196→      { quote: "Replied the same afternoon, every time.", by: "R. & M. Phelps" },
+   197→    ],
+   198→    stats: [
+   199→      { n: "24h", label: "reply, guaranteed" },
+   200→      { n: "3", label: "fixed-fee tiers" },
+   201→      { n: "17y", label: "at the same address" },
+   202→    ],
+   203→    faq: [
+   204→      { q: "What does the consultation cover?", a: "A case read, your options, and a fixed quote for whichever route you pick." },
+   205→      { q: "Can you act urgently?", a: "Yes — we hold same-day capacity for time-critical matters." },
+   206→      { q: "Are costs capped?", a: "Every stage is quoted before it starts. Nothing runs open-ended." },
+   207→    ],
+   208→    team: [
+   209→      { name: "Iris Calder", role: "Principal solicitor" },
+   210→      { name: "Daniel Harrow", role: "Senior associate" },
+   211→      { name: "Fen Park", role: "Paralegal" },
+   212→    ],
+   213→    timeline: [
+   214→      { step: "Instruct", note: "One consultation, everything on the table" },
+   215→      { step: "Strategy", note: "Written plan with fixed fees per stage" },
+   216→      { step: "Resolve", note: "Executed, reported, closed" },
+   217→    ],
+   218→    bookingCta: "Book a consultation",
+   219→    ctaLine: "Legal clarity starts with one fixed-fee hour.",
+   220→  },
+   221→  home: {
+   222→    menuTitle: "Services and call-outs",
+   223→    menu: [
+   224→      { name: "Call-out diagnosis", note: "At your door within 24h", price: "£89" },
+   225→      { name: "Full service", note: "Parts, labour, 12-month guarantee", price: "from £240" },
+   226→      { name: "Annual care plan", note: "Two visits, priority line", price: "£19/mo" },
+   227→      { name: "Emergency, same-day", note: "7am–10pm, every day", price: "£129" },
+   228→    ],
+   229→    featuresTitle: "The trade, done properly",
+   230→    features: [
+   231→      { title: "Fixed price before we start", note: "Diagnosed, quoted, approved — in that order." },
+   232→      { title: "Engineers, not salespeople", note: "Nobody earns commission on what they sell you." },
+   233→      { title: "Tidy by five", note: "We leave the room cleaner than we found it." },
+   234→    ],
+   235→    reviews: [
+   236→      { quote: "Quoted before a screw was turned. Stuck to it.", by: "Mrs. Ellison" },
+   237→      { quote: "Came at 8am, boiler ran by lunch.", by: "K. Osei" },
+   238→      { quote: "Third year on the care plan. Zero complaints.", by: "The Brennan household" },
+   239→    ],
+   240→    stats: [
+   241→      { n: "24h", label: "door-to-door" },
+   242→      { n: "12mo", label: "guarantee, standard" },
+   243→      { n: "4.9", label: "average rating" },
+   244→    ],
+   245→    faq: [
+   246→      { q: "Are you insured?", a: "Fully — £5m public liability, and every visit is documented." },
+   247→      { q: "Do you carry parts?", a: "The common ones, yes; anything else arrives next-day." },
+   248→      { q: "Can I get a fixed price?", a: "Always, after diagnosis, before any work begins." },
+   249→    ],
+   250→    team: [
+   251→      { name: "Volt Electrical", role: "Founded 2011" },
+   252→      { name: "Ravi Chandran", role: "Lead engineer" },
+   253→      { name: "Meg Doyle", role: "Service coordinator" },
+   254→    ],
+   255→    timeline: [
+   256→      { step: "Call", note: "Describe the fault, get a slot" },
+   257→      { step: "Diagnose", note: "Fixed quote before any work" },
+   258→      { step: "Fix & guarantee", note: "12 months, in writing" },
+   259→    ],
+   260→    bookingCta: "Book a call-out",
+   261→    ctaLine: "One call, one visit, one fixed price. Book the engineer.",
+   262→  },
+   263→  property: {
+   264→    menuTitle: "Listings and services",
+   265→    menu: [
+   266→      { name: "Private viewings", note: "Weekend and evening slots", price: "—" },
+   267→      { name: "Valuation, full report", note: "Three comparables, 48h", price: "£390" },
+   268→      { name: "Sales progression", note: "Offer to keys, one handler", price: "1.2%" },
+   269→      { name: "Lettings management", note: "Vetted tenants, monthly reports", price: "8%/mo" },
+   270→    ],
+   271→    featuresTitle: "Property, without the theatre",
+   272→    features: [
+   273→      { title: "Every viewing accompanied", note: "Someone who knows the building walks you through." },
+   274→      { title: "Honest valuation ranges", note: "Three comparables, in writing, before you commit." },
+   275→      { title: "One handler to keys", note: "The person who sells it manages it to completion." },
+   276→    ],
+   277→    reviews: [
+   278→      { quote: "Sold in eleven days, four percent over asking.", by: "The Marsh family" },
+   279→      { quote: "The valuation report was the most honest we saw.", by: "J. Adeyemi" },
+   280→      { quote: "Weekly updates without ever chasing once.", by: "Dunmore Lettings" },
+   281→    ],
+   282→    stats: [
+   283→      { n: "11", label: "median days to offer" },
+   284→      { n: "98%", label: "of asking achieved" },
+   285→      { n: "23y", label: "on the same street" },
+   286→    ],
+   287→    faq: [
+   288→      { q: "How fast can I view?", a: "Accompanied slots run Thu–Sun; evening viewings on request." },
+   289→      { q: "What does valuation include?", a: "Three comparables, condition notes, and a written range — within 48 hours." },
+   290→      { q: "Do you handle lettings?", a: "Full management, vetted tenants, monthly owner reports." },
+   291→    ],
+   292→    team: [
+   293→      { name: "Northbank Residences", role: "Est. 2002" },
+   294→      { name: "Clara Whitmore", role: "Sales director" },
+   295→      { name: "Theo Marsh", role: "Head of viewings" },
+   296→    ],
+   297→    timeline: [
+   298→      { step: "Enquire", note: "Book a viewing or a valuation" },
+   299→      { step: "View", note: "Accompanied, unhurried, honest" },
+   300→      { step: "Offer to keys", note: "One handler, weekly written updates" },
+   301→    ],
+   302→    bookingCta: "Book a viewing",
+   303→    ctaLine: "The residence speaks for itself. Book the viewing.",
+   304→  },
+   305→}
+   306→
+   307→/* ── shared primitives — token contract only ──────────────────────── */
+   308→
+   309→const eyebrow: React.CSSProperties = {
+   310→  fontFamily: "var(--mono, monospace)",
+   311→  fontSize: 10,
+   312→  letterSpacing: "0.16em",
+   313→  textTransform: "uppercase",
+   314→  color: "var(--muted)",
+   315→}
+   316→const display: React.CSSProperties = {
+   317→  fontFamily: "var(--display)",
+   318→  color: "var(--ink)",
+   319→  lineHeight: 1.08,
+   320→  margin: 0,
+   321→  fontWeight: 500,
+   322→}
+   323→const body: React.CSSProperties = {
+   324→  fontFamily: "var(--body)",
+   325→  color: "var(--muted)",
+   326→  lineHeight: 1.6,
+   327→  margin: 0,
+   328→}
+   329→
+   330→function Band({ children, pad = "clamp(44px, 7cqi, 84px)" }: { children: React.ReactNode; pad?: string }) {
+   331→  return (
+   332→    <section
+   333→      data-mod-band
+   334→      style={{ background: "var(--bg)", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)", padding: `${pad} clamp(20px, 6cqi, 72px)` }}
+   335→    >
+   336→      <div style={{ maxWidth: 1120, margin: "0 auto" }}>{children}</div>
+   337→    </section>
+   338→  )
+   339→}
+   340→
+   341→function Cta({ label, kind = "solid" }: { label: string; kind?: "solid" | "ghost" }) {
+   342→  return (
+   343→    <button
+   344→      type="button"
+   345→      style={
+   346→        kind === "solid"
+   347→          ? { background: "var(--primary)", color: "var(--on-primary)", borderRadius: "var(--r)", padding: "12px 22px", fontFamily: "var(--body)", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer" }
+   348→          : { background: "transparent", color: "var(--ink)", borderRadius: "var(--r)", padding: "12px 20px", fontFamily: "var(--body)", fontSize: 14, fontWeight: 500, border: "1px solid var(--line)", cursor: "pointer" }
+   349→      }
+   350→    >
+   351→      {label}
+   352→    </button>
+   353→  )
+   354→}
+   355→
+   356→/* ── archetypes ───────────────────────────────────────────────────── */
+   357→
+   358→function Hero({ pack, m }: { pack: ContentPack; m: PlaybookModule }) {
+   359→  return (
+   360→    <Band>
+   361→      <p style={eyebrow}>{m.name}</p>
+   362→      <h2 style={{ ...display, fontSize: "clamp(34px, 5cqi, 58px)", margin: "14px 0 18px", maxWidth: 760 }}>{pack.ctaLine}</h2>
+   363→      <p style={{ ...body, fontSize: 17, maxWidth: 560 }}>{m.purpose}</p>
+   364→      <div style={{ display: "flex", gap: 12, marginTop: 28, flexWrap: "wrap" }}>
+   365→        <Cta label={pack.bookingCta} />
+   366→        <Cta label="See how it works" kind="ghost" />
+   367→      </div>
+   368→    </Band>
+   369→  )
+   370→}
+   371→
+   372→function Features({ pack, m }: { pack: ContentPack; m: PlaybookModule }) {
+   373→  return (
+   374→    <Band>
+   375→      <p style={eyebrow}>{m.section}</p>
+   376→      <h2 style={{ ...display, fontSize: "clamp(26px, 3.4cqi, 38px)", margin: "12px 0 34px" }}>{pack.featuresTitle}</h2>
+   377→      <div style={{ display: "grid", gap: 18, gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
+   378→        {pack.features.map((f) => (
+   379→          <article key={f.title} style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: 24 }}>
+   380→            <h3 style={{ ...display, fontSize: 19, marginBottom: 8 }}>{f.title}</h3>
+   381→            <p style={{ ...body, fontSize: 13.5 }}>{f.note}</p>
+   382→          </article>
+   383→        ))}
+   384→      </div>
+   385→    </Band>
+   386→  )
+   387→}
+   388→
+   389→function Menu({ pack, m }: { pack: ContentPack; m: PlaybookModule }) {
+   390→  return (
+   391→    <Band>
+   392→      <p style={eyebrow}>{m.section}</p>
+   393→      <h2 style={{ ...display, fontSize: "clamp(26px, 3.4cqi, 38px)", margin: "12px 0 28px" }}>{pack.menuTitle}</h2>
+   394→      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+   395→        {pack.menu.map((item) => (
+   396→          <li
+   397→            key={item.name}
+   398→            style={{
+   399→              display: "grid",
+   400→              gridTemplateColumns: "1fr auto",
+   401→              gap: "4px 18px",
+   402→              padding: "16px 0",
+   403→              borderBottom: "1px solid var(--line)",
+   404→              alignItems: "baseline",
+   405→            }}
+   406→          >
+   407→            <b style={{ fontFamily: "var(--body)", color: "var(--ink)", fontWeight: 600, fontSize: 16 }}>{item.name}</b>
+   408→            <span style={{ fontFamily: "var(--display)", color: "var(--accent)", fontSize: 18 }}>{item.price}</span>
+   409→            <span style={{ ...body, fontSize: 13, gridColumn: "1 / -1" }}>{item.note}</span>
+   410→          </li>
+   411→        ))}
+   412→      </ul>
+   413→    </Band>
+   414→  )
+   415→}
+   416→
+   417→function Pricing({ pack, m }: { pack: ContentPack; m: PlaybookModule }) {
+   418→  const tiers = [
+   419→    { name: "Essential", price: pack.menu[1]?.price ?? "£190", note: "The honest core — everything a first-time client needs.", hot: false },
+   420→    { name: "Complete", price: pack.menu[2]?.price ?? "£450", note: "The full plan, handled end to end with priority timing.", hot: true },
+   421→    { name: "Bespoke", price: "On request", note: "Multi-site, multi-party, or ongoing retained work.", hot: false },
+   422→  ]
+   423→  return (
+   424→    <Band>
+   425→      <p style={eyebrow}>{m.section}</p>
+   426→      <h2 style={{ ...display, fontSize: "clamp(26px, 3.4cqi, 38px)", margin: "12px 0 30px" }}>Three ways to work with us</h2>
+   427→      <div style={{ display: "grid", gap: 18, gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))" }}>
+   428→        {tiers.map((t) => (
+   429→          <article
+   430→            key={t.name}
+   431→            style={{
+   432→              background: "var(--surface)",
+   433→              border: t.hot ? "2px solid var(--primary)" : "1px solid var(--line)",
+   434→              borderRadius: "var(--r)",
+   435→              padding: 26,
+   436→              position: "relative",
+   437→            }}
+   438→          >
+   439→            {t.hot && (
+   440→              <span
+   441→                style={{
+   442→                  position: "absolute",
+   443→                  top: -11,
+   444→                  left: 24,
+   445→                  background: "var(--primary)",
+   446→                  color: "var(--on-primary)",
+   447→                  fontFamily: "var(--mono, monospace)",
+   448→                  fontSize: 9.5,
+   449→                  letterSpacing: "0.12em",
+   450→                  textTransform: "uppercase",
+   451→                  padding: "4px 10px",
+   452→                  borderRadius: 999,
+   453→                }}
+   454→              >
+   455→                Most chosen
+   456→              </span>
+   457→            )}
+   458→            <p style={eyebrow}>{t.name}</p>
+   459→            <p style={{ ...display, fontSize: 34, margin: "10px 0 12px" }}>{t.price}</p>
+   460→            <p style={{ ...body, fontSize: 13.5, marginBottom: 20 }}>{t.note}</p>
+   461→            <Cta label="Choose this" kind={t.hot ? "solid" : "ghost"} />
+   462→          </article>
+   463→        ))}
+   464→      </div>
+   465→    </Band>
+   466→  )
+   467→}
+   468→
+   469→function Reviews({ pack, m }: { pack: ContentPack; m: PlaybookModule }) {
+   470→  return (
+   471→    <Band>
+   472→      <p style={eyebrow}>{m.section}</p>
+   473→      <h2 style={{ ...display, fontSize: "clamp(26px, 3.4cqi, 38px)", margin: "12px 0 30px" }}>Said by the people who paid</h2>
+   474→      <div style={{ display: "grid", gap: 18, gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
+   475→        {pack.reviews.map((r) => (
+   476→          <figure key={r.by} style={{ margin: 0, background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: 26 }}>
+   477→            <blockquote style={{ ...display, fontSize: 20, fontStyle: "italic", marginBottom: 14 }}>“{r.quote}”</blockquote>
+   478→            <figcaption style={{ ...eyebrow, color: "var(--accent)" }}>{r.by}</figcaption>
+   479→          </figure>
+   480→        ))}
+   481→      </div>
+   482→    </Band>
+   483→  )
+   484→}
+   485→
+   486→function Faq({ pack, m }: { pack: ContentPack; m: PlaybookModule }) {
+   487→  return (
+   488→    <Band>
+   489→      <p style={eyebrow}>{m.section}</p>
+   490→      <h2 style={{ ...display, fontSize: "clamp(26px, 3.4cqi, 38px)", margin: "12px 0 26px" }}>Asked before booking</h2>
+   491→      <div style={{ display: "grid", gap: 10, maxWidth: 760 }}>
+   492→        {pack.faq.map((f) => (
+   493→          <details key={f.q} style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: "16px 20px" }}>
+   494→            <summary style={{ fontFamily: "var(--body)", color: "var(--ink)", fontWeight: 600, fontSize: 15, cursor: "pointer" }}>{f.q}</summary>
+   495→            <p style={{ ...body, fontSize: 14, marginTop: 10 }}>{f.a}</p>
+   496→          </details>
+   497→        ))}
+   498→      </div>
+   499→    </Band>
+   500→  )
+   501→}
+   502→
+   503→function Gallery({ pack, m }: { pack: ContentPack; m: PlaybookModule }) {
+   504→  const cells = [1, 2, 3, 4, 5, 6]
+   505→  return (
+   506→    <Band>
+   507→      <p style={eyebrow}>{m.section}</p>
+   508→      <h2 style={{ ...display, fontSize: "clamp(26px, 3.4cqi, 38px)", margin: "12px 0 28px" }}>{pack.featuresTitle}</h2>
+   509→      <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))" }}>
+   510→        {cells.map((c) => (
+   511→          <figure
+   512→            key={c}
+   513→            style={{
+   514→              margin: 0,
+   515→              aspectRatio: "4 / 5",
+   516→              borderRadius: "var(--r)",
+   517→              border: "1px solid var(--line)",
+   518→              background: `linear-gradient(135deg, color-mix(in srgb, var(--primary) ${6 + c * 3}%, var(--surface)), color-mix(in srgb, var(--accent) ${4 + c * 2}%, var(--bg)))`,
+   519→              display: "grid",
+   520→              placeItems: "center",
+   521→            }}
+   522→            aria-label={`${m.name} plate ${c}`}
+   523→          >
+   524→            <span style={{ ...eyebrow, color: "var(--muted)" }}>PLATE {String(c).padStart(2, "0")}</span>
+   525→          </figure>
+   526→        ))}
+   527→      </div>
+   528→    </Band>
+   529→  )
+   530→}
+   531→
+   532→function Stats({ pack }: { pack: ContentPack }) {
+   533→  return (
+   534→    <Band pad="clamp(30px, 4.5cqi, 54px)">
+   535→      <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", textAlign: "center" }}>
+   536→        {pack.stats.map((s) => (
+   537→          <div key={s.label}>
+   538→            <p style={{ ...display, fontSize: "clamp(38px, 5cqi, 56px)", color: "var(--accent)" }}>{s.n}</p>
+   539→            <p style={{ ...eyebrow, marginTop: 6 }}>{s.label}</p>
+   540→          </div>
+   541→        ))}
+   542→      </div>
+   543→    </Band>
+   544→  )
+   545→}
+   546→
+   547→function Booking({ pack, m }: { pack: ContentPack; m: PlaybookModule }) {
+   548→  const input: React.CSSProperties = {
+   549→    background: "var(--surface)",
+   550→    border: "1px solid var(--line)",
+   551→    borderRadius: "var(--r)",
+   552→    color: "var(--ink)",
+   553→    fontFamily: "var(--body)",
+   554→    fontSize: 14,
+   555→    padding: "12px 14px",
+   556→    width: "100%",
+   557→  }
+   558→  return (
+   559→    <Band>
+   560→      <div style={{ display: "grid", gap: 34, gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", alignItems: "center" }}>
+   561→        <div>
+   562→          <p style={eyebrow}>{m.section}</p>
+   563→          <h2 style={{ ...display, fontSize: "clamp(26px, 3.4cqi, 38px)", margin: "12px 0 14px" }}>{pack.bookingCta}</h2>
+   564→          <p style={{ ...body, fontSize: 15, marginBottom: 22 }}>{m.purpose}</p>
+   565→          <ol style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 10 }}>
+   566→            {pack.timeline.map((t, i) => (
+   567→              <li key={t.step} style={{ display: "flex", gap: 12, alignItems: "baseline" }}>
+   568→                <span style={{ ...eyebrow, color: "var(--accent)" }}>{String(i + 1).padStart(2, "0")}</span>
+   569→                <span style={{ fontFamily: "var(--body)", color: "var(--ink)", fontSize: 14, fontWeight: 600 }}>
+   570→                  {t.step} <span style={{ color: "var(--muted)", fontWeight: 400 }}>— {t.note}</span>
+   571→                </span>
+   572→              </li>
+   573→            ))}
+   574→          </ol>
+   575→        </div>
+   576→        <form
+   577→          style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: 26, display: "grid", gap: 12 }}
+   578→          onSubmit={(e) => e.preventDefault()}
+   579→        >
+   580→          <label style={{ ...eyebrow, display: "grid", gap: 6 }}>
+   581→            Name
+   582→            <input style={input} placeholder="Your name" />
+   583→          </label>
+   584→          <label style={{ ...eyebrow, display: "grid", gap: 6 }}>
+   585→            Contact
+   586→            <input style={input} type="email" placeholder="you@example.com" />
+   587→          </label>
+   588→          <label style={{ ...eyebrow, display: "grid", gap: 6 }}>
+   589→            Preferred date
+   590→            <input style={input} type="date" />
+   591→          </label>
+   592→          <div style={{ marginTop: 8 }}>
+   593→            <Cta label={pack.bookingCta} />
+   594→          </div>
+   595→        </form>
+   596→      </div>
+   597→    </Band>
+   598→  )
+   599→}
+   600→
+   601→function Logos({ pack, m }: { pack: ContentPack; m: PlaybookModule }) {
+   602→  const names = pack.team.map((t) => t.name)
+   603→  return (
+   604→    <Band pad="clamp(22px, 3cqi, 36px)">
+   605→      <p style={{ ...eyebrow, textAlign: "center", marginBottom: 18 }}>Trusted by the neighbourhood</p>
+   606→      <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 38px", justifyContent: "center", alignItems: "center" }}>
+   607→        {names.map((n) => (
+   608→          <span key={n} style={{ fontFamily: "var(--display)", fontSize: 20, color: "var(--muted)", letterSpacing: "0.02em" }}>
+   609→            {n}
+   610→          </span>
+   611→        ))}
+   612→        <span style={{ fontFamily: "var(--mono, monospace)", fontSize: 11, color: "var(--muted)", letterSpacing: "0.1em" }}>{m.name}</span>
+   613→      </div>
+   614→    </Band>
+   615→  )
+   616→}
+   617→
+   618→function Timeline({ pack, m }: { pack: ContentPack; m: PlaybookModule }) {
+   619→  return (
+   620→    <Band>
+   621→      <p style={eyebrow}>{m.section}</p>
+   622→      <h2 style={{ ...display, fontSize: "clamp(26px, 3.4cqi, 38px)", margin: "12px 0 34px" }}>How it works</h2>
+   623→      <ol style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 24, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+   624→        {pack.timeline.map((t, i) => (
+   625→          <li key={t.step} style={{ borderTop: "2px solid var(--accent)", paddingTop: 16 }}>
+   626→            <p style={{ ...display, fontSize: 40, color: "var(--accent)" }}>{String(i + 1).padStart(2, "0")}</p>
+   627→            <h3 style={{ ...display, fontSize: 19, margin: "8px 0 6px" }}>{t.step}</h3>
+   628→            <p style={{ ...body, fontSize: 13.5 }}>{t.note}</p>
+   629→          </li>
+   630→        ))}
+   631→      </ol>
+   632→    </Band>
+   633→  )
+   634→}
+   635→
+   636→function Team({ pack, m }: { pack: ContentPack; m: PlaybookModule }) {
+   637→  return (
+   638→    <Band>
+   639→      <p style={eyebrow}>{m.section}</p>
+   640→      <h2 style={{ ...display, fontSize: "clamp(26px, 3.4cqi, 38px)", margin: "12px 0 30px" }}>The people you actually meet</h2>
+   641→      <div style={{ display: "grid", gap: 18, gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+   642→        {pack.team.map((t) => (
+   643→          <article key={t.name} style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--r)", padding: 24, textAlign: "center" }}>
+   644→            <span
+   645→              style={{
+   646→                display: "inline-grid",
+   647→                placeItems: "center",
+   648→                width: 56,
+   649→                height: 56,
+   650→                borderRadius: "50%",
+   651→                background: "color-mix(in srgb, var(--primary) 12%, var(--surface))",
+   652→                color: "var(--primary)",
+   653→                fontFamily: "var(--display)",
+   654→                fontSize: 20,
+   655→                marginBottom: 12,
+   656→              }}
+   657→            >
+   658→              {t.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
+   659→            </span>
+   660→            <h3 style={{ ...display, fontSize: 17 }}>{t.name}</h3>
+   661→            <p style={{ ...eyebrow, marginTop: 6 }}>{t.role}</p>
+   662→          </article>
+   663→        ))}
+   664→      </div>
+   665→    </Band>
+   666→  )
+   667→}
+   668→
+   669→function Contact({ pack, m }: { pack: ContentPack; m: PlaybookModule }) {
+   670→  return (
+   671→    <Band>
+   672→      <div style={{ display: "grid", gap: 26, gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
+   673→        <div>
+   674→          <p style={eyebrow}>{m.section}</p>
+   675→          <h2 style={{ ...display, fontSize: "clamp(24px, 3cqi, 34px)", margin: "12px 0 16px" }}>Find us, call us, write to us</h2>
+   676→          <p style={{ ...body, fontSize: 14.5, marginBottom: 18 }}>{m.purpose}</p>
+   677→          <div style={{ display: "grid", gap: 8 }}>
+   678→            <span style={{ fontFamily: "var(--body)", color: "var(--ink)", fontSize: 15, fontWeight: 600 }}>{pack.team[0]?.name}</span>
+   679→            <span style={{ ...body, fontSize: 14 }}>Mon–Fri 9–18 · Sat 10–16</span>
+   680→            <span style={{ ...body, fontSize: 14 }}>hello@{m.id.slice(0, 12) || "growthos"}.site · +44 20 7946 0102</span>
+   681→          </div>
+   682→        </div>
+   683→        <div
+   684→          style={{
+   685→            background: "linear-gradient(135deg, color-mix(in srgb, var(--accent) 9%, var(--surface)), color-mix(in srgb, var(--primary) 7%, var(--bg)))",
+   686→            border: "1px solid var(--line)",
+   687→            borderRadius: "var(--r)",
+   688→            minHeight: 220,
+   689→            display: "grid",
+   690→            placeItems: "center",
+   691→          }}
+   692→          aria-label="Map placeholder"
+   693→        >
+   694→          <span style={{ ...eyebrow }}>MAP · {m.name.toUpperCase()}</span>
+   695→        </div>
+   696→      </div>
+   697→    </Band>
+   698→  )
+   699→}
+   700→
+   701→function CtaBand({ pack, m }: { pack: ContentPack; m: PlaybookModule }) {
+   702→  return (
+   703→    <Band>
+   704→      <div style={{ display: "flex", gap: 26, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
+   705→        <div style={{ maxWidth: 640 }}>
+   706→          <p style={eyebrow}>{m.name}</p>
+   707→          <h2 style={{ ...display, fontSize: "clamp(24px, 3.4cqi, 40px)", margin: "10px 0 0" }}>{pack.ctaLine}</h2>
+   708→        </div>
+   709→        <Cta label={pack.bookingCta} />
+   710→      </div>
+   711→    </Band>
+   712→  )
+   713→}
+   714→
+   715→function Portal({ pack, m }: { pack: ContentPack; m: PlaybookModule }) {
+   716→  const input: React.CSSProperties = {
+   717→    background: "var(--bg)",
+   718→    border: "1px solid var(--line)",
+   719→    borderRadius: "var(--r)",
+   720→    color: "var(--ink)",
+   721→    fontFamily: "var(--body)",
+   722→    fontSize: 14,
+   723→    padding: "12px 14px",
+   724→    width: "100%",
+   725→  }
+   726→  return (
+   727→    <Band>
+   728→      <div style={{ maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
+   729→        <p style={eyebrow}>{m.section}</p>
+   730→        <h2 style={{ ...display, fontSize: "clamp(24px, 3cqi, 32px)", margin: "12px 0 8px" }}>Your room</h2>
+   731→        <p style={{ ...body, fontSize: 14, marginBottom: 20 }}>{m.purpose}</p>
+   732→        <form style={{ display: "grid", gap: 10, textAlign: "left" }} onSubmit={(e) => e.preventDefault()}>
+   733→          <input style={input} placeholder="Email or reference" aria-label="Login" />
+   734→          <input style={input} type="password" placeholder="Passcode" aria-label="Passcode" />
+   735→          <Cta label="Open my room" />
+   736→        </form>
+   737→      </div>
+   738→    </Band>
+   739→  )
+   740→}
+   741→
+   742→function SpecCard({ m, tpl }: { m: PlaybookModule; tpl: TemplateDef }) {
+   743→  return (
+   744→    <Band pad="clamp(28px, 4cqi, 48px)">
+   745→      <p style={eyebrow}>
+   746→        {m.sectionNo} · {m.section} · mounted on {tpl.name}
+   747→      </p>
+   748→      <h2 style={{ ...display, fontSize: "clamp(22px, 2.8cqi, 30px)", margin: "12px 0 10px" }}>{m.name}</h2>
+   749→      <p style={{ fontFamily: "var(--mono, monospace)", fontSize: 11.5, color: "var(--muted)", marginBottom: 14 }}>{m.file}</p>
+   750→      <p style={{ ...body, fontSize: 14.5, maxWidth: 700, marginBottom: 14 }}>{m.purpose}</p>
+   751→      {m.rule && (
+   752→        <p style={{ ...body, fontSize: 13, borderTop: "1px solid var(--line)", paddingTop: 12, maxWidth: 700 }}>
+   753→          <b style={{ color: "var(--ink)" }}>Rule — </b>
+   754→          {m.rule}
+   755→        </p>
+   756→      )}
+   757→      <ul style={{ listStyle: "none", display: "flex", flexWrap: "wrap", gap: 8, padding: 0, margin: "18px 0 0" }}>
+   758→        {m.features.map((f) => (
+   759→          <li
+   760→            key={f}
+   761→            style={{ border: "1px solid var(--line)", borderRadius: 999, padding: "5px 12px", fontFamily: "var(--mono, monospace)", fontSize: 10.5, color: "var(--muted)", letterSpacing: "0.06em" }}
+   762→          >
+   763→            {f}
+   764→          </li>
+   765→        ))}
+   766→      </ul>
+   767→    </Band>
+   768→  )
+   769→}
+   770→
+   771→/* ── the card — archetype inference + industry content + render ───── */
+   772→
+   773→export function ModuleCard({ m, tpl, slot }: { m: PlaybookModule; tpl: TemplateDef; slot: SlotId }) {
+   774→  const pack = PACKS[tpl.industry]
+   775→  const arch = inferArchetype(m)
+   776→  const meta = ARCHETYPES[arch]
+   777→  const props = { pack, m }
+   778→  /* the factory kit wins: when the playbook id maps to a real, interactive
+   779→     kit component (src/modules/kit), mount that with honest demo props
+   780→     instead of the generic archetype renderer. */
+   781→  const real = hasKitModule(m.id) ? renderKitModule(m, tpl) : null
+   782→  return (
+   783→    <div data-mod-card data-arch={real ? "kit" : arch} data-slot={slot} style={{ width: "100%", position: "relative", paddingTop: 26 }}>
+   784→      <span
+   785→        style={{
+   786→          position: "absolute",
+   787→          top: 0,
+   788→          left: 0,
+   789→          zIndex: 5,
+   790→          background: "var(--primary)",
+   791→          color: "var(--on-primary)",
+   792→          fontFamily: "var(--mono, monospace)",
+   793→          fontSize: 9,
+   794→          letterSpacing: "0.14em",
+   795→          textTransform: "uppercase",
+   796→          padding: "5px 10px",
+   797→          borderRadius: "var(--r)",
+   798→        }}
+   799→        aria-hidden
+   800→      >
+   801→        {real ? `FACTORY KIT · REAL · ${m.name}` : `${meta.label} · ${m.name}`}
+   802→      </span>
+   803→      {real ? (
+   804→        real
+   805→      ) : (
+   806→        <>
+   807→          {arch === "hero" && <Hero {...props} />}
+   808→          {arch === "features" && <Features {...props} />}
+   809→          {arch === "menu" && <Menu {...props} />}
+   810→          {arch === "pricing" && <Pricing {...props} />}
+   811→          {arch === "reviews" && <Reviews {...props} />}
+   812→          {arch === "faq" && <Faq {...props} />}
+   813→          {arch === "gallery" && <Gallery {...props} />}
+   814→          {arch === "stats" && <Stats pack={pack} />}
+   815→          {arch === "booking" && <Booking {...props} />}
+   816→          {arch === "logos" && <Logos {...props} />}
+   817→          {arch === "timeline" && <Timeline {...props} />}
+   818→          {arch === "team" && <Team {...props} />}
+   819→          {arch === "contact" && <Contact {...props} />}
+   820→          {arch === "cta" && <CtaBand {...props} />}
+   821→          {arch === "portal" && <Portal {...props} />}
+   822→          {arch === "spec" && <SpecCard m={m} tpl={tpl} />}
+   823→        </>
+   824→      )}
+   825→    </div>
+   826→  )
+   827→}
+   828→
+   829→export { PACKS as CONTENT_PACKS }
+   830→
