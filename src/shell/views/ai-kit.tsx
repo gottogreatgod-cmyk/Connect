@@ -576,7 +576,7 @@ export function BuildProgress({
         {steps.map((s, i) => {
           const Icon = STEP_ICONS[s.id] ?? Route;
           return (
-            <motionStep key={`${s.id}-${i}`} index={i}>
+            <StepRow key={`${s.id}-${i}`}>
               <span className="z-10 grid size-7 shrink-0 place-items-center rounded-full border border-border bg-background text-primary">
                 <Icon className="size-3.5" aria-hidden />
               </span>
@@ -587,7 +587,7 @@ export function BuildProgress({
                 </p>
                 <p className="mt-0.5 break-words text-[11.5px] leading-snug text-muted-foreground">{s.detail}</p>
               </div>
-            </motionStep>
+            </StepRow>
           );
         })}
         {notice && !error && (
@@ -608,7 +608,7 @@ export function BuildProgress({
 }
 
 /** a step row — the connector line runs between rows */
-function motionStep({ children }: { children: React.ReactNode }) {
+function StepRow({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative flex items-start gap-2.5 pb-3 last:pb-0">
       <span className="absolute left-[13px] top-7 h-[calc(100%-10px)] w-px bg-border" aria-hidden />

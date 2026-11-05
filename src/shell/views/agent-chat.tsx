@@ -56,6 +56,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { track } from "@/engine/analytics";
+import { beginBuild, endBuild, noteBuild, pushStep, setBuildSite } from "@/engine/build-activity";
 import { go } from "@/engine/nav";
 import { findTemplate, industryOf, type TemplateDef } from "@/engine/registry";
 import { voiceLabel } from "@/engine/voices";
@@ -106,14 +107,6 @@ interface TraceStep {
   ms: number;
 }
 
-interface AgentMsg {
-  role: "user" | "assistant";
-  text: string;
-  actions?: AgentAction[];
-  trace?: TraceStep[];
-  memory?: string[];
-}
-
 /* ── module-level persistence — survives view switches, like the Builder ── */
 
 const HELLO: AgentMsg = {
@@ -125,14 +118,6 @@ const HELLO: AgentMsg = {
  *  (they're small and idempotent); render jobs (image/video/speak/
  *  search/read) don't carry their results across reloads, so they come
  *  back as descriptive shells instead of silently re-running. */
-type AgentAction =
-  | ({ rid: string } & AgentSitePick)
-  | { rid: string; type: "image"; prompt: string; size: string }
-  | { rid: string; type: "video"; prompt: string; quality: string }
-  | { rid: string; type: "speak"; text: string; voice: string }
-  | { rid: string; type: "search"; query: string }
-  | { rid: string; type: "read"; url: string };
-
 interface PersistedAction {
   action: AgentAction;
   restored: boolean;
@@ -805,6 +790,9 @@ export function AgentChatPath({
     setLastFailed(null);
     setLiveSteps([]);
     setStreamNote(null);
+    /* the global heartbeat starts too — the Preview Dock (and any view)
+       can show this build happening, live */
+    beginBuild(text);
     const history: AgentMsg[] = [...savedMessages, { role: "user", text }];
     setMessages(history);
     setThinking(true);
@@ -824,8 +812,10 @@ export function AgentChatPath({
           if (evt.type === "step" && evt.step) {
             setStreamNote(null);
             setLiveSteps((s) => [...s, evt.step!]);
+            pushStep(evt.step);
           } else if (evt.type === "error") {
             setStreamNote(evt.error ?? null);
+            noteBuild(evt.error ?? null);
           }
         },
         {
@@ -835,6 +825,11 @@ export function AgentChatPath({
       );
       if (res.error) throw new Error(res.error);
       const actions = (res.actions ?? []).map((a) => ({ ...a, rid: rid() }) as AgentAction);
+      /* the run succeeded — if it staged a site, the dock previews it
+         (site actions carry a `slug`; the render actions carry a `type`) */
+      const siteAction = actions.find((a) => "slug" in a) as { slug: string; name?: string } | undefined;
+      if (siteAction?.slug) setBuildSite(siteAction.slug, siteAction.name ?? siteAction.slug);
+      endBuild({ ok: true });
       setMessages([
         ...history,
         {
@@ -846,8 +841,10 @@ export function AgentChatPath({
         },
       ]);
     } catch (e) {
+      const msg = e instanceof Error ? e.message : "The agent is briefly unavailable.";
+      endBuild({ ok: false, error: msg });
       setLastFailed(text);
-      setError(e instanceof Error ? e.message : "The agent is briefly unavailable.");
+      setError(msg);
     } finally {
       setThinking(false);
       setStreamNote(null);

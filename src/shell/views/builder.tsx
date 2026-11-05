@@ -1830,28 +1830,19 @@ export function BuilderView({ step }: { step: string | null }) {
   }, [current])
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      {/* the builder's own header — direct, no shell chrome */}
+    <div className="flex h-full min-h-0 flex-col overflow-y-auto bg-background">
+      {/* the builder's own header — the step rail; the global topbar above
+          carries the brand and the way to every other view */}
       <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md">
-        <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-3 px-4 sm:px-6">
-          <button
-            type="button"
-            onClick={() => go("/")}
-            className="flex shrink-0 items-center gap-2.5 text-foreground"
-            aria-label="Growth OS — home"
-          >
-            <span aria-hidden className="grid size-7 place-items-center rounded-[7px] bg-primary text-sm font-semibold text-primary-foreground">
-              G
-            </span>
-            <span className="hidden font-semibold sm:inline">Website Builder</span>
-          </button>
+        <div className="mx-auto flex h-12 w-full max-w-5xl items-center gap-3 px-4 sm:px-6">
+          <h1 className="flex shrink-0 items-center gap-2 text-sm font-semibold text-foreground">
+            <Wand2 className="size-4 text-primary" aria-hidden />
+            Website Builder
+          </h1>
           <span className="ml-auto hidden items-center gap-1.5 text-[11px] text-muted-foreground md:flex">
             <Sparkles className="size-3.5 text-primary" aria-hidden />
             1 unified agent · 4 skill families · 19 motion masters · {TEMPLATES.length} templates — one system
           </span>
-          <button type="button" className={btnGhostCx} onClick={() => go("/ai")}>
-            AI Studio
-          </button>
         </div>
         <StepRail current={current} />
       </header>

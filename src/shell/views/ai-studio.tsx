@@ -33,11 +33,8 @@ import {
   Library as LibraryIcon,
   Lightbulb,
   MessageSquare,
-  Moon,
-  Orbit,
   Search,
   Sparkles,
-  Sun,
   Volume2,
   Wand2,
   type LucideIcon,
@@ -48,6 +45,7 @@ import { useEdition } from "../edition-provider";
 import { industryOf, type TemplateDef } from "@/engine/registry";
 import { useBuilder } from "./builder";
 import { AgentChatPath } from "./agent-chat";
+import { PreviewDock } from "../preview-dock";
 import {
   AsrFileTranscribePath,
   AsrVoiceBriefPath,
@@ -244,7 +242,7 @@ function renderPath(family: AiSkillId, pathId: string, tpl: TemplateDef): ReactN
 
 export function AiStudioView({ skill }: { skill: string | null }) {
   const gos = useGos();
-  const { edition, mode, toggleMode } = useEdition();
+  const { edition } = useEdition();
   const tpl = gos.tpl;
   const build = useBuilder();
 
@@ -312,35 +310,6 @@ export function AiStudioView({ skill }: { skill: string | null }) {
                   Stage
                 </button>
               </div>
-              <button
-                type="button"
-                onClick={() => go("/build")}
-                title="The Website Builder — one direct flow: brief, design, copy, art, motion, launch"
-                className="flex items-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs font-semibold shadow-sm transition hover:bg-muted/60"
-              >
-                <Wand2 className="size-4 text-primary" aria-hidden />
-                <span className="hidden xl:inline">Builder</span>
-                <span className="xl:hidden" aria-hidden>→</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => go("/motion")}
-                title="The Motion Lab: 19 master skills from five sources, 11 live stages"
-                className="flex items-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs font-semibold shadow-sm transition hover:bg-muted/60"
-              >
-                <Orbit className="size-4 text-primary" aria-hidden />
-                <span className="hidden xl:inline">Motion Lab</span>
-                <span className="xl:hidden" aria-hidden>→</span>
-              </button>
-              <button
-                type="button"
-                onClick={toggleMode}
-                aria-label={mode === "dark" ? "Switch to daylight mode" : "Switch to evening mode"}
-                title={mode === "dark" ? "Daylight mode" : "Evening mode"}
-                className="flex size-10 flex-none items-center justify-center rounded-xl border border-border bg-card text-muted-foreground shadow-sm transition hover:text-foreground"
-              >
-                {mode === "dark" ? <Sun className="size-4" aria-hidden /> : <Moon className="size-4" aria-hidden />}
-              </button>
             </div>
           </div>
 
@@ -380,8 +349,9 @@ export function AiStudioView({ skill }: { skill: string | null }) {
           </nav>
         </header>
 
-        {/* ── the workspace ── */}
-        <main className="mt-6 flex min-h-0 flex-1 flex-col gap-4" aria-live="polite">
+        {/* ── the workspace: paths on the left, the preview zone on the right ── */}
+        <div className="mt-6 flex min-h-0 flex-1 flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(330px,420px)] lg:items-start">
+          <main className="flex min-h-0 flex-col gap-4" aria-live="polite">
           {/* family summary */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-border bg-card px-4 py-3">
             <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -480,7 +450,15 @@ export function AiStudioView({ skill }: { skill: string | null }) {
               ))}
             </div>
           )}
-        </main>
+          </main>
+
+          {/* THE preview zone — always present, always honest: the build
+              log streams here live while the engine runs, and the staged
+              site renders here the moment it exists (and stays). */}
+          <div className="min-h-[22rem] lg:sticky lg:top-2 lg:max-h-[calc(100dvh-8.5rem)]">
+            <PreviewDock />
+          </div>
+        </div>
 
         {/* ── the wiring map ── */}
         <footer className="mt-8 rounded-2xl border border-border bg-card p-4 sm:p-5">

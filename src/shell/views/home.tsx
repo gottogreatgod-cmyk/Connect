@@ -1,14 +1,19 @@
 "use client"
 
 /**
- * HomeView — the forge: the Growth OS's own landing page.
+ * HomeView — the front door: the system's own explanatory guide.
  *
- * Ports the OMNIFORGE hero / layer-proof / editions-gallery / offer
- * sections onto the merged system: six edition-driven hero layouts, the
- * method (token contract → genome → tiers × finishes), the editions
- * gallery that re-forges this very page live, a showcase of real rendered
- * templates, the playbook teaser, both price ladders and the closing
- * lead form.
+ * The landing page and the topbar teach the same map — every destination
+ * in the system, explained once, reachable from both places:
+ *
+ *   the hero    — what the system is (edition-driven, one version)
+ *   the map     — the guided tour: all eight destinations, what each
+ *                 does, what you can do there, and the path to it
+ *   the method  — the contracts that hold it together
+ *   editions    — one click re-forges this very page
+ *   the proof   — real sites, rendering live
+ *   pricing     — the two ladders
+ *   the closing — the lead form
  *
  * Everything paints through the edition CSS variables applied to <html>
  * by the EditionProvider — no hardcoded colours in this file (plain
@@ -23,19 +28,18 @@ import {
   type FormEvent,
   type ReactNode,
 } from "react"
-import { ArrowRight, ArrowUpRight, BookOpen, Dices, Dna, ExternalLink, Layers, Orbit, Search, SlidersHorizontal, Wand2 } from "lucide-react"
+import { ArrowRight, Blocks, BookOpen, Dices, Dna, ExternalLink, FolderGit2, Layers, LayoutGrid, Library as LibraryIcon, Orbit, SlidersHorizontal, Sparkles, Wand2, type LucideIcon } from "lucide-react"
 import { EDITION_ORDER, EDITIONS, LAYER_ORDER, type Edition, type EditionId } from "@/engine/editions"
 import { CAP_LABELS, FINISHES, type FinishCaps } from "@/engine/finish"
 import { SWITCHES } from "@/engine/genome"
 import { INDUSTRIES, TEMPLATES, findTemplate, industryOf, type TemplateDef } from "@/engine/registry"
 import { PLAYBOOK_BY_TIER, TIERS, tierOf } from "@/engine/tiers"
-import { SYSTEM_MAP, go, href } from "@/engine/nav"
+import { go, href } from "@/engine/nav"
 import { track } from "@/engine/analytics"
 import { useEdition } from "../edition-provider"
 import { SpinBlock, SpinField, useCursorLabel, useFx } from "../fx"
 import { useGos } from "../gos-context"
 import { SiteFrame } from "../site-frame"
-import { OPEN_PALETTE_EVENT } from "../command-palette"
 
 /* ── constants ─────────────────────────────────────────────────────── */
 
@@ -57,10 +61,7 @@ const TOKENS = [
   "--on-primary", "--accent", "--on-accent", "--radius", "--font-display", "--font-body",
 ]
 
-const MARQUEE_TEXT =
-  `${TEMPLATES.length} finished templates · ${MODULE_TOTAL} playbook modules · ` +
-  `${SWITCHES.length} genome switches · ${EDITION_ORDER.length} editions · ` +
-  `${FINISHES.length} finish tiers · ${TIERS.length} tiers per industry — `
+const MARQUEE_NOTE = `${TEMPLATES.length} finished templates · ${MODULE_TOTAL} playbook modules · ${SWITCHES.length} genome switches · ${EDITION_ORDER.length} editions · ${FINISHES.length} finish tiers · ${TIERS.length} tiers per industry`
 
 const SHOWCASE = [
   "molo-bakehouse", "ember-oak", "kalm-physio",
@@ -69,7 +70,6 @@ const SHOWCASE = [
   .map((s) => findTemplate(s))
   .filter((t): t is TemplateDef => !!t)
 
-const EXAMPLE_MODULES = ["Navigation & headers", "Booking flows", "Listings & search", "Quote calculators", "Client portals", "Galleries"]
 const BUDGETS = ["Under £500", "£500 – 2k", "£2k – 10k", "£10k +"]
 const NAV_LINKS: { label: string; path: string }[] = [
   { label: "Builder", path: "/build" },
@@ -158,25 +158,14 @@ function HeroCtas({
   )
 }
 
-function Marquee() {
-  const { caps } = useFx()
-  if (!caps.marquee) return null
+/* ── the single stats strip — the numbers, once ───────────────────── */
+
+function StatsStrip() {
   return (
-    <div className="overflow-hidden border-y border-border bg-muted/30">
-      <p className="sr-only">
-        {TEMPLATES.length} finished templates, {MODULE_TOTAL} playbook modules, {SWITCHES.length} genome
-        switches, {EDITION_ORDER.length} editions, {FINISHES.length} finish tiers, {TIERS.length} tiers per industry.
+    <div className="border-b border-border bg-muted/25">
+      <p className="mx-auto w-full max-w-6xl px-4 py-3 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground sm:px-6 lg:px-8">
+        {MARQUEE_NOTE}
       </p>
-      <div className="ed-marquee flex w-max" aria-hidden="true">
-        {[0, 1].map((k) => (
-          <span
-            key={k}
-            className="whitespace-nowrap py-2.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
-          >
-            {MARQUEE_TEXT.repeat(3)}
-          </span>
-        ))}
-      </div>
     </div>
   )
 }
@@ -204,49 +193,6 @@ function Section({
       </header>
       {children}
     </section>
-  )
-}
-
-/* ── the header ───────────────────────────────────────────────────── */
-
-function PageHeader() {
-  return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-md">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <button
-          type="button"
-          onClick={() => go("/library")}
-          className="flex shrink-0 items-center gap-2.5 text-foreground"
-          aria-label="Growth OS — open the template library"
-        >
-          <span aria-hidden className="grid size-7 place-items-center rounded-[7px] bg-primary text-sm font-semibold text-primary-foreground">
-            G
-          </span>
-          <span className="ed-display whitespace-nowrap text-base sm:text-lg">Growth OS</span>
-        </button>
-        <nav aria-label="Views" className="mx-auto hidden items-center gap-1 sm:flex">
-          {NAV_LINKS.map((l) => (
-            <a
-              key={l.path}
-              href={href(l.path)}
-              className="rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              {l.label}
-            </a>
-          ))}
-        </nav>
-        <button
-          type="button"
-          onClick={() => window.dispatchEvent(new CustomEvent(OPEN_PALETTE_EVENT))}
-          title="Command palette (⌘K)"
-          className="ml-auto inline-flex items-center gap-2 rounded-md border border-border bg-background px-2.5 py-1.5 font-mono text-[11px] text-muted-foreground transition-colors hover:text-foreground sm:ml-0"
-        >
-          <Search className="size-3" aria-hidden />
-          <span className="hidden sm:inline">Search</span>
-          <span aria-hidden className="rounded border border-border bg-muted/60 px-1 py-px text-[10px]">⌘K</span>
-        </button>
-      </div>
-    </header>
   )
 }
 
@@ -435,14 +381,14 @@ function Hero() {
   return (
     <>
       {hero}
-      <Marquee />
+      <StatsStrip />
     </>
   )
 }
 
-/* ── the AI band — the intelligence layer, front of house ─────── */
+/* ── the guided tour — every destination, explained ─────────────── */
 
-const AI_BAND_SKILLS = [
+const AI_FAMILIES = [
   { slug: "agent", name: "Agent Chat", note: "one chat · every skill" },
   { slug: "chat", name: "Chat & Content", note: "librarian · copy forge" },
   { slug: "art", name: "Art & Motion", note: "images · reels · motion lab" },
@@ -450,51 +396,211 @@ const AI_BAND_SKILLS = [
   { slug: "research", name: "Vision & Research", note: "see · search · read" },
 ]
 
-function AiBand() {
-  const { caps } = useFx()
+interface TourStop {
+  path: string
+  icon: LucideIcon
+  name: string
+  tagline: string
+  /** small chips under the tagline — the concrete vocabulary of the stop */
+  chips: string[]
+  bullets: string[]
+  /** the AI Studio stop carries its five families as sub-links */
+  families?: typeof AI_FAMILIES
+}
+
+const TOUR: TourStop[] = [
+  {
+    path: "/build",
+    icon: Wand2,
+    name: "Builder",
+    tagline: "The direct path — six steps, zero jargon, from a plain-words brief to a launched site.",
+    chips: ["brief", "design", "content", "art", "motion", "launch"],
+    bullets: [
+      "Describe the business in plain words — get honest picks from the real registry, with reasons",
+      "A live design preview: one-click skins, shuffle the look, watch it move",
+      "Launch copy written for your business — warm, premium or bold, you pick the voice",
+      "Art per section: hero image, brand mark, editorial still, cinematic reel, site voiceover",
+      "Motion personalities felt live on your own site before you commit",
+      "Launch: the assembled site plus take-it-to-any-AI exports",
+    ],
+  },
+  {
+    path: "/ai",
+    icon: Sparkles,
+    name: "AI Studio",
+    tagline: "The intelligence layer — one agent with every skill wired in, plus four guided families.",
+    chips: ["1 unified agent", "4 families", "16 live paths"],
+    bullets: [
+      "One chat builds the site, generates its art, renders a reel, speaks the copy and researches the market",
+      "Four guided families — chat, art & motion, voice, research — walk you through every skill step by step",
+      "Every generation is a real API call, streamed live — the engine loop is visible, nothing faked",
+      "Site builds auto-stage with a live preview zone that survives navigation",
+    ],
+    families: AI_FAMILIES,
+  },
+  {
+    path: "/motion",
+    icon: Orbit,
+    name: "Motion",
+    tagline: "Layer two — movement as a brand decision, felt before it is committed.",
+    chips: ["19 master skills", "11 live stages", "5 sources"],
+    bullets: [
+      "Nineteen skills distilled from five public sources into one runtime",
+      "Live stages you can scrub, race and feel — curves, springs, timelines",
+      "Motion personalities for real brands, applied to a live page",
+      "The same registry is served to any agent at one URL",
+    ],
+  },
+  {
+    path: "/sources",
+    icon: FolderGit2,
+    name: "Sources",
+    tagline: "The ledger — what this system is actually built from, counted from the real files.",
+    chips: ["9 repos", "live census", "MCP"],
+    bullets: [
+      "Nine GitHub repos cloned in, each layer explained in our own words",
+      "The live skill census — re-counted from disk on every request, no marketing numbers",
+      "What each repo contributes: motion masters, agent patterns, memory, skills",
+      "The MCP wiring, verified",
+    ],
+  },
+  {
+    path: "/library",
+    icon: LibraryIcon,
+    name: "Library",
+    tagline: "The working shell — sidebar, stage and inspector around every template.",
+    chips: [`${TEMPLATES.length} templates`, "7 genome switches", "tier morphing"],
+    bullets: [
+      "Browse with the keyboard (← →), inspect the genome, morph the tier",
+      "Every template staged live on the grid — the real site, not screenshots",
+      "The finish tier's instruments: type tools, the randomizer, the inspector",
+    ],
+  },
+  {
+    path: "/catalogue",
+    icon: LayoutGrid,
+    name: "Catalogue",
+    tagline: "Every template as a searchable specimen plate.",
+    chips: ["search", "filter", "sort"],
+    bullets: [
+      "Filter by industry, sort by DNA — every template one plate",
+      "One click opens the full library stage, another the full-bleed site",
+    ],
+  },
+  {
+    path: "/playbook",
+    icon: BookOpen,
+    name: "Playbook",
+    tagline: `The ${MODULE_TOTAL}-module build standard every template is audited against.`,
+    chips: [`${MODULE_TOTAL} modules`, "20 sections", "rules + code"],
+    bullets: [
+      "Every module with real content rules, a11y notes and reference code",
+      "Tiered Starter → Flagship — the depth ladder you can check",
+      "Deep-linkable: every module has an address you can share",
+    ],
+  },
+  {
+    path: "/forge",
+    icon: Blocks,
+    name: "Forge",
+    tagline: "Any playbook module, mounted live on any template.",
+    chips: ["344 modules", `${TEMPLATES.length} hosts`, "live mount"],
+    bullets: [
+      "Pick any module from the standard, mount it on any template",
+      "See it working live — swap the host template and watch it hold",
+      "The same kit that built the module-made template in the library",
+    ],
+  },
+]
+
+function TourCard({ stop }: { stop: TourStop }) {
+  const Icon = stop.icon
   return (
-    <section id="ai-band" className="border-b border-border bg-muted/25">
-      <div className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8">
-        <div className="flex flex-wrap items-end justify-between gap-5">
-          <div className="max-w-2xl">
-            <p className="ed-eyebrow">Layer one · the AI intelligence</p>
-            <h2 className="ed-display mt-3 text-3xl leading-tight sm:text-4xl">
-              One agent. <span className="ed-emph">Every skill.</span>
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              The AI Studio is the first layer of the merged system — one unified agent that can build a website, generate
-              its art, render a reel, speak the copy and research the market, all from a single chat. For people who
-              prefer buttons to conversation, four guided families — chat, art &amp; motion, voice, research — walk you
-              through every skill step by step.
-            </p>
+    <article className="ed-card flex h-full flex-col gap-4 p-6">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-md border border-border bg-muted/40">
+            <Icon className="size-4.5 text-primary" />
+          </span>
+          <div>
+            <h3 className="ed-display text-lg leading-tight">{stop.name}</h3>
+            <code className="font-mono text-[10.5px] text-primary">#{stop.path}</code>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              track("cta_clicked", { source: "forge", target: "ai-studio" })
-              go("/ai")
-            }}
-            className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-          >
-            Open AI Studio <ArrowRight className="size-4" aria-hidden />
-          </button>
         </div>
-        <ul className={`mt-8 grid grid-cols-2 gap-2 sm:grid-cols-5 ${caps.rise ? "ed-rise" : ""}`}>
-          {AI_BAND_SKILLS.map((s) => (
-            <li key={s.slug}>
-              <button
-                type="button"
-                onClick={() => go(`/ai/${s.slug}`)}
-                className="group flex w-full flex-col gap-1 rounded-lg border border-border bg-card p-3.5 text-left transition hover:border-primary/50 hover:bg-primary/5"
-              >
-                <span className="text-[13px] font-semibold text-foreground group-hover:text-primary">{s.name}</span>
-                <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{s.note}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <button
+          type="button"
+          onClick={() => {
+            track("tour_stop_opened", { stop: stop.path })
+            go(stop.path)
+          }}
+          className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          Open <ArrowRight className="size-3.5" aria-hidden />
+        </button>
       </div>
-    </section>
+
+      <p className="text-sm leading-relaxed text-muted-foreground">{stop.tagline}</p>
+
+      <ul className="flex flex-wrap gap-1.5">
+        {stop.chips.map((c) => (
+          <li key={c} className="rounded-full border border-border bg-muted/40 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+            {c}
+          </li>
+        ))}
+      </ul>
+
+      <ul className="space-y-1.5 text-[13px] leading-snug text-foreground/85">
+        {stop.bullets.map((b) => (
+          <li key={b} className="flex gap-2">
+            <span aria-hidden className="mt-[7px] size-1 shrink-0 rounded-full bg-primary" />
+            <span>{b}</span>
+          </li>
+        ))}
+      </ul>
+
+      {stop.families && (
+        <div className="mt-auto border-t border-border pt-3">
+          <p className="ed-eyebrow mb-2">The five families</p>
+          <div className="flex flex-wrap gap-1.5">
+            {stop.families.map((f) => (
+              <button
+                key={f.slug}
+                type="button"
+                onClick={() => go(`/ai/${f.slug}`)}
+                className="group flex flex-col rounded-lg border border-border bg-card px-2.5 py-1.5 text-left transition hover:border-primary/50 hover:bg-primary/5"
+              >
+                <span className="text-[12px] font-semibold text-foreground group-hover:text-primary">{f.name}</span>
+                <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">{f.note}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </article>
+  )
+}
+
+function GuidedTour() {
+  return (
+    <Section
+      id="map"
+      n="01"
+      eyebrow="The map"
+      title={<>Every destination, <span className="ed-emph">explained</span>.</>}
+      desc="The topbar above and this page teach the same map — the system's eight destinations. Each card says what the place does, what you can do there, and carries the address. Start anywhere; everything is one click from everywhere."
+    >
+      <SpinField className="grid gap-4 md:grid-cols-2">
+        {TOUR.map((stop) => (
+          <SpinBlock key={stop.path} className="h-full">
+            <TourCard stop={stop} />
+          </SpinBlock>
+        ))}
+      </SpinField>
+      <p className="mt-6 rounded-lg border border-border bg-muted/30 px-4 py-3 font-mono text-[11px] leading-relaxed text-muted-foreground">
+        One address grammar for all of it — identity is the path (#/build, #/ai/voice, #/site/ember-oak…), state rides in the query
+        (?finish= · ?edition= · ?published=1 · ?on=), and old links keep resolving. The back button is honest everywhere.
+      </p>
+    </Section>
   )
 }
 
@@ -565,7 +671,7 @@ function Method() {
   return (
     <Section
       id="method"
-      n="01"
+      n="02"
       eyebrow="The method"
       title={<>How the system <span className="ed-emph">works</span>.</>}
       desc="Three contracts hold the whole thing together. Swap any of them and the work keeps its shape — that is what makes an edition click instant and a genome switch safe."
@@ -696,7 +802,7 @@ function EditionsGallery() {
   return (
     <Section
       id="editions"
-      n="02"
+      n="03"
       eyebrow="The editions"
       title={<>One click <span className="ed-emph">re-forges</span> the shell.</>}
       desc="Six complete identities for one system — press a card and this page, the hero layout, the type, the material and the copy all move together. The template previews keep their own DNA; that is the genome's job."
@@ -772,7 +878,7 @@ function Showcase() {
   return (
     <Section
       id="showcase"
-      n="03"
+      n="04"
       eyebrow="The proof"
       title={<>Open a <span className="ed-emph">finished</span> site.</>}
       desc="Six of the twenty-three, rendering live below — the real sites, not screenshots (Nightflow is module-built from the factory kit). Press one to open it in the library, or take the full page with the consoles."
@@ -786,126 +892,7 @@ function Showcase() {
   )
 }
 
-/* ── the playbook teaser ───────────────────────────────────────────── */
-
-const SEGMENT_INKS = ["bg-primary/40", "bg-primary/70", "bg-primary", "bg-accent/70", "bg-accent"]
-
-function PlaybookTeaser() {
-  return (
-    <section id="modules" aria-labelledby="modules-heading" className="mx-auto w-full max-w-6xl scroll-mt-24 px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-      <div className="ed-card grid gap-10 p-6 sm:p-10 lg:grid-cols-[1.15fr_1fr] lg:items-center">
-        <div>
-          <p className="ed-eyebrow">
-            <span className="text-primary">04</span> — The build standard
-          </p>
-          <h2 id="modules-heading" className="ed-display mt-3 text-3xl leading-tight sm:text-4xl">
-            The Module Playbook
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            {MODULE_TOTAL} modules · 20 sections · every module with real content rules, a11y notes and reference
-            code — tiered Starter → Flagship.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {EXAMPLE_MODULES.map((m) => (
-              <span key={m} className="rounded-full border border-border bg-muted/40 px-3 py-1 text-[11.5px] text-muted-foreground">
-                {m}
-              </span>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => go("/playbook")}
-            className="mt-8 inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-          >
-            Open the playbook <ArrowRight className="size-4" aria-hidden />
-          </button>
-        </div>
-        <div>
-          <p className="ed-eyebrow mb-3">Modules per tier</p>
-          <div
-            role="img"
-            aria-label={`Module split — Starter ${PLAYBOOK_BY_TIER.low}, Growth ${PLAYBOOK_BY_TIER.mid}, Scale ${PLAYBOOK_BY_TIER.scale}, Business ${PLAYBOOK_BY_TIER.high}, Flagship ${PLAYBOOK_BY_TIER.premium}`}
-            className="flex h-3 overflow-hidden rounded-full"
-          >
-            {TIERS.map((t, i) => (
-              <span
-                key={t.id}
-                className={SEGMENT_INKS[i]}
-                style={{ width: `${(PLAYBOOK_BY_TIER[t.id] / MODULE_TOTAL) * 100}%` }}
-              />
-            ))}
-          </div>
-          <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {TIERS.map((t, i) => (
-              <div key={t.id}>
-                <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <span aria-hidden className={`inline-block size-2 rounded-full ${SEGMENT_INKS[i]}`} />
-                  {t.plan}
-                </dt>
-                <dd className="ed-display mt-0.5 text-2xl">{PLAYBOOK_BY_TIER[t.id]}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </div>
-    </section>
-  )
-}
-
 /* ── pricing — the two ladders ────────────────────────────────────── */
-
-/* ── the system map — the merged system's clean paths ──────────────── */
-
-function SystemMapSection() {
-  return (
-    <section id="paths" aria-labelledby="paths-heading" className="mx-auto w-full max-w-6xl scroll-mt-24 px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-      <header className="mb-8 max-w-3xl">
-        <p className="ed-eyebrow">The system path — one grammar, every view addressed</p>
-        <h2 id="paths-heading" className="ed-display mt-3 text-3xl leading-tight sm:text-4xl">
-          Every view has an address.
-        </h2>
-        <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-          Both intelligence layers, the library, the catalogue, the playbook, the forge and every finished site live
-          under one clean path system — shareable, bookmarkable, back-button honest. Identity is the path; state
-          rides in the query — and the genome randomizer (the dice in the topbar) follows you into every view.
-        </p>
-      </header>
-      <div className="ed-card overflow-hidden p-0">
-        <ul className="divide-y divide-border">
-          {SYSTEM_MAP.map((row) => {
-            const live = !row.path.includes("<")
-            const inner = (
-              <>
-                <code className="min-w-[12rem] shrink-0 font-mono text-[12.5px] text-primary">#{row.path}</code>
-                <span className="text-sm font-medium">{row.label}</span>
-                <span className="ml-auto hidden min-w-0 truncate pl-4 text-xs text-muted-foreground md:block">{row.note}</span>
-                {live ? (
-                  <ArrowUpRight className="ml-1 size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />
-                ) : (
-                  <span className="ml-1 shrink-0 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground/60">deep link</span>
-                )}
-              </>
-            )
-            return (
-              <li key={row.path}>
-                {live ? (
-                  <a href={href(row.path)} className="group flex flex-wrap items-baseline gap-x-4 gap-y-1 px-4 py-3 transition-colors hover:bg-muted/60 sm:px-5">
-                    {inner}
-                  </a>
-                ) : (
-                  <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-4 py-3 sm:px-5">{inner}</div>
-                )}
-              </li>
-            )
-          })}
-        </ul>
-        <p className="border-t border-border bg-muted/40 px-4 py-2.5 font-mono text-[11px] leading-relaxed text-muted-foreground sm:px-5">
-          state → ?finish=spectacle · ?edition=obsidian · ?published=1 · ?on=&lt;slug&gt; — old ?view= links keep resolving
-        </p>
-      </div>
-    </section>
-  )
-}
 
 function Pricing() {
   const toId = useCallback((target: string) => {
@@ -1253,15 +1240,12 @@ export function HomeView() {
     <div className="forge h-full min-h-0 overflow-y-auto overscroll-contain" style={fontVars}>
       <style>{OPT_OUT}</style>
       <div className="flex min-h-full flex-col">
-        <PageHeader />
         <main className="flex-1">
           <Hero />
-          <AiBand />
+          <GuidedTour />
           <Method />
           <EditionsGallery />
           <Showcase />
-          <PlaybookTeaser />
-          <SystemMapSection />
           <Pricing />
           <Closing />
         </main>

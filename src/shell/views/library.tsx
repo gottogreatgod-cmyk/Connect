@@ -2,20 +2,19 @@
 
 /**
  * LibraryView — the merged shell: the Growth OS library frame (sidebar ·
- * stage · panel) with the OMNIFORGE instruments bolted into the topbar.
+ * stage · panel). The Topbar lives at the shell root now (one header for
+ * every view), so this view is just the working grid beneath it.
  * Keyboard: ←/→ browse templates, [ ] toggles the inspector.
  */
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { TEMPLATES } from "@/engine/registry"
 import { useGos } from "../gos-context"
-import { Topbar } from "../topbar"
 import { Sidebar } from "../sidebar"
 import { Stage } from "../stage"
 import { Panel } from "../panel"
 
-export function LibraryView({ finishId }: { finishId: string }) {
+export function LibraryView({ finishId: _finishId, navOpen, onNav }: { finishId: string; navOpen: boolean; onNav: (v: boolean) => void }) {
   const gos = useGos()
-  const [navOpen, setNavOpen] = useState(false)
 
   /* keyboard: ←/→ move through templates */
   useEffect(() => {
@@ -34,19 +33,18 @@ export function LibraryView({ finishId }: { finishId: string }) {
       } else if (e.key === "]") {
         gos.setPanelOpen(!gos.panelOpen)
       } else if (e.key === "Escape") {
-        setNavOpen(false)
+        onNav(false)
       }
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [gos])
+  }, [gos, onNav])
 
   return (
-    <div className={`gos-app-wrap ${navOpen ? "nav-open" : ""}`}>
-      <Topbar navOpen={navOpen} onNav={setNavOpen} />
+    <div className="gos-app-wrap">
       <div className={`gos-app ${gos.panelOpen ? "with-panel" : ""}`}>
         <Sidebar />
-        {navOpen && <div className="gos-scrim" onClick={() => setNavOpen(false)} />}
+        {navOpen && <div className="gos-scrim" onClick={() => onNav(false)} />}
         <Stage />
         {gos.panelOpen && <Panel />}
       </div>

@@ -287,6 +287,13 @@ HOW TO PICK — in priority order:
 2. The business KIND second — the daily-rhythm of the business should feel familiar (a florist with daily stock and walk-ins is closer to a café's "today's bake + hours" than to a fine-dining tasting menu).
 3. The template's demo industry LAST — the design gets re-skinned and the demo copy is replaced by the client's own, so a food template can carry a florist perfectly if the conversion goal matches.
 
+CONVERSION FAMILIES — start here, then refine by kind:
+- books appointments, classes or sessions (clinic, studio, salon, gym, coach, therapist, tutor) → the booking-first templates (clinics, studios, practices)
+- sells daily stock to walk-ins (bakery, café, florist, juice bar) → the "today's board + hours" templates
+- quotes and jobs (trades, repairs, contractors) → the phone-ringing trades templates
+- takes reservations (restaurant, venue, experience) → the reservations templates
+- lists inventory (property, vehicles, portfolios) → the listings templates
+
 RULES:
 - The slug MUST come from the registry above — never invent one.
 - The pitch is about the CLIENT's business, concrete and honest, no hype words like "unlock" or "elevate".`;

@@ -67,11 +67,16 @@ export function Topbar({ navOpen, onNav }: { navOpen: boolean; onNav: (v: boolea
     <header className="gos-topbar">
       <button
         className="gos-icon-btn gos-only-narrow"
-        onClick={() => onNav(!navOpen)}
-        aria-label={navOpen ? "Close template list" : "Open template list"}
-        aria-expanded={navOpen}
+        onClick={() => {
+          /* in the library the hamburger opens the template drawer;
+             anywhere else it takes you there first */
+          if (view === "library") onNav(!navOpen)
+          else go("/library")
+        }}
+        aria-label={view === "library" ? (navOpen ? "Close template list" : "Open template list") : "Open the template library"}
+        aria-expanded={view === "library" ? navOpen : undefined}
       >
-        {navOpen ? <X size={18} /> : <Menu size={18} />}
+        {view === "library" && navOpen ? <X size={18} /> : <Menu size={18} />}
       </button>
 
       <a
@@ -88,7 +93,7 @@ export function Topbar({ navOpen, onNav }: { navOpen: boolean; onNav: (v: boolea
         </span>
         <span className="gos-brand-text">
           <b>Growth OS</b>
-          <span>Template Library</span>
+          <span>One system · every layer</span>
         </span>
       </a>
 
